@@ -1,0 +1,3 @@
+[submodule "strings"]
+	path = strings
+	url = https://github.com/Aerocatia/strings
