@@ -3,6 +3,15 @@
 version = 4
 
 [[package]]
+name = "c_mine"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "cc"
 version = "1.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -21,6 +30,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 name = "demon"
 version = "0.1.0"
 dependencies = [
+ "c_mine",
  "embed-resource",
  "windows-sys 0.59.0",
 ]

@@ -1,4 +1,6 @@
 #![no_std]
+#![allow(unused_variables)]
+#![allow(dead_code)]
 
 #[cfg(not(all(target_pointer_width = "32", windows)))]
 compile_error!("This crate can only be compiled for i686-pc-windows-* targets!");
@@ -9,3 +11,6 @@ mod allocator;
 mod util;
 mod panic;
 mod init;
+mod tag;
+mod id;
+mod table;

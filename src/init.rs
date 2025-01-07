@@ -10,7 +10,7 @@ use crate::init::hook::init_hooks;
 
 #[repr(u32)]
 #[derive(Copy, Clone, PartialEq, Debug)]
-enum ExeType {
+pub enum ExeType {
     /// Build that loads scenarios from cache files (maps/*.map)
     Cache,
 
