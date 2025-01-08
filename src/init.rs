@@ -37,13 +37,23 @@ unsafe extern "system" fn DllMain(_hinstance: HINSTANCE, reason: u32, _reserved:
 }
 
 static ATTACHED: AtomicBool = AtomicBool::new(false);
-static EXE_TYPE: AtomicU32 = AtomicU32::new(0);
+static EXE_TYPE: AtomicU32 = AtomicU32::new(0xFFFFFFFF);
 
 /// Gets the EXE type.
 pub fn get_exe_type() -> ExeType {
-    assert!(ATTACHED.load(Ordering::Relaxed), "Not loaded; can't get EXE type! This is a bug. *sad Butterfree noises*");
-    unsafe {
-        core::mem::transmute(EXE_TYPE.load(Ordering::Relaxed))
+    get_exe_type_if_available().expect("Not loaded; can't get EXE type! This is a bug. *sad Butterfree noises*")
+}
+
+/// Gets the EXE type.
+pub fn get_exe_type_if_available() -> Option<ExeType> {
+    let exe_type = EXE_TYPE.load(Ordering::Relaxed);
+    if exe_type != 0xFFFFFFFF {
+        unsafe {
+            Some(core::mem::transmute(exe_type))
+        }
+    }
+    else {
+        None
     }
 }
 

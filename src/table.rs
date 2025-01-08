@@ -1,4 +1,3 @@
-use core::ptr::null_mut;
 use c_mine::c_mine;
 use crate::id::ID;
 
@@ -6,7 +5,7 @@ pub const DATA_FOURCC: u32 = 0x64407440;
 
 #[repr(C)]
 pub struct Table<T: Sized + 'static, const SALT: u16> {
-    /// Name of the memes
+    /// Name of the data table
     name: [u8; 32],
 
     /// Maximum/reserved elements in the table
@@ -15,14 +14,17 @@ pub struct Table<T: Sized + 'static, const SALT: u16> {
     /// Size of each element
     element_size: u16,
 
+    /// Valid if non-zero
+    valid: u8,
+
     /// ???
-    unknown_1: [u8; 4],
+    unknown_2: [u8; 3],
 
     /// Unused (d@t@)
     data_fourcc: u32,
 
     /// ??? cleared on clear
-    unknown_2: u16,
+    unknown_3: u16,
 
     /// Size
     current_size: u16,
@@ -58,8 +60,9 @@ impl<T: Sized + 'static, const SALT: u16> Table<T, SALT> {
             data_fourcc: DATA_FOURCC,
             first: first_element,
             next_id: 0,
-            unknown_1: Default::default(),
+            valid: 0,
             unknown_2: Default::default(),
+            unknown_3: Default::default(),
             current_size: 0,
             count: 0,
         };
@@ -81,11 +84,32 @@ impl<T: Sized + 'static, const SALT: u16> Table<T, SALT> {
     pub fn clear(&mut self) {
         self.current_size = 0;
         self.count = 0;
-        self.unknown_2 = 0;
+        self.unknown_2 = [0u8; 3];
         for i in self.get_instances_mut() {
             i.salt_bytes = [0u8; 4]
         }
         self.reset_next_id();
+    }
+    pub fn is_valid(&self) -> bool {
+        self.valid != 0
+    }
+    pub fn verify(&self) -> Result<(), &'static str> {
+        if self.first.is_null() {
+            return Err("data pointer is null");
+        }
+        if self.data_fourcc != DATA_FOURCC {
+            return Err("data fourcc ('d@t@') is invalid");
+        }
+        if self.maximum < self.count {
+            return Err("maximum was less than count");
+        }
+        if self.maximum < self.current_size {
+            return Err("maximum was less than current size");
+        }
+        if self.current_size < self.count {
+            return Err("count was less than current size");
+        }
+        Ok(())
     }
     fn reset_next_id(&mut self) {
         self.next_id = (ID::<SALT>::from_index(0).expect("??? no id?").full_id() >> 16) as u16;
@@ -102,6 +126,14 @@ pub struct TableIterator<T: Sized + 'static, const SALT: u16> {
     padding: [u8; 2],
     id: u32,
     salt: u32
+}
+impl<T: Sized + 'static, const SALT: u16> TableIterator<T, SALT> {
+    pub unsafe fn init(&mut self, table: *mut Table<T, SALT>) {
+        self.table = table as *mut _;
+        self.current_index = 0;
+        self.id = u32::MAX;
+        self.salt = (self.table as u32) ^ ITER_FOURCC;
+    }
 }
 impl<T: Sized + 'static, const SALT: u16> Iterator for TableIterator<T, SALT> {
     type Item = &'static mut TableElement<T>;
@@ -145,12 +177,38 @@ impl<T: Sized + 'static> TableElement<T> {
     }
 }
 
+// RE: table FFI functions
+//
+// We don't know what the type or salt is, but the iterator does not need it,
+// so we're using [u8; 0] with a zero salt
+//
+// Ideally, these should not be called from Rust code.
+
 #[c_mine]
-pub unsafe extern "C" fn iterator_next(iterator: &mut TableIterator<[u8; 0], 0>) -> Option<&mut TableElement<[u8; 0]>> {
-    // We don't know what the type or salt is, but the iterator does not need it,
-    // so we're using [u8; 0] with a zero salt
-    //
-    // It also just so happens that Iterator::next() even nicely maps to the exact
-    // FFI-compatible type that Halo wants (a nullable pointer)
+pub extern "C" fn data_verify(table: Option<&'static Table<[u8; 0], 0>>) {
+    let Some(table) = table else {
+        panic!("null table passed into data_verify");
+    };
+    table.verify().expect("table is broken");
+}
+
+#[c_mine]
+pub unsafe extern "C" fn data_iterator_new(iterator: &mut TableIterator<[u8; 0], 0>, table: Option<&'static mut Table<[u8; 0], 0>>) {
+    let Some(table) = table else {
+        panic!("null table passed into data_iterator_new");
+    };
+    assert!(table.is_valid(), "init iterator with invalid table");
+    table.verify().expect("init iterator with failed verify");
+
+    iterator.init(table as *mut _);
+}
+
+#[c_mine]
+pub extern "C" fn data_iterator_next(iterator: &mut TableIterator<[u8; 0], 0>) -> Option<&mut TableElement<[u8; 0]>> {
+    assert!(unsafe { &*iterator.table }.is_valid(), "iterating iterator with invalid table");
+
+    // It just so happens that Iterator::next() nicely maps to the exact
+    // FFI-compatible type that Halo wants (a nullable pointer). Yay!
+
     iterator.next()
 }

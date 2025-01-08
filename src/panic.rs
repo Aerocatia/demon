@@ -8,6 +8,7 @@ use windows_sys::Win32::Foundation::{GetLastError, TRUE};
 use windows_sys::Win32::System::Diagnostics::Debug::{RtlCaptureStackBackTrace, SymFromAddr, SymGetLineFromAddr64, SymInitialize, SymSetOptions, IMAGEHLP_LINE64, SYMBOL_INFO, SYMOPT_ALLOW_ABSOLUTE_SYMBOLS, SYMOPT_LOAD_ANYTHING, SYMOPT_LOAD_LINES};
 use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess};
 use windows_sys::Win32::UI::WindowsAndMessaging::MESSAGEBOX_STYLE;
+use crate::init::{get_exe_type_if_available, ExeType};
 use crate::util::{get_exe_dir, write_to_file};
 
 #[panic_handler]
@@ -30,6 +31,14 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
         if let Some(location) = panic_info.location() {
             alloc::fmt::write(&mut brief, format_args!("\n\nLocation: {location}")).ok()?;
         }
+
+        let exe_type = match get_exe_type_if_available() {
+            Some(ExeType::Tag) => "tag",
+            Some(ExeType::Cache) => "cache",
+            None => "unknown (not fully loaded)"
+        };
+
+        alloc::fmt::write(&mut brief, format_args!("\n\nEXE type: {exe_type}")).ok()?;
 
         let mut full = String::with_capacity(4096);
         full += &brief;
