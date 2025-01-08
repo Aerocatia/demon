@@ -2,6 +2,7 @@ use crate::init::{get_exe_type, ExeType};
 use crate::util::CFunctionProvider;
 use windows_sys::Win32::Foundation::TRUE;
 use windows_sys::Win32::System::Memory::{VirtualProtect, PAGE_EXECUTE_READWRITE};
+use c_mine::*;
 
 type Thunk = [u8; 5];
 unsafe fn overwrite_thunk<T>(thunk: *mut Thunk, to: CFunctionProvider<T>) {
@@ -22,15 +23,5 @@ unsafe fn overwrite_thunk<T>(thunk: *mut Thunk, to: CFunctionProvider<T>) {
 }
 
 pub unsafe fn init_hooks() {
-    // TODO: codegen from JSON
-    if get_exe_type() == ExeType::Tag {
-        overwrite_thunk(0x00403AB2 as *mut _, crate::table::data_iterator_next);
-        overwrite_thunk(0x00407A1D as *mut _, crate::table::data_iterator_new);
-        overwrite_thunk(0x00404F4D as *mut _, crate::table::data_verify);
-    }
-    else if get_exe_type() == ExeType::Cache {
-        overwrite_thunk(0x004047FF as *mut _, crate::table::data_iterator_next);
-        overwrite_thunk(0x004087BF as *mut _, crate::table::data_iterator_new);
-        overwrite_thunk(0x00405EC5 as *mut _, crate::table::data_verify);
-    }
+    generate_hook_setup_code!();
 }

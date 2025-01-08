@@ -1,0 +1,7 @@
+{
+    "resolve_tag_loaded": {
+        "tag": "0x004067C6",
+        "cache": "0x0040769E",
+        "replacement": "crate::tag::resolve_tag_loaded"
+    }
+}

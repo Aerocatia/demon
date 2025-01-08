@@ -4,7 +4,7 @@ use crate::id::ID;
 pub const DATA_FOURCC: u32 = 0x64407440;
 
 #[repr(C)]
-pub struct Table<T: Sized + 'static, const SALT: u16> {
+pub struct DataTable<T: Sized + 'static, const SALT: u16> {
     /// Name of the data table
     name: [u8; 32],
 
@@ -38,11 +38,11 @@ pub struct Table<T: Sized + 'static, const SALT: u16> {
     /// Pointer to first element in the table
     first: *mut TableElement<T>
 }
-impl<T: Sized + 'static, const SALT: u16> Table<T, SALT> {
+impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
     /// # Safety
     ///
     /// `first_element` must point to at least `maximum` elements.
-    pub unsafe fn init(table_name: &str, maximum: usize, first_element: *mut TableElement<T>) -> Table<T, SALT> {
+    pub unsafe fn init(table_name: &str, maximum: usize, first_element: *mut TableElement<T>) -> DataTable<T, SALT> {
         assert!(maximum < (u16::MAX - 1) as usize, "table maximum is too big for a table {table_name}");
 
         let element_size = size_of::<TableElement<T>>();
@@ -53,7 +53,7 @@ impl<T: Sized + 'static, const SALT: u16> Table<T, SALT> {
         assert!(name_bytes.len() < name.len(), "{table_name} is too long for a table!");
         name[..name_bytes.len()].copy_from_slice(name_bytes);
 
-        let mut table = Table {
+        let mut table = DataTable {
             name,
             maximum: maximum as u16,
             element_size: size_of::<T>() as u16,
@@ -111,6 +111,16 @@ impl<T: Sized + 'static, const SALT: u16> Table<T, SALT> {
         }
         Ok(())
     }
+    /// Create an iterator for the table using a Halo data iterator.
+    ///
+    /// # Safety
+    ///
+    /// Halo's data iterator cannot guarantee that the table has not changed.
+    pub unsafe fn iter(&'static mut self) -> TableIterator<T, SALT> {
+        let mut table_iterator: TableIterator<T, SALT> = core::mem::zeroed();
+        table_iterator.init(self);
+        table_iterator
+    }
     fn reset_next_id(&mut self) {
         self.next_id = (ID::<SALT>::from_index(0).expect("??? no id?").full_id() >> 16) as u16;
     }
@@ -121,18 +131,21 @@ const ITER_FOURCC: u32 = 0x69746572;
 /// Halo iterator for table
 #[repr(C)]
 pub struct TableIterator<T: Sized + 'static, const SALT: u16> {
-    table: *mut Table<T, SALT>,
+    table: *mut DataTable<T, SALT>,
     current_index: u16,
     padding: [u8; 2],
     id: u32,
     salt: u32
 }
 impl<T: Sized + 'static, const SALT: u16> TableIterator<T, SALT> {
-    pub unsafe fn init(&mut self, table: *mut Table<T, SALT>) {
+    pub unsafe fn init(&mut self, table: *mut DataTable<T, SALT>) {
         self.table = table as *mut _;
         self.current_index = 0;
         self.id = u32::MAX;
         self.salt = (self.table as u32) ^ ITER_FOURCC;
+    }
+    pub fn id(&self) -> ID<SALT> {
+        ID::from_full_id(self.id)
     }
 }
 impl<T: Sized + 'static, const SALT: u16> Iterator for TableIterator<T, SALT> {
@@ -185,7 +198,7 @@ impl<T: Sized + 'static> TableElement<T> {
 // Ideally, these should not be called from Rust code.
 
 #[c_mine]
-pub extern "C" fn data_verify(table: Option<&'static Table<[u8; 0], 0>>) {
+pub extern "C" fn data_verify(table: Option<&'static DataTable<[u8; 0], 0>>) {
     let Some(table) = table else {
         panic!("null table passed into data_verify");
     };
@@ -193,7 +206,7 @@ pub extern "C" fn data_verify(table: Option<&'static Table<[u8; 0], 0>>) {
 }
 
 #[c_mine]
-pub unsafe extern "C" fn data_iterator_new(iterator: &mut TableIterator<[u8; 0], 0>, table: Option<&'static mut Table<[u8; 0], 0>>) {
+pub unsafe extern "C" fn data_iterator_new(iterator: &mut TableIterator<[u8; 0], 0>, table: Option<&'static mut DataTable<[u8; 0], 0>>) {
     let Some(table) = table else {
         panic!("null table passed into data_iterator_new");
     };

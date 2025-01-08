@@ -1,3 +1,5 @@
+use core::fmt::{Debug, Formatter};
+
 const NULL_ID: u32 = 0xFFFFFFFF;
 
 #[derive(Copy, Clone, PartialEq)]
@@ -16,6 +18,9 @@ impl<const SALT: u16> ID<SALT> {
         Ok(Self {
             full_id: make_id(index, SALT)
         })
+    }
+    pub const fn from_full_id(full_id: u32) -> Self {
+        Self { full_id }
     }
     pub const fn full_id(&self) -> u32 {
         self.full_id
@@ -51,11 +56,16 @@ impl<const SALT: u16> Default for ID<SALT> {
         Self::NULL
     }
 }
-
-pub const fn make_id(index: u16, salt: u16) -> u32 {
-    let index = (index & 0xFFFF) as u32;
-    let index_doubled = (index << 16) | index;
-    index_doubled ^ (((0x8000 | salt) as u32) << 16)
+impl<const SALT: u16> Debug for ID<SALT> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        f.write_fmt(format_args!("ID<SALT=0x{SALT:04X}; ID=0x{:08X}>", self.full_id))
+    }
 }
 
-pub type TagID = ID<0x7461>;
+pub const fn make_id(index: u16, salt: u16) -> u32 {
+    let salt = salt as u32;
+    let index = (index & 0xFFFF) as u32;
+    let high = (0x8000 | index.wrapping_add(salt)) << 16;
+    index | high
+}
+
