@@ -39,6 +39,15 @@ impl<const SALT: u16> ID<SALT> {
         }
     }
 
+    pub const fn identifier(&self) -> Option<u16> {
+        if !self.is_null() {
+            Some((self.full_id >> 16) as u16)
+        }
+        else {
+            None
+        }
+    }
+
     pub const fn is_valid(&self) -> bool {
         let Some(index) = self.index() else {
             return true

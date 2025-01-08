@@ -1,3 +1,4 @@
+use core::ffi::CStr;
 use c_mine::c_mine;
 use crate::id::ID;
 
@@ -17,8 +18,11 @@ pub struct DataTable<T: Sized + 'static, const SALT: u16> {
     /// Valid if non-zero
     valid: u8,
 
+    /// Zeroed identifiers are not allowed
+    identifier_zero_invalid: u8,
+
     /// ???
-    unknown_2: [u8; 3],
+    unknown_2: [u8; 2],
 
     /// Unused (d@t@)
     data_fourcc: u32,
@@ -39,6 +43,13 @@ pub struct DataTable<T: Sized + 'static, const SALT: u16> {
     first: *mut TableElement<T>
 }
 impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
+    pub fn name(&self) -> &str {
+        CStr::from_bytes_until_nul(&self.name)
+            .expect("should have a null terminated name")
+            .to_str()
+            .expect("should be ASCII")
+    }
+
     /// # Safety
     ///
     /// `first_element` must point to at least `maximum` elements.
@@ -58,6 +69,7 @@ impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
             maximum: maximum as u16,
             element_size: size_of::<T>() as u16,
             data_fourcc: DATA_FOURCC,
+            identifier_zero_invalid: 0,
             first: first_element,
             next_id: 0,
             valid: 0,
@@ -84,9 +96,9 @@ impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
     pub fn clear(&mut self) {
         self.current_size = 0;
         self.count = 0;
-        self.unknown_2 = [0u8; 3];
+        self.unknown_2 = [0u8; 2];
         for i in self.get_instances_mut() {
-            i.salt_bytes = [0u8; 4]
+            i.identifier_bytes = [0u8; 4]
         }
         self.reset_next_id();
     }
@@ -168,7 +180,7 @@ impl<T: Sized + 'static, const SALT: u16> Iterator for TableIterator<T, SALT> {
             };
 
             if instance.is_active() {
-                let bytes = instance.salt_bytes;
+                let bytes = instance.identifier_bytes;
                 let salt = (u16::from_ne_bytes([bytes[0], bytes[1]]) as u32) << 16;
                 self.id = salt | (index as u32);
                 return Some(instance);
@@ -181,12 +193,15 @@ impl<T: Sized + 'static, const SALT: u16> Iterator for TableIterator<T, SALT> {
 
 #[repr(C)]
 pub struct TableElement<T: Sized + 'static> {
-    pub salt_bytes: [u8; 4],
+    pub identifier_bytes: [u8; 4],
     pub item: T
 }
 impl<T: Sized + 'static> TableElement<T> {
     pub const fn is_active(&self) -> bool {
-        self.salt_bytes[0] != 0 || self.salt_bytes[1] != 0
+        self.identifier() != 0
+    }
+    pub const fn identifier(&self) -> u16 {
+        u16::from_ne_bytes([self.identifier_bytes[0], self.identifier_bytes[1]])
     }
 }
 
@@ -224,4 +239,38 @@ pub extern "C" fn data_iterator_next(iterator: &mut TableIterator<[u8; 0], 0>) -
     // FFI-compatible type that Halo wants (a nullable pointer). Yay!
 
     iterator.next()
+}
+
+#[c_mine]
+pub unsafe extern "C" fn datum_get(table: Option<&'static DataTable<[u8; 0], 0>>, id: ID<0>) -> &'static mut TableElement<[u8; 0]> {
+    let Some(table) = table else {
+        panic!("null table passed into datum_get");
+    };
+
+    let full_id = id.full_id();
+
+    let (Some(index), Some(identifier)) = (id.index(), id.identifier()) else {
+        panic!("datum_get({name}, {full_id:08X}) - Null IDs are not allowed!", name=table.name());
+    };
+
+    if identifier == 0 && table.identifier_zero_invalid != 0 {
+        panic!("datum_get({name}, {full_id:08X}) - Zeroed identifiers are not allowed in this table!", name=table.name());
+    }
+
+    let current_size = table.current_size;
+    if index > current_size as usize {
+        panic!("datum_get({name}, {full_id:08X}) - Index {index} is out-of-bounds (DataTable::current_size={current_size})", name=table.name());
+    }
+
+    let element = (table.first as *mut u8)
+        .wrapping_add(index * (table.element_size as usize)) as *mut TableElement<[u8; 0]>;
+
+    let element = &mut *element;
+    let element_identifier = element.identifier();
+
+    if identifier != 0 && element_identifier != identifier {
+        panic!("datum_get({name}, {full_id:08X}) - Mismatched identifier (expected 0x{identifier:04X}, was actually 0x{element_identifier:04X})", name=table.name());
+    }
+
+    element
 }

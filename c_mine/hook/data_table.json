@@ -13,5 +13,10 @@
         "tag": "0x00404F4D",
         "cache": "0x00405EC5",
         "replacement": "crate::table::data_verify"
+    },
+    "datum_get": {
+        "tag": "0x00408DC8",
+        "cache": "0x00409A1B",
+        "replacement": "crate::table::datum_get"
     }
 }
