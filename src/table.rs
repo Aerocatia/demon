@@ -146,9 +146,11 @@ impl<T: Sized + 'static> TableElement<T> {
 }
 
 #[c_mine]
-pub unsafe extern "C" fn iterator_next(iterator: &mut TableIterator<[u8; 0], 0>) -> *mut TableElement<[u8; 0]> {
-    match iterator.next() {
-        Some(t) => t as *mut _,
-        None => null_mut()
-    }
+pub unsafe extern "C" fn iterator_next(iterator: &mut TableIterator<[u8; 0], 0>) -> Option<&mut TableElement<[u8; 0]>> {
+    // We don't know what the type or salt is, but the iterator does not need it,
+    // so we're using [u8; 0] with a zero salt
+    //
+    // It also just so happens that Iterator::next() even nicely maps to the exact
+    // FFI-compatible type that Halo wants (a nullable pointer)
+    iterator.next()
 }
