@@ -8,7 +8,7 @@ use crate::util::VariableProvider;
 pub const TAG_ID_SALT: u16 = 0x6174;
 pub type TagID = ID<TAG_ID_SALT>;
 
-pub const TAGS_TAG_INSTANCES: VariableProvider<*mut DataTable<TagTagInstance, TAG_ID_SALT>> = VariableProvider {
+pub const TAGS_TAG_INSTANCES: VariableProvider<Option<&mut DataTable<TagTagInstance, TAG_ID_SALT>>> = VariableProvider {
     name: "TAGS_TAG_INSTANCES",
     cache_address: 0x00000000 as *mut _,
     tags_address: 0x00FFDAF8 as *mut _
@@ -26,7 +26,7 @@ pub const CACHE_TAGS_ARE_LOADED: VariableProvider<u8> = VariableProvider {
     tags_address: 0x00000000 as *mut _
 };
 
-pub const CACHE_FILE_TAG_HEADER: VariableProvider<*mut CacheFileTagHeader> = VariableProvider {
+pub const CACHE_FILE_TAG_HEADER: VariableProvider<Option<&mut CacheFileTagHeader>> = VariableProvider {
     name: "CACHE_FILE_TAG_HEADER",
     cache_address: 0x00AF8B70 as *mut _,
     tags_address: 0x00000000 as *mut _
@@ -43,8 +43,9 @@ pub fn get_cache_file_tags() -> &'static [CacheTagInstance] {
         if *CACHE_TAGS_ARE_LOADED.get() == 0 {
             return &[]
         }
-        let cache_header = *CACHE_FILE_TAG_HEADER.get();
-        assert!(!cache_header.is_null(), "CACHE_FILE_TAG_HEADER is null!");
+        let Some(cache_header) = CACHE_FILE_TAG_HEADER.get() else {
+            panic!("CACHE_FILE_TAG_HEADER is null!")
+        };
         let tags = *CACHE_TAG_INSTANCES.get();
         assert!(!tags.is_null(), "CACHE_TAGS_ADDRESS is null!");
         core::slice::from_raw_parts(tags, (&*cache_header).tag_count as usize)
@@ -157,10 +158,10 @@ pub unsafe extern "C" fn resolve_tag_loaded(group: TagGroupUnsafe, path: *const 
     let path = CStr::from_ptr(path).to_str().expect("input tag is not UTF-8");
     match get_exe_type() {
         ExeType::Tag => {
-            let pointer = *TAGS_TAG_INSTANCES.get_mut();
-            assert!(!pointer.is_null(), "TAGS_TAG_INSTANCES is null!");
+            let Some(table) = TAGS_TAG_INSTANCES.get_mut() else {
+                panic!("TAGS_TAG_INSTANCES is null!");
+            };
 
-            let table: &'static mut DataTable<TagTagInstance, TAG_ID_SALT> = &mut *pointer;
             let mut iterator = table.iter();
             let Some(_) = (&mut iterator)
                 .filter(|tag| tag.item.get_primary_tag_group() == group && tag.item.get_tag_path() == path)

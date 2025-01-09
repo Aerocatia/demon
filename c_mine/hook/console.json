@@ -1,0 +1,12 @@
+{
+    "terminal_update": {
+        "cache": "0x00402905",
+        "tag": "0x00401D57",
+        "replacement": "crate::console::terminal_update"
+    },
+    "console_is_active": {
+        "cache": "0x00406EBA",
+        "tag": "0x00405F0B",
+        "replacement": "crate::console::console_is_active"
+    }
+}

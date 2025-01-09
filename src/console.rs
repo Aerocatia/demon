@@ -1,17 +1,9 @@
 use core::mem::transmute;
+use c_mine::c_mine;
+use crate::id::ID;
+use crate::table::DataTable;
+use crate::timing::FixedTimer;
 use crate::util::VariableProvider;
-
-pub const CONSOLE_PRINTF: VariableProvider<[u8; 0]> = VariableProvider {
-    name: "CONSOLE_PRINTF",
-    cache_address: 0x0040917E as *mut _,
-    tags_address: 0x0040A844 as *mut _
-};
-
-pub const ERROR: VariableProvider<[u8; 0]> = VariableProvider {
-    name: "ERROR",
-    cache_address: 0x00408607 as *mut _,
-    tags_address: 0x0040785B as *mut _
-};
 
 pub const ERROR_WAS_SET: VariableProvider<u8> = VariableProvider {
     name: "ERROR_WAS_SET",
@@ -83,6 +75,12 @@ pub fn error_put_args(priority: ErrorPriority, fmt: core::fmt::Arguments) {
 }
 
 pub fn error_put_message(priority: ErrorPriority, error_bytes: &[u8]) {
+    const ERROR: VariableProvider<[u8; 0]> = VariableProvider {
+        name: "ERROR",
+        cache_address: 0x00408607 as *mut _,
+        tags_address: 0x0040785B as *mut _
+    };
+
     assert!(error_bytes.last() == Some(&0u8), "should be null-terminated");
 
     // SAFETY: VariableProvider is probably right.
@@ -151,6 +149,12 @@ pub fn console_put_args(color: Option<&ConsoleColor>, fmt: core::fmt::Arguments)
 }
 
 fn console_put_message(color: Option<&ConsoleColor>, message_bytes: &[u8]) {
+    const CONSOLE_PRINTF: VariableProvider<[u8; 0]> = VariableProvider {
+        name: "CONSOLE_PRINTF",
+        cache_address: 0x0040917E as *mut _,
+        tags_address: 0x0040A844 as *mut _
+    };
+
     assert!(message_bytes.last() == Some(&0u8), "should be null-terminated");
 
     // SAFETY: VariableProvider is probably right.
@@ -158,5 +162,89 @@ fn console_put_message(color: Option<&ConsoleColor>, message_bytes: &[u8]) {
         let what = CONSOLE_PRINTF.get() as *const _;
         let what: unsafe extern "C" fn(color: Option<&ConsoleColor>, fmt: *const u8, arg: *const u8) = transmute(what);
         what(color, b"%s\x00".as_ptr(), message_bytes.as_ptr());
+    }
+}
+
+const TERMINAL_SALT: u16 = 0x6574;
+
+#[repr(C)]
+struct TerminalOutput {
+    pub some_id: ID<TERMINAL_SALT>,
+    pub unknown1: u32,
+    pub unknown2: u8,
+    pub text: [u8; 0xFF],
+    pub unknown3: u32,
+    pub color: ConsoleColor,
+    pub timer: u32
+}
+
+type TerminalOutputTable = DataTable<TerminalOutput, TERMINAL_SALT>;
+
+const TERMINAL_INITIALIZED: VariableProvider<u8> = VariableProvider {
+    name: "TERMINAL_INITIALIZED",
+    cache_address: 0x00C8AEE0 as *mut _,
+    tags_address: 0x00D42490 as *mut _
+};
+
+const TERMINAL_OUTPUT_TABLE: VariableProvider<Option<&mut TerminalOutputTable>> = VariableProvider {
+    name: "TERMINAL_OUTPUT_TABLE",
+    cache_address: 0x00C8AEE4 as *mut _,
+    tags_address: 0x00D42494 as *mut _
+};
+
+const LIMIT_TICKS: u32 = 150;
+const CONSOLE_FADE_FRAME_RATE: f64 = 30.0;
+
+/// Fades all terminal output
+///
+/// Only works once every 1/[`CONSOLE_FADE_FRAME_RATE`]th of a second. This is a temporary solution
+/// until the console is replaced so at least the console is faded at the correct rate for now
+/// instead of being unusable at high frame rates.
+unsafe fn fade_console_text(table: &'static mut TerminalOutputTable) {
+    static RATE: FixedTimer = FixedTimer::new(CONSOLE_FADE_FRAME_RATE);
+    if !RATE.test() {
+        return
+    }
+
+    // Unsafe because we cannot guarantee the table won't be concurrently written to at this moment...
+    for i in table.iter() {
+        i.item.timer = (i.item.timer + 1).min(LIMIT_TICKS);
+    }
+}
+
+const CONSOLE_IS_ACTIVE: VariableProvider<u8> = VariableProvider {
+    name: "CONSOLE_IS_ACTIVE",
+    cache_address: 0x00C98AE0 as *mut _,
+    tags_address: 0x00D500A0 as *mut _
+};
+
+#[c_mine]
+pub extern "C" fn console_is_active() -> bool {
+    // SAFETY: This is known to be valid
+    unsafe { *CONSOLE_IS_ACTIVE.get() != 0 }
+}
+
+#[c_mine]
+pub unsafe extern "C" fn terminal_update() {
+    if *TERMINAL_INITIALIZED.get() == 0 {
+        return
+    }
+
+    const GET_CONSOLE_INPUT: VariableProvider<[u8; 0]> = VariableProvider {
+        name: "GET_CONSOLE_INPUT",
+        cache_address: 0x00649720 as *mut _,
+        tags_address: 0x00650F80 as *mut _
+    };
+
+    let get_console_input: extern "C" fn() = transmute(GET_CONSOLE_INPUT.get() as *const _);
+    let get_console_input = get_console_input();
+
+    let t = TERMINAL_OUTPUT_TABLE
+        .get_mut()
+        .as_mut()
+        .expect("TERMINAL_OUTPUT_TABLE not initialized");
+
+    if !console_is_active.get()() {
+        fade_console_text(*t);
     }
 }
