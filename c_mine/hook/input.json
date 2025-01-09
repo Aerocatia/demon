@@ -1,0 +1,7 @@
+{
+    "mouse_sensitivity": {
+        "cache": "0x00403666",
+        "tag": "0x004027A7",
+        "replacement": "crate::mouse::mouse_sensitivity"
+    }
+}

@@ -18,3 +18,4 @@ mod tag;
 mod id;
 mod table;
 mod timing;
+mod mouse;
