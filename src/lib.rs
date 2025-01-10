@@ -19,3 +19,4 @@ mod id;
 mod table;
 mod timing;
 mod mouse;
+mod scoreboard;

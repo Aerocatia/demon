@@ -1,0 +1,7 @@
+{
+    "game_engine_post_rasterize": {
+        "tag": "0x00404F5C",
+        "cache": "0x00405EED",
+        "replacement": "crate::scoreboard::game_engine_post_rasterize"
+    }
+}
