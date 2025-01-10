@@ -200,16 +200,19 @@ const CONSOLE_FADE_FRAME_RATE: f64 = 30.0;
 /// Only works once every 1/[`CONSOLE_FADE_FRAME_RATE`]th of a second. This is a temporary solution
 /// until the console is replaced so at least the console is faded at the correct rate for now
 /// instead of being unusable at high frame rates.
+///
+/// Unsafe because we cannot guarantee the table won't be concurrently written to at this moment...
 unsafe fn fade_console_text(table: &'static mut TerminalOutputTable) {
-    static RATE: FixedTimer = FixedTimer::new(CONSOLE_FADE_FRAME_RATE);
-    if !RATE.test() {
-        return
-    }
+    static RATE: FixedTimer = FixedTimer::new(
+        1.0 / CONSOLE_FADE_FRAME_RATE,
+        30
+    );
 
-    // Unsafe because we cannot guarantee the table won't be concurrently written to at this moment...
-    for i in table.iter() {
-        i.item.timer = (i.item.timer + 1).min(LIMIT_TICKS);
-    }
+    RATE.run(|| {
+        for i in table.iter() {
+            i.item.timer = (i.item.timer + 1).min(LIMIT_TICKS);
+        }
+    });
 }
 
 const CONSOLE_IS_ACTIVE: VariableProvider<u8> = VariableProvider {

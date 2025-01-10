@@ -1,9 +1,17 @@
 use core::ffi::CStr;
+use core::fmt::{Formatter, Debug};
 use c_mine::c_mine;
 use crate::id::ID;
 
 pub const DATA_FOURCC: u32 = 0x64407440;
 
+/// Create an iterator for the table using a Halo data iterator.
+///
+/// # Safety
+///
+/// No guarantee is made that the table is not being accessed concurrently.
+///
+/// As such, any function that accesses the table elements is unsafe.
 #[repr(C)]
 pub struct DataTable<T: Sized + 'static, const SALT: u16> {
     /// Name of the data table
@@ -81,6 +89,50 @@ impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
         table.reset_next_id();
         table
     }
+    pub unsafe fn get_element(&mut self, id: ID<SALT>) -> Result<&mut TableElement<T>, GetElementError<T, SALT>> {
+        let full_id = id.full_id();
+
+        let (Some(index), Some(identifier)) = (id.index(), id.identifier()) else {
+            return Err(GetElementError {
+                table: self,
+                id,
+                err: GetElementByIdErrorKind::BadId("Null IDs are not allowed!")
+            });
+        };
+
+        if identifier == 0 && self.identifier_zero_invalid != 0 {
+            return Err(GetElementError {
+                table: self,
+                id,
+                err: GetElementByIdErrorKind::BadId("Zeroed identifiers are not allowed in this table!")
+            });
+        }
+
+        let current_size = self.current_size as usize;
+        if index > current_size {
+            return Err(GetElementError {
+                table: self,
+                id,
+                err: GetElementByIdErrorKind::OutOfBounds { current_size },
+            });
+        }
+
+        let element = (self.first as *mut u8)
+            .wrapping_add(index * (self.element_size as usize)) as *mut TableElement<T>;
+
+        let element = &mut *element;
+        let element_identifier = element.identifier();
+
+        if identifier != 0 && element_identifier != identifier {
+            return Err(GetElementError {
+                table: self,
+                id,
+                err: GetElementByIdErrorKind::MismatchedIdentifier { expected: identifier, actually: element_identifier }
+            });
+        }
+
+        Ok(element)
+    }
     pub fn get_instances(&self) -> &[TableElement<T>] {
         // SAFETY: Maximum should be correct
         unsafe {
@@ -93,7 +145,7 @@ impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
             core::slice::from_raw_parts_mut(self.first, self.maximum as usize)
         }
     }
-    pub fn clear(&mut self) {
+    pub unsafe fn clear(&mut self) {
         self.current_size = 0;
         self.count = 0;
         self.unknown_2 = [0u8; 2];
@@ -123,53 +175,86 @@ impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
         }
         Ok(())
     }
-    /// Create an iterator for the table using a Halo data iterator.
-    ///
-    /// # Safety
-    ///
-    /// Halo's data iterator cannot guarantee that the table has not changed.
-    pub unsafe fn iter(&'static mut self) -> TableIterator<T, SALT> {
+    pub unsafe fn iter(&mut self) -> TableIterator<T, SALT> {
         let mut table_iterator: TableIterator<T, SALT> = core::mem::zeroed();
-        table_iterator.init(self);
+        table_iterator.init(Some(self));
         table_iterator
+    }
+    pub fn iter_salt(&self) -> u32 {
+        (((self as *const _) as usize) as u32) ^ ITER_FOURCC
     }
     fn reset_next_id(&mut self) {
         self.next_id = (ID::<SALT>::from_index(0).expect("??? no id?").full_id() >> 16) as u16;
     }
 }
 
+pub struct GetElementError<'a, T: Sized + 'static, const SALT: u16> {
+    table: &'a DataTable<T, SALT>,
+    id: ID<SALT>,
+    err: GetElementByIdErrorKind
+}
+
+impl<'a, T: Sized + 'static, const SALT: u16> Debug for GetElementError<'a, T, SALT> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        f.write_fmt(format_args!("<{}>::get_element(0x{:08X}): ", self.table.name(), self.id.full_id()))?;
+
+        match self.err {
+            GetElementByIdErrorKind::MismatchedIdentifier { expected, actually } => f.write_fmt(
+                format_args!("Mismatched identifier (expected 0x{expected:04X}, was actually 0x{actually:04X})")
+            ),
+            GetElementByIdErrorKind::BadId(reason) => f.write_str(reason),
+            GetElementByIdErrorKind::OutOfBounds { current_size } => f.write_fmt(format_args!("Out of bounds! (current_size=0x{current_size:04X})"))
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum GetElementByIdErrorKind {
+    OutOfBounds { current_size: usize },
+    MismatchedIdentifier { expected: u16, actually: u16 },
+    BadId(&'static str)
+}
+
 const ITER_FOURCC: u32 = 0x69746572;
 
 /// Halo iterator for table
 #[repr(C)]
-pub struct TableIterator<T: Sized + 'static, const SALT: u16> {
-    table: *mut DataTable<T, SALT>,
+pub struct TableIterator<'a, T: Sized + 'static, const SALT: u16> {
+    table: Option<&'a mut DataTable<T, SALT>>,
     current_index: u16,
     padding: [u8; 2],
     id: u32,
     salt: u32
 }
-impl<T: Sized + 'static, const SALT: u16> TableIterator<T, SALT> {
-    pub unsafe fn init(&mut self, table: *mut DataTable<T, SALT>) {
-        self.table = table as *mut _;
+impl<'a, T: Sized + 'static, const SALT: u16> TableIterator<'a, T, SALT> {
+    pub fn init(&mut self, table: Option<&'a mut DataTable<T, SALT>>) {
+        let Some(table) = table else {
+            panic!("trying to iterate a null table");
+        };
+
+        self.salt = table.iter_salt();
+        self.table = Some(table);
         self.current_index = 0;
         self.id = u32::MAX;
-        self.salt = (self.table as u32) ^ ITER_FOURCC;
     }
     pub fn id(&self) -> ID<SALT> {
         ID::from_full_id(self.id)
     }
 }
-impl<T: Sized + 'static, const SALT: u16> Iterator for TableIterator<T, SALT> {
-    type Item = &'static mut TableElement<T>;
+impl<'a, T: Sized + 'static, const SALT: u16> Iterator for TableIterator<'a, T, SALT> {
+    type Item = &'a mut TableElement<T>;
 
-    fn next(&mut self) -> Option<&'static mut TableElement<T>> {
-        assert_eq!((self.table as u32) ^ ITER_FOURCC, self.salt, "Incorrect salt for iterator!");
+    fn next(&mut self) -> Option<&'a mut TableElement<T>> {
+        let Some(ref table) = self.table else {
+            panic!("iterating an iterator with a null table");
+        };
+
+        assert_eq!(table.iter_salt(), self.salt, "Incorrect salt for iterator!");
 
         // SAFETY: This is fine 🔥🐶🔥
-        let instance_data = unsafe { (&mut *self.table).first as *mut u8 };
-        let instance_size = unsafe { (&mut *self.table).element_size as usize };
-        let instance_count = unsafe { (&mut *self.table).maximum as usize };
+        let instance_data = table.first as *mut u8;
+        let instance_size = table.element_size as usize;
+        let instance_count = table.maximum as usize;
 
         while (self.current_index as usize) < instance_count {
             let index = self.current_index as usize;
@@ -210,7 +295,7 @@ impl<T: Sized + 'static> TableElement<T> {
 // We don't know what the type or salt is, but the iterator does not need it,
 // so we're using [u8; 0] with a zero salt
 //
-// Ideally, these should not be called from Rust code.
+// You should not use these functions in Rust code!
 
 #[c_mine]
 pub extern "C" fn data_verify(table: Option<&'static DataTable<[u8; 0], 0>>) {
@@ -221,19 +306,23 @@ pub extern "C" fn data_verify(table: Option<&'static DataTable<[u8; 0], 0>>) {
 }
 
 #[c_mine]
-pub unsafe extern "C" fn data_iterator_new(iterator: &mut TableIterator<[u8; 0], 0>, table: Option<&'static mut DataTable<[u8; 0], 0>>) {
+pub unsafe extern "C" fn data_iterator_new(iterator: &mut TableIterator<'static, [u8; 0], 0>, table: Option<&'static mut DataTable<[u8; 0], 0>>) {
     let Some(table) = table else {
         panic!("null table passed into data_iterator_new");
     };
     assert!(table.is_valid(), "init iterator with invalid table");
     table.verify().expect("init iterator with failed verify");
 
-    iterator.init(table as *mut _);
+    iterator.init(Some(table));
 }
 
 #[c_mine]
-pub extern "C" fn data_iterator_next(iterator: &mut TableIterator<[u8; 0], 0>) -> Option<&mut TableElement<[u8; 0]>> {
-    assert!(unsafe { &*iterator.table }.is_valid(), "iterating iterator with invalid table");
+pub extern "C" fn data_iterator_next(iterator: &'static mut TableIterator<[u8; 0], 0>) -> Option<&'static mut TableElement<[u8; 0]>> {
+    let Some(ref table) = iterator.table else {
+        panic!("iterating table with a null table...");
+    };
+
+    assert!(table.is_valid(), "iterating invalid table");
 
     // It just so happens that Iterator::next() nicely maps to the exact
     // FFI-compatible type that Halo wants (a nullable pointer). Yay!
@@ -242,35 +331,10 @@ pub extern "C" fn data_iterator_next(iterator: &mut TableIterator<[u8; 0], 0>) -
 }
 
 #[c_mine]
-pub unsafe extern "C" fn datum_get(table: Option<&'static DataTable<[u8; 0], 0>>, id: ID<0>) -> &'static mut TableElement<[u8; 0]> {
+pub unsafe extern "C" fn datum_get(table: Option<&'static mut DataTable<[u8; 0], 0>>, id: ID<0>) -> &'static mut TableElement<[u8; 0]> {
     let Some(table) = table else {
         panic!("null table passed into datum_get");
     };
 
-    let full_id = id.full_id();
-
-    let (Some(index), Some(identifier)) = (id.index(), id.identifier()) else {
-        panic!("datum_get({name}, {full_id:08X}) - Null IDs are not allowed!", name=table.name());
-    };
-
-    if identifier == 0 && table.identifier_zero_invalid != 0 {
-        panic!("datum_get({name}, {full_id:08X}) - Zeroed identifiers are not allowed in this table!", name=table.name());
-    }
-
-    let current_size = table.current_size;
-    if index > current_size as usize {
-        panic!("datum_get({name}, {full_id:08X}) - Index {index} is out-of-bounds (DataTable::current_size={current_size})", name=table.name());
-    }
-
-    let element = (table.first as *mut u8)
-        .wrapping_add(index * (table.element_size as usize)) as *mut TableElement<[u8; 0]>;
-
-    let element = &mut *element;
-    let element_identifier = element.identifier();
-
-    if identifier != 0 && element_identifier != identifier {
-        panic!("datum_get({name}, {full_id:08X}) - Mismatched identifier (expected 0x{identifier:04X}, was actually 0x{element_identifier:04X})", name=table.name());
-    }
-
-    element
+    table.get_element(id).expect("Failed to get element:")
 }
