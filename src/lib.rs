@@ -20,3 +20,4 @@ mod table;
 mod timing;
 mod mouse;
 mod scoreboard;
+mod math;

@@ -1,0 +1,32 @@
+{
+    "is_valid_real": {
+        "cache": "0x00403972",
+        "tag": "0x00402B0D",
+        "replacement": "crate::math::is_valid_real"
+    },
+    "is_valid_vector2d": {
+        "cache": "0x0040A015",
+        "tag": "0x0040944E",
+        "replacement": "crate::math::is_valid_vector2d"
+    },
+    "is_valid_point2d": {
+        "cache": "0x004088CD",
+        "tag": "0x00407B4E",
+        "replacement": "crate::math::is_valid_point2d"
+    },
+    "is_valid_rgb_color": {
+        "cache": "0x00408C88",
+        "tag": "0x00407F4F",
+        "replacement": "crate::math::is_valid_rgb_color"
+    },
+    "is_valid_point3d": {
+        "cache": "0x00401032",
+        "tag": "0x0040A15F",
+        "replacement": "crate::math::is_valid_point3d"
+    },
+    "is_valid_argb_color": {
+        "cache": "0x004011DB",
+        "tag": "0x0040A259",
+        "replacement": "crate::math::is_valid_argb_color"
+    }
+}
