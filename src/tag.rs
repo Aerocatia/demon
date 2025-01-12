@@ -169,7 +169,7 @@ pub trait TagIndex {
     fn get_tag_data(&self) -> *mut [u8; 0];
 }
 
-/// Used only in tag builds.
+/// Used only in cache builds.
 #[repr(C)]
 pub struct CacheTagInstance {
     pub primary_tag_group: TagGroupUnsafe,
@@ -204,7 +204,7 @@ impl TagIndex for CacheTagInstance {
     }
 }
 
-/// Used only in cache builds.
+/// Used only in tag builds.
 #[repr(C)]
 pub struct TagTagInstance {
     pub tag_path: [u8; 256],
