@@ -21,3 +21,5 @@ mod timing;
 mod mouse;
 mod scoreboard;
 mod math;
+mod script;
+mod string;

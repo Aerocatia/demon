@@ -1,0 +1,7 @@
+{
+    "main_crash": {
+        "cache": "0x00403C29",
+        "tag": "0x00402DF1",
+        "replacement": "crate::script::main_crash"
+    }
+}

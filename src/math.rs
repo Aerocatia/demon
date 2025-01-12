@@ -1,5 +1,6 @@
 use c_mine::c_mine;
 
+#[derive(Copy, Clone, Default, Debug, PartialEq)]
 #[repr(C)]
 pub struct ColorRGB {
     pub r: f32,
@@ -13,6 +14,7 @@ impl ColorRGB {
     }
 }
 
+#[derive(Copy, Clone, Default, Debug, PartialEq)]
 #[repr(C)]
 pub struct ColorARGB {
     pub alpha: f32,
@@ -25,6 +27,7 @@ impl ColorARGB {
     }
 }
 
+#[derive(Copy, Clone, Default, Debug, PartialEq)]
 #[repr(C)]
 pub struct Vector2D {
     pub x: f32,
@@ -37,6 +40,7 @@ impl Vector2D {
     }
 }
 
+#[derive(Copy, Clone, Default, Debug, PartialEq)]
 #[repr(C)]
 pub struct Vector3D {
     pub x: f32,

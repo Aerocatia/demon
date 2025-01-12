@@ -3,24 +3,30 @@ use alloc::vec::Vec;
 use core::mem::zeroed;
 use core::panic::PanicInfo;
 use core::ptr::{null, null_mut};
+use core::sync::atomic::{AtomicBool, Ordering};
 use windows_sys::s;
 use windows_sys::Win32::Foundation::{GetLastError, TRUE};
 use windows_sys::Win32::System::Diagnostics::Debug::{RtlCaptureStackBackTrace, SymFromAddr, SymGetLineFromAddr64, SymInitialize, SymSetOptions, IMAGEHLP_LINE64, SYMBOL_INFO, SYMOPT_ALLOW_ABSOLUTE_SYMBOLS, SYMOPT_LOAD_ANYTHING, SYMOPT_LOAD_LINES};
-use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess};
+use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess, TerminateProcess};
 use windows_sys::Win32::UI::WindowsAndMessaging::MESSAGEBOX_STYLE;
+use c_mine::c_mine;
 use crate::init::{get_exe_type_if_available, ExeType};
 use crate::util::{get_exe_dir, write_to_file};
 
 #[panic_handler]
 unsafe fn on_panic(panic_info: &PanicInfo) -> ! {
     let displayed_output = generate_panic_message(panic_info);
+    let msg = displayed_output
+        .as_ref()
+        .map(|o| o.as_ptr())
+        .unwrap_or(s!("(could not generate a panic message)"));
     windows_sys::Win32::UI::WindowsAndMessaging::MessageBoxA(
         null_mut(),
-        displayed_output.as_ref().map(|o| o.as_ptr()).unwrap_or(s!("(could not generate a panic message)")),
+        msg,
         s!("Panic!"),
         MESSAGEBOX_STYLE::default()
     );
-    ExitProcess(197);
+    crash_process();
 }
 
 pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> {
@@ -125,6 +131,29 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
     output_brief.push(0);
     Some(output_brief)
 }
+
+/// Closes the process quickly with error code 197.
+pub fn crash_process() -> ! {
+    unsafe {
+        TerminateProcess(GetCurrentProcess(), 197);
+
+        // in case TerminateProcess fails for some reason
+        ExitProcess(197);
+    }
+}
+
+#[c_mine]
+pub extern "C" fn gathering_exception_data() -> ! {
+    static PANICKED: AtomicBool = AtomicBool::new(false);
+
+    if !PANICKED.swap(true, Ordering::Relaxed) {
+        panic!("Segmentation fault!");
+    }
+
+    // in case our panic somehow triggered another segfault
+    crash_process();
+}
+
 
 #[no_mangle]
 fn rust_eh_personality() {}

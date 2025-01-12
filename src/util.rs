@@ -120,3 +120,39 @@ impl<T: Sized> VariableProvider<T> {
         &mut *address
     }
 }
+
+/// Write the arguments `fmt` to a byte buffer `bytes`.
+///
+/// If the byte buffer is not large enough, it will be truncated.
+///
+/// Returns `Err` if an error occurs (`bytes` will not be modified).
+pub fn fmt_to_byte_array<const LEN: usize>(bytes: &mut [u8; LEN], fmt: core::fmt::Arguments) -> core::fmt::Result {
+    struct ErrorBuffer<const LEN: usize> {
+        offset: usize,
+        data: [u8; LEN]
+    }
+    impl<const LEN: usize> core::fmt::Write for ErrorBuffer<LEN> {
+        fn write_str(&mut self, s: &str) -> core::fmt::Result {
+            let max_len = self.data.len();
+            let remainder = &mut self.data[self.offset..max_len-1];
+            let bytes_to_add = s.as_bytes();
+            let bytes = &bytes_to_add[..remainder.len().min(bytes_to_add.len())];
+            if !bytes.is_empty() {
+                remainder[..bytes.len()].copy_from_slice(bytes);
+                self.offset += bytes.len();
+            }
+            Ok(())
+        }
+    }
+
+    let mut buffer: ErrorBuffer<LEN> = ErrorBuffer {
+        offset: 0,
+        data: [0u8; LEN]
+    };
+
+    core::fmt::write(&mut buffer, fmt)?;
+
+    *bytes = buffer.data;
+
+    Ok(())
+}

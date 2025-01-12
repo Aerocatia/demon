@@ -1,6 +1,7 @@
 use core::mem::transmute;
 use c_mine::c_mine;
 use crate::id::ID;
+use crate::math::ColorARGB;
 use crate::table::DataTable;
 use crate::timing::FixedTimer;
 use crate::util::VariableProvider;
@@ -15,7 +16,7 @@ pub const ERROR_WAS_SET: VariableProvider<u8> = VariableProvider {
 #[allow(unused_macros)]
 macro_rules! error {
     ($($args:tt)*) => {{
-        crate::console::error_put_args(crate::console::ErrorPriority::Console, format_args!($($args), *));
+        crate::console::error_put_args(crate::console::ErrorPriority::Console, format_args!($($args)*));
     }};
 }
 
@@ -23,7 +24,7 @@ macro_rules! error {
 #[allow(unused_macros)]
 macro_rules! log {
     ($($args:tt)*) => {{
-        crate::console::error_put_args(crate::console::ErrorPriority::FileOnly, format_args!($($args), *));
+        crate::console::error_put_args(crate::console::ErrorPriority::FileOnly, format_args!($($args)*));
     }};
 }
 
@@ -45,33 +46,15 @@ pub enum ErrorPriority {
 }
 
 pub fn error_put_args(priority: ErrorPriority, fmt: core::fmt::Arguments) {
-    struct ErrorBuffer {
-        offset: usize,
-        data: [u8; 0xFFE]
-    }
-    impl core::fmt::Write for ErrorBuffer {
-        fn write_str(&mut self, s: &str) -> core::fmt::Result {
-            let max_len = self.data.len();
-            let remainder = &mut self.data[self.offset..max_len-1];
-            let bytes_to_add = s.as_bytes();
-            let bytes = &bytes_to_add[..remainder.len().min(bytes_to_add.len())];
-            if !bytes.is_empty() {
-                remainder[..bytes.len()].copy_from_slice(bytes);
-                self.offset += bytes.len();
-            }
-            Ok(())
-        }
-    }
+    // format
+    let mut data = [0u8; 0xFFE];
+    crate::util::fmt_to_byte_array(&mut data, fmt).expect("failed to write error");
 
-    let mut message_bytes = ErrorBuffer {
-        offset: 0,
-        data: [0u8; 0xFFE]
-    };
+    // null terminate
+    *data.last_mut().expect("should be a last one???") = 0;
 
-    // never fails!
-    let _ = core::fmt::write(&mut message_bytes, fmt);
-
-    error_put_message(priority, &message_bytes.data);
+    // done
+    error_put_message(priority, &data);
 }
 
 pub fn error_put_message(priority: ErrorPriority, error_bytes: &[u8]) {
@@ -91,64 +74,38 @@ pub fn error_put_message(priority: ErrorPriority, error_bytes: &[u8]) {
     }
 }
 
-#[repr(C)]
-pub struct ConsoleColor {
-    pub alpha: f32,
-    pub red: f32,
-    pub green: f32,
-    pub blue: f32
-}
-
 /// Print the formatted string to the in-game console.
 #[allow(unused_macros)]
 macro_rules! console {
     ($($args:tt)*) => {{
-        crate::console::console_put_args(None, format_args!($($args), *));
+        crate::console::console_put_args(None, format_args!($($args)*));
     }};
 }
 
 /// Print the formatted string to the in-game console with a given color.
 ///
-/// The first argument must be a &ConsoleColor reference.
+/// The first argument must be a [`ColorARGB`] reference.
 #[allow(unused_macros)]
 macro_rules! console_color {
     ($color:expr, $($args:tt)*) => {{
-        let color: &crate::console::ConsoleColor = $color;
-        crate::console::console_put_args(Some(color), format_args!($($args), *));
+        let color: &crate::math::ColorARGB = $color;
+        crate::console::console_put_args(Some(color), format_args!($($args)*));
     }};
 }
 
-pub fn console_put_args(color: Option<&ConsoleColor>, fmt: core::fmt::Arguments) {
-    struct ConsoleBuffer {
-        offset: usize,
-        data: [u8; 0xFE]
-    }
-    impl core::fmt::Write for ConsoleBuffer {
-        fn write_str(&mut self, s: &str) -> core::fmt::Result {
-            let max_len = self.data.len();
-            let remainder = &mut self.data[self.offset..max_len-1];
-            let bytes_to_add = s.as_bytes();
-            let bytes = &bytes_to_add[..remainder.len().min(bytes_to_add.len())];
-            if !bytes.is_empty() {
-                remainder[..bytes.len()].copy_from_slice(bytes);
-                self.offset += bytes.len();
-            }
-            Ok(())
-        }
-    }
+pub fn console_put_args(color: Option<&ColorARGB>, fmt: core::fmt::Arguments) {
+    // format
+    let mut data = [0u8; 0xFE];
+    crate::util::fmt_to_byte_array(&mut data, fmt).expect("failed to write console message");
 
-    let mut message_bytes = ConsoleBuffer {
-        offset: 0,
-        data: [0u8; 0xFE]
-    };
+    // null terminate
+    *data.last_mut().expect("should be a last one???") = 0;
 
-    // never fails!
-    let _ = core::fmt::write(&mut message_bytes, fmt);
-
-    console_put_message(color, &message_bytes.data);
+    // done
+    console_put_message(color, &data);
 }
 
-fn console_put_message(color: Option<&ConsoleColor>, message_bytes: &[u8]) {
+fn console_put_message(color: Option<&ColorARGB>, message_bytes: &[u8]) {
     const CONSOLE_PRINTF: VariableProvider<[u8; 0]> = VariableProvider {
         name: "CONSOLE_PRINTF",
         cache_address: 0x0040917E as *mut _,
@@ -160,7 +117,7 @@ fn console_put_message(color: Option<&ConsoleColor>, message_bytes: &[u8]) {
     // SAFETY: VariableProvider is probably right.
     unsafe {
         let what = CONSOLE_PRINTF.get() as *const _;
-        let what: unsafe extern "C" fn(color: Option<&ConsoleColor>, fmt: *const u8, arg: *const u8) = transmute(what);
+        let what: unsafe extern "C" fn(color: Option<&ColorARGB>, fmt: *const u8, arg: *const u8) = transmute(what);
         what(color, b"%s\x00".as_ptr(), message_bytes.as_ptr());
     }
 }
@@ -174,7 +131,7 @@ struct TerminalOutput {
     pub unknown2: u8,
     pub text: [u8; 0xFF],
     pub unknown3: u32,
-    pub color: ConsoleColor,
+    pub color: ColorARGB,
     pub timer: u32
 }
 

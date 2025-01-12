@@ -1,0 +1,7 @@
+{
+    "unicode_string_list_get_string": {
+        "cache": "0x00403198",
+        "tag": "0x00402275",
+        "replacement": "crate::string::unicode_string_list_get_string"
+    }
+}

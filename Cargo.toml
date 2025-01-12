@@ -10,9 +10,21 @@ path = "src/lib.rs"
 
 [profile.dev]
 panic = "abort"
+opt-level = 0
+debug = true
+strip = "none"
+debug-assertions = false
+overflow-checks = false
+lto = false
 
 [profile.release]
 panic = "abort"
+opt-level = 3
+debug = true
+strip = "none"
+debug-assertions = false
+overflow-checks = false
+lto = true
 
 [dependencies]
 windows-sys = { version = "0.59", default-features = false, features = ["Wdk_Foundation", "Win32_System", "Win32_System_SystemServices", "Win32_UI", "Win32_UI_WindowsAndMessaging", "Win32_System_Threading", "Win32_System_Memory", "Win32_Storage", "Win32_Storage_FileSystem", "Win32_System_LibraryLoader", "Win32_UI_Shell", "Win32_Security", "Win32_System_IO", "Win32_System_Diagnostics", "Win32_System_Diagnostics_Debug", "Win32_System_Performance"] }

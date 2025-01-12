@@ -1,0 +1,7 @@
+{
+    "gathering_exception_data": {
+        "cache": "0x00406C53",
+        "tag": "0x00405C7C",
+        "replacement": "crate::panic::gathering_exception_data"
+    }
+}
