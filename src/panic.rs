@@ -154,6 +154,5 @@ pub extern "C" fn gathering_exception_data() -> ! {
     crash_process();
 }
 
-
 #[no_mangle]
 fn rust_eh_personality() {}
