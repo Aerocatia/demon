@@ -8,5 +8,10 @@
         "cache": "0x00406EBA",
         "tag": "0x00405F0B",
         "replacement": "crate::console::console_is_active"
+    },
+    "console_initialize": {
+        "cache": "0x004025F9",
+        "tag": "0x00401BC7",
+        "replacement": "crate::console::console_initialize"
     }
 }

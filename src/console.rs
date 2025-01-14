@@ -1,7 +1,7 @@
 use core::mem::transmute;
 use c_mine::c_mine;
 use crate::id::ID;
-use crate::math::ColorARGB;
+use crate::math::{ColorARGB, ColorRGB};
 use crate::table::DataTable;
 use crate::timing::FixedTimer;
 use crate::util::VariableProvider;
@@ -207,4 +207,99 @@ pub unsafe extern "C" fn terminal_update() {
     if !console_is_active.get()() {
         fade_console_text(*t);
     }
+}
+
+const CONSOLE_COLOR: VariableProvider<ColorARGB> = VariableProvider {
+    name: "CONSOLE_COLOR",
+    cache_address: 0x00C98B68 as *mut _,
+    tags_address: 0x00D50128 as *mut _
+};
+
+const CONSOLE_PROMPT_TEXT: VariableProvider<[u8; 32]> = VariableProvider {
+    name: "CONSOLE_PROMPT_TEXT",
+    cache_address: 0x00C98B78 as *mut _,
+    tags_address: 0x00D50138 as *mut _
+};
+
+const CONSOLE_TEXT: VariableProvider<[u8; 256]> = VariableProvider {
+    name: "CONSOLE_TEXT",
+    cache_address: 0x00C98B98 as *mut _,
+    tags_address: 0x00D50158 as *mut _
+};
+
+const CONSOLE_HISTORY_LENGTH: VariableProvider<u16> = VariableProvider {
+    name: "CONSOLE_HISTORY_LENGTH",
+    cache_address: 0x00C9949C as *mut _,
+    tags_address: 0x00D5015C as *mut _
+};
+
+const CONSOLE_HISTORY_NEXT_INDEX: VariableProvider<u16> = VariableProvider {
+    name: "CONSOLE_HISTORY_NEXT_INDEX",
+    cache_address: 0x00C9949E as *mut _,
+    tags_address: 0x00D5015E as *mut _
+};
+
+const CONSOLE_HISTORY_SELECTED_INDEX: VariableProvider<u16> = VariableProvider {
+    name: "CONSOLE_HISTORY_SELECTED_INDEX",
+    cache_address: 0x00C994A0 as *mut _,
+    tags_address: 0x00D50160 as *mut _
+};
+
+const CONSOLE_ENABLED: VariableProvider<bool> = VariableProvider {
+    name: "CONSOLE_ENABLED",
+    cache_address: 0x00C98AE1 as *mut _,
+    tags_address: 0x00D500A1 as *mut _
+};
+
+const DEFAULT_CONSOLE_PROMPT_TEXT: &str = "halo( ";
+const DEFAULT_CONSOLE_COLOR: ColorARGB = ColorARGB {
+    alpha: 1.0,
+    color: ColorRGB {
+        r: 1.0,
+        g: 0.3,
+        b: 1.0
+    }
+};
+
+/// Set the console prompt text.
+///
+/// # Panics
+///
+/// Panics if `string.len() >= 32`
+pub fn set_console_prompt_text(string: &str) {
+    // SAFETY: it's fairly safe because we know this text is here in the EXE
+    // TODO: make console_prompt_text a String when all things that access it are replaced
+    let prompt_text = unsafe { CONSOLE_PROMPT_TEXT.get_mut() };
+    let Some(remaining_space) = (prompt_text.len() - 1).checked_sub(string.len()) else {
+        panic!("console prompt text `{string}` is too long")
+    };
+
+    // also zeroes out the remainder of the buffer
+    let mut copy_iterator = string
+        .bytes()
+        .chain(core::iter::repeat_n(0, remaining_space + 1));
+    prompt_text.fill_with(|| copy_iterator.next().expect("should still be enough space"));
+}
+
+/// Set the console color
+///
+/// # Panics
+///
+/// Panics if `!color.is_valid()`
+pub fn set_console_color_text(color: ColorARGB) {
+    assert!(color.is_valid(), "invalid console color {color:?}");
+
+    // SAFETY: should be present in the program
+    *unsafe { CONSOLE_COLOR.get_mut() } = color;
+}
+
+#[c_mine]
+pub unsafe extern "C" fn console_initialize() {
+    set_console_prompt_text(DEFAULT_CONSOLE_PROMPT_TEXT);
+    set_console_color_text(DEFAULT_CONSOLE_COLOR);
+    CONSOLE_TEXT.get_mut().fill(0);
+    *CONSOLE_HISTORY_SELECTED_INDEX.get_mut() = 0xFFFF;
+    *CONSOLE_HISTORY_LENGTH.get_mut() = 0;
+    *CONSOLE_HISTORY_SELECTED_INDEX.get_mut() = 0xFFFF;
+    *CONSOLE_ENABLED.get_mut() = true;
 }
