@@ -1,10 +1,10 @@
-use core::mem::transmute;
+use core::marker::PhantomData;
 use c_mine::c_mine;
 use crate::id::ID;
 use crate::math::{ColorARGB, ColorRGB};
 use crate::table::DataTable;
 use crate::timing::FixedTimer;
-use crate::util::VariableProvider;
+use crate::util::{PointerProvider, VariableProvider};
 
 pub const ERROR_WAS_SET: VariableProvider<u8> = VariableProvider {
     name: "ERROR_WAS_SET",
@@ -58,19 +58,18 @@ pub fn error_put_args(priority: ErrorPriority, fmt: core::fmt::Arguments) {
 }
 
 pub fn error_put_message(priority: ErrorPriority, error_bytes: &[u8]) {
-    const ERROR: VariableProvider<[u8; 0]> = VariableProvider {
+    const ERROR: PointerProvider<unsafe extern "C" fn(priority: i16, fmt: *const u8, arg: *const u8)> = PointerProvider {
         name: "ERROR",
-        cache_address: 0x00408607 as *mut _,
-        tags_address: 0x0040785B as *mut _
+        cache_address: 0x00408607,
+        tags_address: 0x0040785B,
+        phantom_data: PhantomData
     };
 
     assert!(error_bytes.last() == Some(&0u8), "should be null-terminated");
 
-    // SAFETY: VariableProvider is probably right.
+    // SAFETY: PointerProvider is probably right.
     unsafe {
-        let what = ERROR.get() as *const _;
-        let what: unsafe extern "C" fn(priority: i16, fmt: *const u8, arg: *const u8) = transmute(what);
-        what(priority as i16, b"%s\x00".as_ptr(), error_bytes.as_ptr());
+        ERROR.get()(priority as i16, b"%s\x00".as_ptr(), error_bytes.as_ptr());
     }
 }
 
@@ -106,19 +105,18 @@ pub fn console_put_args(color: Option<&ColorARGB>, fmt: core::fmt::Arguments) {
 }
 
 fn console_put_message(color: Option<&ColorARGB>, message_bytes: &[u8]) {
-    const CONSOLE_PRINTF: VariableProvider<[u8; 0]> = VariableProvider {
+    const CONSOLE_PRINTF: PointerProvider<unsafe extern "C" fn(color: Option<&ColorARGB>, fmt: *const u8, arg: *const u8)> = PointerProvider {
         name: "CONSOLE_PRINTF",
-        cache_address: 0x0040917E as *mut _,
-        tags_address: 0x0040A844 as *mut _
+        cache_address: 0x0040917E,
+        tags_address: 0x0040A844,
+        phantom_data: PhantomData
     };
 
     assert!(message_bytes.last() == Some(&0u8), "should be null-terminated");
 
-    // SAFETY: VariableProvider is probably right.
+    // SAFETY: PointerProvider is probably right.
     unsafe {
-        let what = CONSOLE_PRINTF.get() as *const _;
-        let what: unsafe extern "C" fn(color: Option<&ColorARGB>, fmt: *const u8, arg: *const u8) = transmute(what);
-        what(color, b"%s\x00".as_ptr(), message_bytes.as_ptr());
+        CONSOLE_PRINTF.get()(color, b"%s\x00".as_ptr(), message_bytes.as_ptr());
     }
 }
 
@@ -190,14 +188,14 @@ pub unsafe extern "C" fn terminal_update() {
         return
     }
 
-    const GET_CONSOLE_INPUT: VariableProvider<[u8; 0]> = VariableProvider {
+    const GET_CONSOLE_INPUT: PointerProvider<extern "C" fn()> = PointerProvider {
         name: "GET_CONSOLE_INPUT",
-        cache_address: 0x00649720 as *mut _,
-        tags_address: 0x00650F80 as *mut _
+        cache_address: 0x00649720,
+        tags_address: 0x00650F80,
+        phantom_data: PhantomData
     };
 
-    let get_console_input: extern "C" fn() = transmute(GET_CONSOLE_INPUT.get() as *const _);
-    let get_console_input = get_console_input();
+    GET_CONSOLE_INPUT.get()();
 
     let t = TERMINAL_OUTPUT_TABLE
         .get_mut()

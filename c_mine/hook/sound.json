@@ -1,0 +1,17 @@
+{
+    "ui_start_main_menu_music": {
+        "cache": "0x00404732",
+        "tag": "0x004039DB",
+        "replacement": "crate::sound::main_menu_music::ui_start_main_menu_music"
+    },
+    "ui_stop_main_menu_music": {
+        "cache": "0x004042E1",
+        "tag": "0x0040353A",
+        "replacement": "crate::sound::main_menu_music::ui_stop_main_menu_music"
+    },
+    "ui_main_menu_music_active": {
+        "cache": "0x0040603C",
+        "tag": "0x0040A0f6",
+        "replacement": "crate::sound::main_menu_music::ui_main_menu_music_active"
+    }
+}

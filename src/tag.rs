@@ -1,5 +1,5 @@
 use core::ffi::{c_char, CStr};
-use core::fmt::{Debug, Formatter};
+use core::fmt::{Debug, Display, Formatter};
 use c_mine::c_mine;
 use crate::id::ID;
 use crate::init::{get_exe_type, ExeType};
@@ -245,9 +245,12 @@ impl TagIndex for TagTagInstance {
     }
 }
 
-#[c_mine]
-pub unsafe extern "C" fn resolve_tag_loaded(group: TagGroupUnsafe, path: *const c_char) -> TagID {
-    let path = CStr::from_ptr(path).to_str().expect("input tag is not UTF-8");
+/// Look up a tag, returning a reference to it and its ID.
+///
+/// # Safety
+///
+/// No guarantee is made that there are no data races.
+pub unsafe fn lookup_tag(path: &str, group: TagGroupUnsafe) -> Option<(&dyn TagIndex, TagID)> {
     match get_exe_type() {
         ExeType::Tag => {
             let Some(table) = TAGS_TAG_INSTANCES.get_mut() else {
@@ -255,20 +258,28 @@ pub unsafe extern "C" fn resolve_tag_loaded(group: TagGroupUnsafe, path: *const 
             };
 
             let mut iterator = table.iter();
-            let Some(_) = (&mut iterator)
+            let Some(tag) = (&mut iterator)
                 .filter(|tag| tag.item.get_primary_tag_group() == group && tag.item.get_tag_path() == path)
                 .next() else {
-                return TagID::NULL
+                return None
             };
 
-            iterator.id()
+            Some((&tag.item, iterator.id()))
         },
         ExeType::Cache => get_cache_file_tags()
             .iter()
             .find(|f| f.get_primary_tag_group() == group && f.get_tag_path() == path)
-            .map(|t| t.tag_id)
-            .unwrap_or(TagID::NULL)
+            .map(|f| {
+                let tag_id = f.tag_id;
+                (f as &dyn TagIndex, tag_id)
+            })
     }
+}
+
+#[c_mine]
+pub unsafe extern "C" fn tag_loaded(group: TagGroupUnsafe, path: *const c_char) -> TagID {
+    let path = CStr::from_ptr(path).to_str().expect("input tag is not UTF-8");
+    lookup_tag(path, group).map(|t| t.1).unwrap_or(TagID::NULL)
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -358,6 +369,12 @@ pub enum TagGroup {
     WeatherParticleSystem = 0x7261696E,
     Wind = 0x77696E64,
     Null = 0xFFFFFFFF
+}
+
+impl Display for TagGroup {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        f.write_str(self.name())
+    }
 }
 
 impl TagGroup {

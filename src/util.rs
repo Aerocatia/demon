@@ -1,6 +1,8 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::fmt::{Debug, Formatter};
+use core::marker::PhantomData;
+use core::mem::transmute_copy;
 use core::ptr::{null, null_mut};
 use windows_sys::Win32::Foundation::{CloseHandle, FALSE, GENERIC_WRITE, MAX_PATH};
 use windows_sys::Win32::Storage::FileSystem::{WriteFile, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL};
@@ -118,6 +120,33 @@ impl<T: Sized> VariableProvider<T> {
             panic!("trying to get a mutable null VariableProvider ({name}) for exe_type:", name=self.name);
         }
         &mut *address
+    }
+}
+
+/// Transmutes the given `usize` into a [`T`] depending on EXE type.
+///
+/// This is useful for transmuting addresses into functions.
+pub(crate) struct PointerProvider<T: Sized> {
+    pub name: &'static str,
+    pub cache_address: usize,
+    pub tags_address: usize,
+    pub phantom_data: PhantomData<T>
+}
+impl<T: Sized> PointerProvider<T> {
+    pub unsafe fn get(&self) -> T {
+        assert!(size_of::<T>() == size_of::<usize>());
+
+        let exe_type = get_exe_type();
+        let address = match exe_type {
+            ExeType::Cache => self.cache_address,
+            ExeType::Tag => self.tags_address
+        };
+
+        if address == 0 {
+            panic!("trying to get a null VariableProvider ({name}) for exe_type:", name=self.name);
+        }
+
+        transmute_copy(&address)
     }
 }
 

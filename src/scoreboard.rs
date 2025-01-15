@@ -1,7 +1,7 @@
-use core::mem::transmute;
+use core::marker::PhantomData;
 use c_mine::c_mine;
 use crate::timing::FixedTimer;
-use crate::util::VariableProvider;
+use crate::util::{PointerProvider, VariableProvider};
 
 const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = VariableProvider {
     name: "game_engine",
@@ -41,22 +41,22 @@ pub unsafe extern "C" fn game_engine_post_rasterize() {
 
     match *GAME_ENGINE_GLOBALS_MODE.get() {
         0 | 1 => {
-            const A: VariableProvider<[u8; 0]> = VariableProvider {
+            const A: PointerProvider<extern "C" fn()> = PointerProvider {
                 name: "a",
-                cache_address: 0x005A4360 as *mut _,
-                tags_address: 0x005AA4C0 as *mut _,
+                cache_address: 0x005A4360,
+                tags_address: 0x005AA4C0,
+                phantom_data: PhantomData
             };
-            let function: extern "C" fn() = transmute(A.get() as *const _);
-            function();
+            A.get()();
         },
         2 | 3 => {
-            const B: VariableProvider<[u8; 0]> = VariableProvider {
+            const B: PointerProvider<extern "C" fn()> = PointerProvider {
                 name: "a",
-                cache_address: 0x00404089 as *mut _,
-                tags_address: 0x004032A6 as *mut _,
+                cache_address: 0x00404089,
+                tags_address: 0x004032A6,
+                phantom_data: PhantomData
             };
-            let function: extern "C" fn() = transmute(B.get() as *const _);
-            function();
+            B.get()();
         },
         n => panic!("game_engine_globals.mode is an unexpected value {n}")
     }
