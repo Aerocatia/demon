@@ -1,5 +1,6 @@
 use crate::init::{get_exe_type_if_available, ExeType};
 use crate::util::{get_exe_dir, write_to_file};
+use alloc::borrow::Cow;
 use alloc::string::String;
 use alloc::vec::Vec;
 use c_mine::c_mine;
@@ -11,8 +12,10 @@ use core::ptr::{null, null_mut};
 use core::sync::atomic::{AtomicBool, Ordering};
 use windows_sys::s;
 use windows_sys::Win32::Foundation;
-use windows_sys::Win32::Foundation::{GetLastError, HANDLE, TRUE};
+use windows_sys::Win32::Foundation::{GetLastError, HANDLE, HMODULE, TRUE};
 use windows_sys::Win32::System::Diagnostics::Debug::{RtlCaptureStackBackTrace, SymFromAddr, SymGetLineFromAddr64, SymInitialize, SymSetOptions, EXCEPTION_POINTERS, IMAGEHLP_LINE64, SYMBOL_INFO, SYMOPT_ALLOW_ABSOLUTE_SYMBOLS, SYMOPT_LOAD_ANYTHING, SYMOPT_LOAD_LINES};
+use windows_sys::Win32::System::LibraryLoader::GetModuleFileNameA;
+use windows_sys::Win32::System::ProcessStatus::GetModuleBaseNameA;
 use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess, TerminateProcess};
 use windows_sys::Win32::UI::WindowsAndMessaging::MESSAGEBOX_STYLE;
 
@@ -127,7 +130,23 @@ unsafe fn resolve_address_symbol_data(address: usize, bt_printed: &mut bool, out
             return
         };
 
-        let _ = fmt::write(output_full, format_args!(" {}", name_cstr.to_string_lossy()));
+        let mut module_name_bytes = [0u8; 256];
+        let module_name_length = GetModuleBaseNameA(
+            process,
+            symbol_info_ref.ModBase as HMODULE,
+            module_name_bytes.as_mut_ptr(),
+            module_name_bytes.len() as u32 - 1
+        );
+        module_name_bytes[module_name_length as usize] = 0;
+
+        let module_name = if module_name_length == 0 {
+            Cow::Borrowed("???")
+        }
+        else {
+            CStr::from_bytes_until_nul(&module_name_bytes).expect("should have zero").to_string_lossy()
+        };
+
+        let _ = fmt::write(output_full, format_args!(" {} ({module_name})", name_cstr.to_string_lossy()));
 
         let mut img: IMAGEHLP_LINE64 = zeroed();
         img.SizeOfStruct = size_of_val(&img) as u32;
