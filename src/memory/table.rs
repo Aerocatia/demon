@@ -1,7 +1,8 @@
-use core::ffi::CStr;
-use core::fmt::{Formatter, Debug};
+use core::ffi::{c_char, CStr};
+use core::fmt::{Debug, Formatter};
 use c_mine::c_mine;
 use crate::id::ID;
+use crate::memory::allocate_into_game_state;
 
 pub const DATA_FOURCC: u32 = 0x64407440;
 
@@ -69,8 +70,8 @@ impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
 
         let mut name = [0u8; 32];
         let name_bytes = table_name.as_bytes();
-        assert!(name_bytes.len() < name.len(), "{table_name} is too long for a table!");
-        name[..name_bytes.len()].copy_from_slice(name_bytes);
+        let name_len_truncated = name_bytes.len().min(name.len() - 1);
+        name[..name_len_truncated].copy_from_slice(&name_bytes[..name_len_truncated]);
 
         let mut table = DataTable {
             name,
@@ -337,4 +338,32 @@ pub unsafe extern "C" fn datum_get(table: Option<&'static mut DataTable<[u8; 0],
     };
 
     table.get_element(id).expect("Failed to get element:")
+}
+
+#[c_mine]
+pub extern "C" fn data_allocation_size(count: u16, element_size: u16) -> usize {
+    size_of::<DataTable<[u8; 0], 0>>() + (count as usize) * (element_size as usize)
+}
+
+#[c_mine]
+pub unsafe extern "C" fn data_initialize(data_table: &mut DataTable<[u8; 0], 0>, name: *const c_char, count: u16, element_size: u16) {
+    let name = CStr::from_ptr(name).to_str().expect("initializing data table but name is not valid UTF-8");
+    let ptr: *mut DataTable<[u8; 0], 0> = data_table as *mut _;
+    *data_table = DataTable::init(
+        name,
+        count as usize,
+        ptr.wrapping_add(1) as *mut _
+    );
+    data_table.element_size = element_size;
+}
+
+#[c_mine]
+pub unsafe extern "C" fn game_state_data_new(name: *const c_char, count: u16, element_size: u16) -> *mut DataTable<[u8; 0], 0> {
+    let size = data_allocation_size.get()(count, element_size);
+    let data = allocate_into_game_state(
+        || { CStr::from_ptr(name).to_str().expect("game_state_data_new with invalid name") },
+        size
+    ) as *mut DataTable<[u8; 0], 0>;
+    data_initialize.get()(&mut *data, name, count, element_size);
+    data
 }

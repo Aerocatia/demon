@@ -3,7 +3,7 @@ use core::fmt::{Debug, Display, Formatter};
 use c_mine::c_mine;
 use crate::id::ID;
 use crate::init::{get_exe_type, ExeType};
-use crate::table::DataTable;
+use crate::memory::table::DataTable;
 use crate::util::VariableProvider;
 
 pub const TAG_ID_SALT: u16 = 0x6174;

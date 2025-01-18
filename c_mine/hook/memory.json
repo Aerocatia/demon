@@ -1,0 +1,42 @@
+{
+    "data_iterator_next": {
+        "tag": "0x00403AB2",
+        "cache": "0x004047FF",
+        "replacement": "crate::memory::table::data_iterator_next"
+    },
+    "data_iterator_new": {
+        "tag": "0x00407A1D",
+        "cache": "0x004087BF",
+        "replacement": "crate::memory::table::data_iterator_new"
+    },
+    "data_verify": {
+        "tag": "0x00404F4D",
+        "cache": "0x00405EC5",
+        "replacement": "crate::memory::table::data_verify"
+    },
+    "datum_get": {
+        "tag": "0x00408DC8",
+        "cache": "0x00409A1B",
+        "replacement": "crate::memory::table::datum_get"
+    },
+    "data_initialize": {
+        "tag": "0x004019E7",
+        "cache": "0x00402207",
+        "replacement": "crate::memory::table::data_initialize"
+    },
+    "data_allocation_size": {
+        "tag": "0x004066BD",
+        "cache": "0x004075AE",
+        "replacement": "crate::memory::table::data_allocation_size"
+    },
+    "game_state_data_new": {
+        "tag": "0x00402108",
+        "cache": "0x00402F8B",
+        "replacement": "crate::memory::table::game_state_data_new"
+    },
+    "game_state_malloc": {
+        "tag": "0x0040A2F4",
+        "cache": "0x004012F3",
+        "replacement": "crate::memory::game_state_malloc"
+    }
+}

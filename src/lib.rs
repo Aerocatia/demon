@@ -17,7 +17,7 @@ mod panic;
 mod init;
 mod tag;
 mod id;
-mod table;
+mod memory;
 mod timing;
 mod mouse;
 mod scoreboard;

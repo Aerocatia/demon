@@ -1,7 +1,7 @@
 use c_mine::c_mine;
 use crate::id::ID;
 use crate::math::{ColorARGB, ColorRGB};
-use crate::table::DataTable;
+use crate::memory::table::DataTable;
 use crate::timing::FixedTimer;
 use crate::util::{PointerProvider, VariableProvider};
 
