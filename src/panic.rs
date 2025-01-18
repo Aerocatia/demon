@@ -173,6 +173,7 @@ pub unsafe extern "C" fn gathering_exception_data(pointers: &EXCEPTION_POINTERS)
 
     let error_kind = match code {
         Foundation::EXCEPTION_ACCESS_VIOLATION => " (segfault; param1=write, param2=address)",
+        Foundation::EXCEPTION_BREAKPOINT => " (breakpoint; likely a failed assertion)",
         _ => "",
     };
 
