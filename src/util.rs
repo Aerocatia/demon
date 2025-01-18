@@ -93,6 +93,32 @@ impl<T: Sized> Debug for CFunctionProvider<T> {
     }
 }
 
+macro_rules! variable {
+    {
+        name: $name:expr,
+        cache_address: $cache:expr,
+        tags_address: $tags:expr
+    } => {
+        crate::util::VariableProvider {
+            name: $name,
+            cache_address: $cache as *mut _,
+            tags_address: $tags as *mut _
+        }
+    };
+    {
+        name: $name:expr,
+        cache_address: $cache:expr
+    } => {
+        variable! { name: $name, cache_address: $cache, tags_address: 0 }
+    };
+    {
+        name: $name:expr,
+        tags_address: $tags:expr
+    } => {
+        variable! { name: $name, cache_address: 0, tags_address: $tags }
+    };
+}
+
 pub(crate) struct VariableProvider<T: Sized> {
     pub name: &'static str,
     pub cache_address: *mut T,
@@ -121,6 +147,33 @@ impl<T: Sized> VariableProvider<T> {
         }
         &mut *address
     }
+}
+
+macro_rules! pointer {
+    {
+        name: $name:expr,
+        cache_address: $cache:expr,
+        tags_address: $tags:expr
+    } => {
+        crate::util::PointerProvider {
+            name: $name,
+            cache_address: $cache,
+            tags_address: $tags,
+            phantom_data: core::marker::PhantomData
+        }
+    };
+    {
+        name: $name:expr,
+        cache_address: $cache:expr
+    } => {
+        pointer! { name: $name, cache_address: $cache, tags_address: 0 }
+    };
+    {
+        name: $name:expr,
+        tags_address: $tags:expr
+    } => {
+        pointer! { name: $name, cache_address: 0, tags_address: $tags }
+    };
 }
 
 /// Transmutes the given `usize` into a [`T`] depending on EXE type.

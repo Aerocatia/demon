@@ -8,10 +8,11 @@ compile_error!("This crate can only be compiled for i686-pc-windows-* targets!")
 extern crate alloc;
 
 #[macro_use]
+mod util;
+#[macro_use]
 mod console;
 
 mod allocator;
-mod util;
 mod panic;
 mod init;
 mod tag;

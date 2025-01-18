@@ -1,31 +1,30 @@
-use core::marker::PhantomData;
 use c_mine::c_mine;
 use crate::timing::FixedTimer;
 use crate::util::{PointerProvider, VariableProvider};
 
-const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = VariableProvider {
+const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = variable! {
     name: "game_engine",
-    cache_address: 0x00C56FF4 as *mut _,
-    tags_address: 0x00D0E5AC as *mut _,
+    cache_address: 0x00C56FF4,
+    tags_address: 0x00D0E5AC
 };
 
 // 1 = game_engine_mode_postgame_delay
-const GAME_ENGINE_GLOBALS_MODE: VariableProvider<u32> = VariableProvider {
+const GAME_ENGINE_GLOBALS_MODE: VariableProvider<u32> = variable! {
     name: "game_engine_globals.mode",
-    cache_address: 0x00C56FDC as *mut _,
-    tags_address: 0x00D0E594 as *mut _,
+    cache_address: 0x00C56FDC,
+    tags_address: 0x00D0E594
 };
 
-const SCOREBOARD_FADE: VariableProvider<f32> = VariableProvider {
+const SCOREBOARD_FADE: VariableProvider<f32> = variable! {
     name: "scoreboard_fade",
-    cache_address: 0x00C56FE0 as *mut _,
-    tags_address: 0x00D0E598 as *mut _,
+    cache_address: 0x00C56FE0,
+    tags_address: 0x00D0E598
 };
 
-const RULES_FADE: VariableProvider<f32> = VariableProvider {
+const RULES_FADE: VariableProvider<f32> = variable! {
     name: "rules_fade",
-    cache_address: 0x00C56FE4 as *mut _,
-    tags_address: 0x00D0E59C as *mut _,
+    cache_address: 0x00C56FE4,
+    tags_address: 0x00D0E59C
 };
 
 #[c_mine]
@@ -41,20 +40,18 @@ pub unsafe extern "C" fn game_engine_post_rasterize() {
 
     match *GAME_ENGINE_GLOBALS_MODE.get() {
         0 | 1 => {
-            const A: PointerProvider<extern "C" fn()> = PointerProvider {
+            const A: PointerProvider<extern "C" fn()> = pointer! {
                 name: "a",
                 cache_address: 0x005A4360,
-                tags_address: 0x005AA4C0,
-                phantom_data: PhantomData
+                tags_address: 0x005AA4C0
             };
             A.get()();
         },
         2 | 3 => {
-            const B: PointerProvider<extern "C" fn()> = PointerProvider {
-                name: "a",
+            const B: PointerProvider<extern "C" fn()> = pointer! {
+                name: "b",
                 cache_address: 0x00404089,
-                tags_address: 0x004032A6,
-                phantom_data: PhantomData
+                tags_address: 0x004032A6
             };
             B.get()();
         },

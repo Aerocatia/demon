@@ -46,10 +46,10 @@ const MAIN_MENU_MUSIC_PATH: &str = "sound\\music\\title1\\title1";
 const MAIN_MENU_TAG_GROUP: TagGroup = TagGroup::SoundLooping;
 
 // ???
-pub const MAIN_MENU_FADE_ACTIVE: VariableProvider<u32> = VariableProvider {
+pub const MAIN_MENU_FADE_ACTIVE: VariableProvider<u32> = variable! {
     name: "MAIN_MENU_FADE_ACTIVE",
-    cache_address: 0x00C99718 as *mut _,
-    tags_address: 0x00D50CF0 as *mut _,
+    cache_address: 0x00C99718,
+    tags_address: 0x00D50CF0
 };
 
 fn main_menu_fade_active() -> bool {

@@ -9,28 +9,24 @@ use crate::util::VariableProvider;
 pub const TAG_ID_SALT: u16 = 0x6174;
 pub type TagID = ID<TAG_ID_SALT>;
 
-pub const TAGS_TAG_INSTANCES: VariableProvider<Option<&mut DataTable<TagTagInstance, TAG_ID_SALT>>> = VariableProvider {
+pub const TAGS_TAG_INSTANCES: VariableProvider<Option<&mut DataTable<TagTagInstance, TAG_ID_SALT>>> = variable! {
     name: "TAGS_TAG_INSTANCES",
-    cache_address: 0x00000000 as *mut _,
-    tags_address: 0x00FFDAF8 as *mut _
+    tags_address: 0x00FFDAF8
 };
 
-pub const CACHE_TAG_INSTANCES: VariableProvider<*mut CacheTagInstance> = VariableProvider {
+pub const CACHE_TAG_INSTANCES: VariableProvider<*mut CacheTagInstance> = variable! {
     name: "CACHE_TAG_INSTANCES",
-    cache_address: 0x00AF8364 as *mut _,
-    tags_address: 0x00000000 as *mut _
+    cache_address: 0x00AF8364
 };
 
-pub const CACHE_TAGS_ARE_LOADED: VariableProvider<u8> = VariableProvider {
+pub const CACHE_TAGS_ARE_LOADED: VariableProvider<u8> = variable! {
     name: "CACHE_TAGS_ARE_LOADED",
-    cache_address: 0x00AF8368 as *mut _,
-    tags_address: 0x00000000 as *mut _
+    cache_address: 0x00AF8368
 };
 
-pub const CACHE_FILE_TAG_HEADER: VariableProvider<Option<&mut CacheFileTagHeader>> = VariableProvider {
+pub const CACHE_FILE_TAG_HEADER: VariableProvider<Option<&mut CacheFileTagHeader>> = variable! {
     name: "CACHE_FILE_TAG_HEADER",
-    cache_address: 0x00AF8B70 as *mut _,
-    tags_address: 0x00000000 as *mut _
+    cache_address: 0x00AF8B70
 };
 
 /// These methods are unsafe as we cannot guarantee yet that the tag data is not being accessed
