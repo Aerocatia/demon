@@ -1,12 +1,13 @@
 mod hook;
 
+use crate::init::hook::init_hooks;
 use crate::util::get_exe_path;
 use core::ffi::c_void;
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use windows_sys::Win32::Foundation::HINSTANCE;
 use windows_sys::Win32::System::Diagnostics::Debug::{MapFileAndCheckSumA, CHECKSUM_SUCCESS};
 use windows_sys::Win32::System::SystemServices;
-use crate::init::hook::init_hooks;
+use windows_sys::Win32::System::Threading::{SetProcessDEPPolicy, PROCESS_DEP_ENABLE};
 
 #[repr(u32)]
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -61,6 +62,9 @@ unsafe fn attach_if_not_attached() {
     if ATTACHED.swap(true, Ordering::Relaxed) {
         return
     }
+
+    // 2b
+    SetProcessDEPPolicy(PROCESS_DEP_ENABLE);
 
     // TODO: add a method for null terminating stuff or just getting null terminated path?
     let exe_path = get_exe_path();

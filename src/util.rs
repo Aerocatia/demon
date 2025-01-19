@@ -132,7 +132,7 @@ impl<T: Sized> VariableProvider<T> {
             ExeType::Tag => self.tags_address
         };
         if address.is_null() {
-            panic!("trying to get a null VariableProvider ({name}) for exe_type:", name=self.name);
+            panic!("trying to get a null VariableProvider ({name}) for this exe type", name=self.name);
         }
         &*address
     }
@@ -143,7 +143,7 @@ impl<T: Sized> VariableProvider<T> {
             ExeType::Tag => self.tags_address
         };
         if address.is_null() {
-            panic!("trying to get a mutable null VariableProvider ({name}) for exe_type:", name=self.name);
+            panic!("trying to get a mutable null VariableProvider ({name}) for this exe type", name=self.name);
         }
         &mut *address
     }
@@ -196,7 +196,7 @@ impl<T: Sized> PointerProvider<T> {
         };
 
         if address == 0 {
-            panic!("trying to get a null VariableProvider ({name}) for exe_type:", name=self.name);
+            panic!("trying to get a null VariableProvider ({name}) for this exe type", name=self.name);
         }
 
         transmute_copy(&address)
