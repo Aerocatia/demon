@@ -18,6 +18,7 @@ use windows_sys::Win32::System::ProcessStatus::GetModuleBaseNameA;
 use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess, TerminateProcess};
 use windows_sys::Win32::UI::WindowsAndMessaging::MESSAGEBOX_STYLE;
 
+#[cfg(not(test))]
 #[panic_handler]
 unsafe fn on_panic(panic_info: &PanicInfo) -> ! {
     let displayed_output = generate_panic_message(panic_info);
@@ -190,7 +191,7 @@ pub unsafe extern "C" fn gathering_exception_data(pointers: &EXCEPTION_POINTERS)
     let code = exception_record.ExceptionCode;
 
     let error_kind = match code {
-        Foundation::EXCEPTION_ACCESS_VIOLATION => " (segfault; param1=write, param2=address)",
+        Foundation::EXCEPTION_ACCESS_VIOLATION => " (segfault; param1=access, param2=address)",
         Foundation::EXCEPTION_BREAKPOINT => " (breakpoint; likely a failed assertion)",
         _ => "",
     };
@@ -232,5 +233,6 @@ pub unsafe extern "C" fn gathering_exception_data(pointers: &EXCEPTION_POINTERS)
     panic!("Exception!\n\nCode = 0x{code:08X}{error_kind}\n\nFlags: {flags}\n\n{params}Address:{address_symbol_info}\n\nRegister dump:\n{register_dump}");
 }
 
+#[cfg(not(test))]
 #[no_mangle]
 fn rust_eh_personality() {}

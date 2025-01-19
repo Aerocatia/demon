@@ -38,5 +38,15 @@
         "tag": "0x0040A2F4",
         "cache": "0x004012F3",
         "replacement": "crate::memory::game_state_malloc"
+    },
+    "game_in_editor": {
+        "tag": "0x00402833",
+        "cache": "0x004036ED",
+        "replacement": "crate::memory::game_in_editor"
+    },
+    "crc_checksum_buffer": {
+        "tag": "0x0040779D",
+        "cache": "0x00408567",
+        "replacement": "crate::memory::crc_checksum_buffer"
     }
 }

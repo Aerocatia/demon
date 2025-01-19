@@ -25,3 +25,4 @@ mod math;
 mod script;
 mod string;
 mod sound;
+mod crc32;
