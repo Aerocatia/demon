@@ -9,6 +9,18 @@ use crate::util::VariableProvider;
 pub const TAG_ID_SALT: u16 = 0x6174;
 pub type TagID = ID<TAG_ID_SALT>;
 
+pub const GLOBAL_SCENARIO: VariableProvider<*mut u8> = variable! {
+    name: "global_scenario",
+    cache_address: 0x00F1A67C,
+    tags_address: 0x00FD1C44
+};
+
+pub const GLOBAL_SCENARIO_INDEX: VariableProvider<TagID> = variable! {
+    name: "global_scenario_index",
+    cache_address: 0x00A39C64,
+    tags_address: 0x00AE1174
+};
+
 pub const TAGS_TAG_INSTANCES: VariableProvider<Option<&mut DataTable<TagTagInstance, TAG_ID_SALT>>> = variable! {
     name: "TAGS_TAG_INSTANCES",
     tags_address: 0x00FFDAF8
@@ -29,13 +41,30 @@ pub const CACHE_FILE_TAG_HEADER: VariableProvider<Option<&mut CacheFileTagHeader
     cache_address: 0x00AF8B70
 };
 
+#[derive(Copy, Clone, PartialEq)]
+#[repr(transparent)]
+pub struct String32 {
+    data: [u8; 32]
+}
+impl String32 {
+    pub fn as_str(&self) -> &str {
+        let Ok(s) = CStr::from_bytes_until_nul(self.data.as_slice()) else {
+            panic!("String32 not null terminated! Data: {:?}", self.data);
+        };
+        let Ok(s) = s.to_str() else {
+            panic!("String32 not UTF-8! Data: {:?}", self.data)
+        };
+        s
+    }
+}
+
 /// These methods are unsafe as we cannot guarantee yet that the tag data is not being accessed
 /// concurrently.
 #[repr(C)]
 pub struct Reflexive<T: Sized + 'static> {
-    count: usize,
-    objects: *mut T,
-    unknown: u32
+    pub count: usize,
+    pub objects: *mut T,
+    pub unknown: u32
 }
 impl<T: Sized + 'static> Reflexive<T> {
     pub const fn len(&self) -> usize {
@@ -578,4 +607,11 @@ pub unsafe extern "C" fn tag_block_get_element_with_size(
     reflexive
         .objects
         .wrapping_byte_offset(offset)
+}
+
+#[c_mine]
+pub unsafe extern "C" fn global_scenario_get() -> *mut u8 {
+    let global_scenario = *GLOBAL_SCENARIO.get();
+    assert!(!global_scenario.is_null(), "global_scenario_get(): global_scenario is null!");
+    global_scenario
 }

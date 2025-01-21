@@ -246,7 +246,8 @@ const CONSOLE_ENABLED: VariableProvider<bool> = variable! {
 };
 
 const DEFAULT_CONSOLE_PROMPT_TEXT: &str = "halo( ";
-const DEFAULT_CONSOLE_COLOR: ColorARGB = ColorARGB {
+
+pub static mut DEFAULT_CONSOLE_COLOR: ColorARGB = ColorARGB {
     alpha: 1.0,
     color: ColorRGB {
         r: 1.0,

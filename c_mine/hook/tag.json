@@ -18,5 +18,10 @@
         "tag": "0x004067A8",
         "cache": "0x00407685",
         "replacement": "crate::tag::tag_block_get_address"
+    },
+    "global_scenario_get": {
+        "tag": "0x0040643D",
+        "cache": "0x0040736A",
+        "replacement": "crate::tag::global_scenario_get"
     }
 }

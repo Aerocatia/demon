@@ -3,5 +3,21 @@
         "cache": "0x00403C29",
         "tag": "0x00402DF1",
         "replacement": "crate::script::main_crash"
+    },
+    "hs_global_external_get": {
+        "cache": "0x00404679",
+        "tag": "0x00403922",
+        "replacement": "crate::script::hs_global_external_get"
+    },
+    "hs_find_global_by_name": {
+        "cache": "0x00409E26",
+        "tag": "0x00409228",
+        "replacement": "crate::script::hs_find_global_by_name"
+    },
+    "hs_enumerate_globals": {
+        "cache": "0x005E8040",
+        "tag": "0x005F1930",
+        "replacement": "crate::script::hs_enumerate_globals",
+        "sudo": true
     }
 }
