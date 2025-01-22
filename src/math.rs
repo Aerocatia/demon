@@ -27,6 +27,8 @@ impl ColorARGB {
     }
 }
 
+pub type Euler2D = Vector2D;
+
 #[derive(Copy, Clone, Default, Debug, PartialEq)]
 #[repr(C)]
 pub struct Vector2D {

@@ -1,0 +1,7 @@
+{
+    "player_control_get": {
+        "tags": "0x00403F6C",
+        "cache": "0x00404C23",
+        "replacement": "crate::player::player_control_get"
+    }
+}

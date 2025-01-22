@@ -26,3 +26,4 @@ mod script;
 mod string;
 mod sound;
 mod crc32;
+mod player;
