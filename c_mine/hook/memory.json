@@ -29,6 +29,16 @@
         "cache": "0x004075AE",
         "replacement": "crate::memory::table::data_allocation_size"
     },
+    "data_make_valid": {
+        "tag": "0x00401B54",
+        "cache": "0x004024EB",
+        "replacement": "crate::memory::table::data_make_valid"
+    },
+    "data_delete_all": {
+        "tag": "0x00407022",
+        "cache": "0x00407E5f",
+        "replacement": "crate::memory::table::data_delete_all"
+    },
     "game_state_data_new": {
         "tag": "0x00402108",
         "cache": "0x00402F8B",

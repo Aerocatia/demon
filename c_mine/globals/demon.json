@@ -1,2 +1,3 @@
 [
+    { "name": "demon_mouse_sensitivity", "type": "Real", "address": "crate::mouse::MOUSE_SENSITIVITY" }
 ]

@@ -30,13 +30,13 @@ pub struct DataTable<T: Sized + 'static, const SALT: u16> {
     /// Zeroed identifiers are not allowed
     identifier_zero_invalid: u8,
 
-    /// ???
-    unknown_2: [u8; 2],
+    /// Padding
+    padding: [u8; 2],
 
-    /// Unused (d@t@)
+    /// must be [`DATA_FOURCC`]
     data_fourcc: u32,
 
-    /// ??? cleared on clear
+    /// ??? cleared on clear (next free index?)
     unknown_3: u16,
 
     /// Size
@@ -82,7 +82,7 @@ impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
             first: first_element,
             next_id: 0,
             valid: 0,
-            unknown_2: Default::default(),
+            padding: Default::default(),
             unknown_3: Default::default(),
             current_size: 0,
             count: 0,
@@ -149,8 +149,8 @@ impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
     pub unsafe fn clear(&mut self) {
         self.current_size = 0;
         self.count = 0;
-        self.unknown_2 = [0u8; 2];
-        for i in self.get_instances_mut() {
+        self.unknown_3 = 0;
+        for i in self.iter() {
             i.identifier_bytes = [0u8; 4]
         }
         self.reset_next_id();
@@ -185,7 +185,7 @@ impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
         (((self as *const _) as usize) as u32) ^ ITER_FOURCC
     }
     fn reset_next_id(&mut self) {
-        self.next_id = (ID::<SALT>::from_index(0).expect("??? no id?").full_id() >> 16) as u16;
+        self.next_id = (u16::from_ne_bytes([self.name[0], self.name[1]])) | 0x8000
     }
 }
 
@@ -366,4 +366,17 @@ pub unsafe extern "C" fn game_state_data_new(name: *const c_char, count: u16, el
     ) as *mut DataTable<[u8; 0], 0>;
     data_initialize.get()(&mut *data, name, count, element_size);
     data
+}
+
+#[c_mine]
+pub unsafe extern "C" fn data_delete_all(table: Option<&mut DataTable<[u8; 0], 0>>) {
+    table.expect("data_delete_all with null table").clear()
+}
+
+#[c_mine]
+pub unsafe extern "C" fn data_make_valid(table: Option<&mut DataTable<[u8; 0], 0>>) {
+    let table = table.expect("data_make_valid with null table");
+    table.verify().expect("data_make_valid with invalid table");
+    table.valid = 1;
+    table.clear();
 }

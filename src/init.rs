@@ -1,5 +1,7 @@
 mod hook;
 
+pub use hook::sudo_write;
+
 use crate::init::hook::init_hooks;
 use crate::util::get_exe_path;
 use core::ffi::c_void;

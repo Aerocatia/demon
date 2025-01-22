@@ -44,7 +44,7 @@ pub const CACHE_FILE_TAG_HEADER: VariableProvider<Option<&mut CacheFileTagHeader
 #[derive(Copy, Clone, PartialEq)]
 #[repr(transparent)]
 pub struct String32 {
-    data: [u8; 32]
+    pub data: [u8; 32]
 }
 impl String32 {
     pub fn as_str(&self) -> &str {
