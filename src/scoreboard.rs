@@ -5,26 +5,26 @@ use crate::util::{PointerProvider, VariableProvider};
 const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = variable! {
     name: "game_engine",
     cache_address: 0x00C56FF4,
-    tags_address: 0x00D0E5AC
+    tag_address: 0x00D0E5AC
 };
 
 // 1 = game_engine_mode_postgame_delay
 const GAME_ENGINE_GLOBALS_MODE: VariableProvider<u32> = variable! {
     name: "game_engine_globals.mode",
     cache_address: 0x00C56FDC,
-    tags_address: 0x00D0E594
+    tag_address: 0x00D0E594
 };
 
 const SCOREBOARD_FADE: VariableProvider<f32> = variable! {
     name: "scoreboard_fade",
     cache_address: 0x00C56FE0,
-    tags_address: 0x00D0E598
+    tag_address: 0x00D0E598
 };
 
 const RULES_FADE: VariableProvider<f32> = variable! {
     name: "rules_fade",
     cache_address: 0x00C56FE4,
-    tags_address: 0x00D0E59C
+    tag_address: 0x00D0E59C
 };
 
 #[c_mine]
@@ -43,7 +43,7 @@ pub unsafe extern "C" fn game_engine_post_rasterize() {
             const A: PointerProvider<extern "C" fn()> = pointer! {
                 name: "a",
                 cache_address: 0x005A4360,
-                tags_address: 0x005AA4C0
+                tag_address: 0x005AA4C0
             };
             A.get()();
         },
@@ -51,7 +51,7 @@ pub unsafe extern "C" fn game_engine_post_rasterize() {
             const B: PointerProvider<extern "C" fn()> = pointer! {
                 name: "b",
                 cache_address: 0x00404089,
-                tags_address: 0x004032A6
+                tag_address: 0x004032A6
             };
             B.get()();
         },

@@ -49,7 +49,7 @@ const MAIN_MENU_TAG_GROUP: TagGroup = TagGroup::SoundLooping;
 pub const MAIN_MENU_FADE_ACTIVE: VariableProvider<u32> = variable! {
     name: "MAIN_MENU_FADE_ACTIVE",
     cache_address: 0x00C99718,
-    tags_address: 0x00D50CF0
+    tag_address: 0x00D50CF0
 };
 
 fn main_menu_fade_active() -> bool {

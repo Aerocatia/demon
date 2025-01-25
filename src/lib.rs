@@ -27,3 +27,5 @@ mod string;
 mod sound;
 mod crc32;
 mod player;
+mod object;
+mod draw_string;

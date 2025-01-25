@@ -8,7 +8,7 @@ use crate::util::{PointerProvider, VariableProvider};
 pub const ERROR_WAS_SET: VariableProvider<u8> = variable! {
     name: "ERROR_WAS_SET",
     cache_address: 0x00B016C8,
-    tags_address: 0x00BB8C80
+    tag_address: 0x00BB8C80
 };
 
 /// Print an error to the console with the given formatting and log it.
@@ -60,7 +60,7 @@ pub fn error_put_message(priority: ErrorPriority, error_bytes: &[u8]) {
     const ERROR: PointerProvider<unsafe extern "C" fn(priority: i16, fmt: *const u8, arg: *const u8)> = pointer! {
         name: "ERROR",
         cache_address: 0x00408607,
-        tags_address: 0x0040785B
+        tag_address: 0x0040785B
     };
 
     assert!(error_bytes.last() == Some(&0u8), "should be null-terminated");
@@ -106,7 +106,7 @@ fn console_put_message(color: Option<&ColorARGB>, message_bytes: &[u8]) {
     const CONSOLE_PRINTF: PointerProvider<unsafe extern "C" fn(color: Option<&ColorARGB>, fmt: *const u8, arg: *const u8)> = pointer! {
         name: "CONSOLE_PRINTF",
         cache_address: 0x0040917E,
-        tags_address: 0x0040A844
+        tag_address: 0x0040A844
     };
 
     assert!(message_bytes.last() == Some(&0u8), "should be null-terminated");
@@ -135,13 +135,13 @@ type TerminalOutputTable = DataTable<TerminalOutput, TERMINAL_SALT>;
 const TERMINAL_INITIALIZED: VariableProvider<u8> = variable! {
     name: "TERMINAL_INITIALIZED",
     cache_address: 0x00C8AEE0,
-    tags_address: 0x00D42490
+    tag_address: 0x00D42490
 };
 
 const TERMINAL_OUTPUT_TABLE: VariableProvider<Option<&mut TerminalOutputTable>> = variable! {
     name: "TERMINAL_OUTPUT_TABLE",
     cache_address: 0x00C8AEE4,
-    tags_address: 0x00D42494
+    tag_address: 0x00D42494
 };
 
 const LIMIT_TICKS: u32 = 150;
@@ -170,7 +170,7 @@ unsafe fn fade_console_text(table: &'static mut TerminalOutputTable) {
 const CONSOLE_IS_ACTIVE: VariableProvider<u8> = variable! {
     name: "CONSOLE_IS_ACTIVE",
     cache_address: 0x00C98AE0,
-    tags_address: 0x00D500A0
+    tag_address: 0x00D500A0
 };
 
 #[c_mine]
@@ -188,7 +188,7 @@ pub unsafe extern "C" fn terminal_update() {
     const GET_CONSOLE_INPUT: PointerProvider<extern "C" fn()> = pointer! {
         name: "GET_CONSOLE_INPUT",
         cache_address: 0x00649720,
-        tags_address: 0x00650F80
+        tag_address: 0x00650F80
     };
 
     GET_CONSOLE_INPUT.get()();
@@ -206,48 +206,48 @@ pub unsafe extern "C" fn terminal_update() {
 const CONSOLE_COLOR: VariableProvider<ColorARGB> = variable! {
     name: "CONSOLE_COLOR",
     cache_address: 0x00C98B68,
-    tags_address: 0x00D50128
+    tag_address: 0x00D50128
 };
 
 const CONSOLE_PROMPT_TEXT: VariableProvider<[u8; 32]> = variable! {
     name: "CONSOLE_PROMPT_TEXT",
     cache_address: 0x00C98B78,
-    tags_address: 0x00D50138
+    tag_address: 0x00D50138
 };
 
 const CONSOLE_TEXT: VariableProvider<[u8; 256]> = variable! {
     name: "CONSOLE_TEXT",
     cache_address: 0x00C98B98,
-    tags_address: 0x00D50158
+    tag_address: 0x00D50158
 };
 
 const CONSOLE_HISTORY_LENGTH: VariableProvider<u16> = variable! {
     name: "CONSOLE_HISTORY_LENGTH",
     cache_address: 0x00C9949C,
-    tags_address: 0x00D5015C
+    tag_address: 0x00D5015C
 };
 
 const CONSOLE_HISTORY_NEXT_INDEX: VariableProvider<u16> = variable! {
     name: "CONSOLE_HISTORY_NEXT_INDEX",
     cache_address: 0x00C9949E,
-    tags_address: 0x00D5015E
+    tag_address: 0x00D5015E
 };
 
 const CONSOLE_HISTORY_SELECTED_INDEX: VariableProvider<u16> = variable! {
     name: "CONSOLE_HISTORY_SELECTED_INDEX",
     cache_address: 0x00C994A0,
-    tags_address: 0x00D50160
+    tag_address: 0x00D50160
 };
 
 const CONSOLE_ENABLED: VariableProvider<bool> = variable! {
     name: "CONSOLE_ENABLED",
     cache_address: 0x00C98AE1,
-    tags_address: 0x00D500A1
+    tag_address: 0x00D500A1
 };
 
 const DEFAULT_CONSOLE_PROMPT_TEXT: &str = "halo( ";
 
-pub static mut DEFAULT_CONSOLE_COLOR: ColorARGB = ColorARGB {
+pub const DEFAULT_CONSOLE_COLOR: ColorARGB = ColorARGB {
     alpha: 1.0,
     color: ColorRGB {
         r: 1.0,

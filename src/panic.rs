@@ -16,7 +16,7 @@ use windows_sys::Win32::Foundation::{GetLastError, HANDLE, HMODULE, TRUE};
 use windows_sys::Win32::System::Diagnostics::Debug::{RtlCaptureStackBackTrace, SymFromAddr, SymGetLineFromAddr64, SymInitialize, SymSetOptions, EXCEPTION_POINTERS, IMAGEHLP_LINE64, SYMBOL_INFO, SYMOPT_ALLOW_ABSOLUTE_SYMBOLS, SYMOPT_LOAD_ANYTHING, SYMOPT_LOAD_LINES};
 use windows_sys::Win32::System::ProcessStatus::GetModuleBaseNameA;
 use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess, TerminateProcess};
-use windows_sys::Win32::UI::WindowsAndMessaging::MESSAGEBOX_STYLE;
+use windows_sys::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK};
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -30,7 +30,7 @@ unsafe fn on_panic(panic_info: &PanicInfo) -> ! {
         null_mut(),
         msg,
         s!("Panic!"),
-        MESSAGEBOX_STYLE::default()
+        MB_ICONERROR | MB_OK
     );
     crash_process();
 }

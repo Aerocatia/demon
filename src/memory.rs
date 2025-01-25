@@ -12,19 +12,19 @@ pub static CPU_ALLOCATION_SIZE: AtomicUsize = AtomicUsize::new(0);
 pub const GAME_STATE_GLOBALS_LOCKED: VariableProvider<u8> = variable! {
     name: "game_state_globals.locked",
     cache_address: 0x00F14610,
-    tags_address: 0x00FCBBD8
+    tag_address: 0x00FCBBD8
 };
 
 pub const ALLOCATION_ADDRESS: VariableProvider<*mut u8> = variable! {
     name: "ALLOCATION_ADDRESS",
     cache_address: 0x00F14600,
-    tags_address: 0x00FCBBC8
+    tag_address: 0x00FCBBC8
 };
 
 pub const GAME_STATE_CRC: VariableProvider<CRC32> = variable! {
     name: "GAME_STATE_CRC",
     cache_address: 0x00F1460C,
-    tags_address: 0x00FCBBD4
+    tag_address: 0x00FCBBD4
 };
 
 pub fn update_game_state_crc(data: &[u8]) {

@@ -31,6 +31,7 @@ windows-sys = { version = "0.59", default-features = false, features = ["Wdk_Fou
 c_mine = { path = "c_mine" }
 spin = { version = "0.9.8", features = ["mutex", "spin_mutex"] }
 utf16_lit = "2.0.2"
+num_enum = { version = "0.7.3", default-features = false }
 
 [build-dependencies]
 embed-resource = "3.0.1"

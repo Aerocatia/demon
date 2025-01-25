@@ -228,7 +228,7 @@ impl HSGlobal for ScenarioGlobal {
 const HS_ENUMERATE_ADD_RESULT: PointerProvider<unsafe extern "C" fn(what: *const u8)> = pointer! {
     name: "hs_enumerate_add_result",
     cache_address: 0x005F6A10,
-    tags_address: 0x005FD350
+    tag_address: 0x005FD350
 };
 
 #[c_mine]
@@ -257,25 +257,25 @@ pub unsafe extern "C" fn hs_global_get_type(index: u16) -> ScriptValueType {
 const HS_THREAD_TABLE: VariableProvider<Option<&mut DataTable<[u8; 0xFC], 0x7368>>> = variable! {
     name: "hs_thread_table",
     cache_address: 0x00C7DE48,
-    tags_address: 0x00D35400
+    tag_address: 0x00D35400
 };
 
 const HS_GLOBALS_TABLE: VariableProvider<Option<&mut DataTable<usize, 0x7368>>> = variable! {
     name: "hs_globals_table",
     cache_address: 0x00C7DE4C,
-    tags_address: 0x00D35404
+    tag_address: 0x00D35404
 };
 
 const DATUM_NEW_AT_INDEX: PointerProvider<unsafe extern "C" fn(table: *mut DataTable<[u8; 0], 0>, index: u32) -> u32> = pointer! {
     name: "datum_new_at_index",
     cache_address: 0x00406B86,
-    tags_address: 0x00405bAA
+    tag_address: 0x00405bAA
 };
 
 const HS_EXTERNAL_GLOBALS_COUNT: VariableProvider<u16> = variable! {
     name: "HS_EXTERNAL_GLOBALS_COUNT",
     cache_address: 0x0097E8CC,
-    tags_address: 0x009E2D94
+    tag_address: 0x009E2D94
 };
 
 #[c_mine]

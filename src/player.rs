@@ -1,13 +1,17 @@
 use c_mine::c_mine;
+use crate::id::ID;
 use crate::math::{Euler2D, Vector2D};
+use crate::object::ObjectID;
 use crate::util::VariableProvider;
+
+pub type PlayerID = ID<0x6C70>;
 
 pub const MAXIMUM_NUMBER_OF_LOCAL_PLAYERS: usize = 1;
 
 pub const PLAYER_CONTROLS: VariableProvider<*mut PlayerControlTable> = variable! {
     name: "PLAYER_CONTROLS",
     cache_address: 0x00C59620,
-    tags_address: 0x00D10BD8
+    tag_address: 0x00D10BD8
 };
 
 #[repr(C)]
@@ -18,8 +22,7 @@ pub struct PlayerControlTable {
 
 #[repr(C)]
 pub struct PlayerControl {
-    // FIXME
-    pub object_id: u32,
+    pub object_id: ObjectID,
     pub buttons: u32,
     pub unknown_0x8: u32,
 

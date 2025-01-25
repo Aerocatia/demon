@@ -12,18 +12,18 @@ pub type TagID = ID<TAG_ID_SALT>;
 pub const GLOBAL_SCENARIO: VariableProvider<*mut u8> = variable! {
     name: "global_scenario",
     cache_address: 0x00F1A67C,
-    tags_address: 0x00FD1C44
+    tag_address: 0x00FD1C44
 };
 
 pub const GLOBAL_SCENARIO_INDEX: VariableProvider<TagID> = variable! {
     name: "global_scenario_index",
     cache_address: 0x00A39C64,
-    tags_address: 0x00AE1174
+    tag_address: 0x00AE1174
 };
 
 pub const TAGS_TAG_INSTANCES: VariableProvider<Option<&mut DataTable<TagTagInstance, TAG_ID_SALT>>> = variable! {
     name: "TAGS_TAG_INSTANCES",
-    tags_address: 0x00FFDAF8
+    tag_address: 0x00FFDAF8
 };
 
 pub const CACHE_TAG_INSTANCES: VariableProvider<*mut CacheTagInstance> = variable! {
@@ -164,7 +164,7 @@ pub fn get_cache_file_tags() -> &'static [CacheTagInstance] {
             panic!("CACHE_FILE_TAG_HEADER is null!")
         };
         let tags = *CACHE_TAG_INSTANCES.get();
-        assert!(!tags.is_null(), "CACHE_TAGS_ADDRESS is null!");
+        assert!(!tags.is_null(), "CACHE_tag_address is null!");
         core::slice::from_raw_parts(tags, (&*cache_header).tag_count as usize)
     }
 }
@@ -180,6 +180,22 @@ pub trait TagIndex {
     fn get_primary_tag_group(&self) -> TagGroupUnsafe;
     fn get_secondary_tag_group(&self) -> TagGroupUnsafe;
     fn get_tertiary_tag_group(&self) -> TagGroupUnsafe;
+    fn get_tag_id(&self) -> TagID;
+
+    /// Returns Ok(()) if any of the tag's groups correspond to `tag_group`.
+    fn verify_tag_group(&self, tag_group: TagGroupUnsafe) -> Result<(), GetTagDataError> {
+        let expected = [
+            self.get_primary_tag_group(),
+            self.get_secondary_tag_group(),
+            self.get_tertiary_tag_group(),
+            TagGroup::Null.into()
+        ];
+
+        expected
+            .contains(&tag_group)
+            .then_some(())
+            .ok_or_else(|| GetTagDataError::BadTagGroup { id: self.get_tag_id(), tag_group, expected })
+    }
 
     /// Attempt to get the tag path.
     ///
@@ -227,6 +243,10 @@ impl TagIndex for CacheTagInstance {
     fn get_tag_data(&self) -> *mut [u8; 0] {
         self.tag_data
     }
+
+    fn get_tag_id(&self) -> TagID {
+        self.tag_id
+    }
 }
 
 /// Used only in tag builds.
@@ -267,6 +287,19 @@ impl TagIndex for TagTagInstance {
 
     fn get_tag_data(&self) -> *mut [u8; 0] {
         self.tag_data
+    }
+
+    fn get_tag_id(&self) -> TagID {
+        // SAFETY: This is safe because the tag path is self-contained in the struct.
+        let path = unsafe { self.get_tag_path() };
+        let group = self.primary_tag_group;
+
+        // SAFETY: This is safe provided there are no data races. Therefore, it's not safe. Hopefully we don't blow up!
+        let Some(t) = (unsafe { lookup_tag(path, self.primary_tag_group) }) else {
+            panic!("Calling TagTagInstance::get_tag_id, but can't get the tag ID ({path}.{group:?})", )
+        };
+
+        t.1
     }
 }
 
@@ -527,14 +560,14 @@ impl Debug for TagGroupUnsafe {
 #[derive(Copy, Clone)]
 pub enum GetTagDataError {
     NoMatch { id: TagID },
-    BadTagGroup { id: TagID, fourcc: TagGroupUnsafe, expected: [TagGroupUnsafe; 4] }
+    BadTagGroup { id: TagID, tag_group: TagGroupUnsafe, expected: [TagGroupUnsafe; 4] }
 }
 
 impl Debug for GetTagDataError {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         match self {
             GetTagDataError::NoMatch { id } => f.write_fmt(format_args!("Cannot find tag with ID {id:?}")),
-            GetTagDataError::BadTagGroup { id, fourcc: group, expected } => f.write_fmt(format_args!("Found a tag with {id:?}, but the tag group is incorrect: '{group:?}' not in {expected:?}")),
+            GetTagDataError::BadTagGroup { id, tag_group, expected } => f.write_fmt(format_args!("Found a tag with {id:?}, but the tag group is incorrect: '{tag_group:?}' not in {expected:?}")),
         }
     }
 }
@@ -560,20 +593,9 @@ pub unsafe fn get_tag_info(id: TagID) -> Option<&'static dyn TagIndex> {
 
 /// Gets the tag data.
 pub unsafe fn get_tag_data_checking_tag_group(group: TagGroupUnsafe, id: TagID) -> Result<*mut [u8; 0], GetTagDataError> {
-    let tag = get_tag_info(id).ok_or(GetTagDataError::NoMatch { id })?;
-
-    let expected = [
-        tag.get_primary_tag_group(),
-        tag.get_secondary_tag_group(),
-        tag.get_tertiary_tag_group(),
-        TagGroupUnsafe(u32::MAX),
-    ];
-
-    if !expected.contains(&group) {
-        return Err(GetTagDataError::BadTagGroup { id, fourcc: group, expected });
-    }
-
-    Ok(tag.get_tag_data())
+    get_tag_info(id)
+        .ok_or(GetTagDataError::NoMatch { id })
+        .and_then(|tag| tag.verify_tag_group(group).map(|_| tag.get_tag_data()))
 }
 
 #[c_mine]

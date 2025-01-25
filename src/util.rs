@@ -97,39 +97,39 @@ macro_rules! variable {
     {
         name: $name:expr,
         cache_address: $cache:expr,
-        tags_address: $tags:expr
+        tag_address: $tag:expr
     } => {
         crate::util::VariableProvider {
             name: $name,
             cache_address: $cache as *mut _,
-            tags_address: $tags as *mut _
+            tag_address: $tag as *mut _
         }
     };
     {
         name: $name:expr,
         cache_address: $cache:expr
     } => {
-        variable! { name: $name, cache_address: $cache, tags_address: 0 }
+        variable! { name: $name, cache_address: $cache, tag_address: 0 }
     };
     {
         name: $name:expr,
-        tags_address: $tags:expr
+        tag_address: $tag:expr
     } => {
-        variable! { name: $name, cache_address: 0, tags_address: $tags }
+        variable! { name: $name, cache_address: 0, tag_address: $tag }
     };
 }
 
 pub(crate) struct VariableProvider<T: Sized> {
     pub name: &'static str,
     pub cache_address: *mut T,
-    pub tags_address: *mut T
+    pub tag_address: *mut T
 }
 impl<T: Sized> VariableProvider<T> {
     pub unsafe fn get(&self) -> &'static T {
         let exe_type = get_exe_type();
         let address = match exe_type {
             ExeType::Cache => self.cache_address,
-            ExeType::Tag => self.tags_address
+            ExeType::Tag => self.tag_address
         };
         if address.is_null() {
             panic!("trying to get a null VariableProvider ({name}) for this exe type", name=self.name);
@@ -140,7 +140,7 @@ impl<T: Sized> VariableProvider<T> {
         let exe_type = get_exe_type();
         let address = match exe_type {
             ExeType::Cache => self.cache_address,
-            ExeType::Tag => self.tags_address
+            ExeType::Tag => self.tag_address
         };
         if address.is_null() {
             panic!("trying to get a mutable null VariableProvider ({name}) for this exe type", name=self.name);
@@ -153,12 +153,12 @@ macro_rules! pointer {
     {
         name: $name:expr,
         cache_address: $cache:expr,
-        tags_address: $tags:expr
+        tag_address: $tag:expr
     } => {
         crate::util::PointerProvider {
             name: $name,
             cache_address: $cache,
-            tags_address: $tags,
+            tag_address: $tag,
             phantom_data: core::marker::PhantomData
         }
     };
@@ -166,13 +166,13 @@ macro_rules! pointer {
         name: $name:expr,
         cache_address: $cache:expr
     } => {
-        pointer! { name: $name, cache_address: $cache, tags_address: 0 }
+        pointer! { name: $name, cache_address: $cache, tag_address: 0 }
     };
     {
         name: $name:expr,
-        tags_address: $tags:expr
+        tag_address: $tag:expr
     } => {
-        pointer! { name: $name, cache_address: 0, tags_address: $tags }
+        pointer! { name: $name, cache_address: 0, tag_address: $tag }
     };
 }
 
@@ -182,7 +182,7 @@ macro_rules! pointer {
 pub(crate) struct PointerProvider<T: Sized> {
     pub name: &'static str,
     pub cache_address: usize,
-    pub tags_address: usize,
+    pub tag_address: usize,
     pub phantom_data: PhantomData<T>
 }
 impl<T: Sized> PointerProvider<T> {
@@ -192,7 +192,7 @@ impl<T: Sized> PointerProvider<T> {
         let exe_type = get_exe_type();
         let address = match exe_type {
             ExeType::Cache => self.cache_address,
-            ExeType::Tag => self.tags_address
+            ExeType::Tag => self.tag_address
         };
 
         if address == 0 {
