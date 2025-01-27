@@ -30,3 +30,4 @@ mod player;
 mod object;
 mod draw_string;
 mod motion_sensor;
+mod bink;

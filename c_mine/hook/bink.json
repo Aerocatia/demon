@@ -1,0 +1,7 @@
+{
+    "bink_playback_active": {
+        "cache": "0x00401267",
+        "tag": "0x00401131",
+        "replacement": "crate::bink::bink_playback_active"
+    }
+}
