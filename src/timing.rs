@@ -1,6 +1,8 @@
 use core::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use windows_sys::Win32::Foundation::TRUE;
 use windows_sys::Win32::System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency};
+use c_mine::c_mine;
+use crate::util::VariableProvider;
 
 #[derive(Default, Copy, Clone, Debug, PartialEq)]
 #[repr(transparent)]
@@ -66,7 +68,7 @@ impl FixedTimer {
     ///
     /// Panics if `delay` is non-positive.
     pub const fn new(delay: f64, max_ticks_behind: u16) -> Self {
-        assert!(delay > 0.0);
+        assert!(delay > 0.0, "FixedTimer::new with non-positive delay");
         Self {
             last_update: AtomicI64::new(0),
             guard: AtomicBool::new(false),
@@ -128,4 +130,29 @@ impl FixedTimer {
     fn unlock(&self) {
         assert!(self.guard.swap(false, Ordering::Relaxed), "FixedTimer::unlock when not locked...");
     }
+}
+
+#[repr(C)]
+pub struct GameTimeGlobals {
+    pub initialized: u8,
+    pub active: u8,
+    pub _unknown_0x2: u16,
+    pub _unknown_0x4: u32,
+    pub _unknown_0x8: u32,
+    pub game_time: u32
+}
+
+const _: () = assert!(size_of::<GameTimeGlobals>() == 0x10);
+
+pub const GAME_TIME_GLOBALS: VariableProvider<Option<&GameTimeGlobals>> = variable! {
+    name: "game_time_globals",
+    cache_address: 0x00C5913C,
+    tag_address: 0x00D106F4
+};
+
+#[c_mine]
+pub unsafe extern "C" fn game_time_get() -> u32 {
+    let globals = GAME_TIME_GLOBALS.get().expect("game_time_get with null game_time_globals");
+    assert!(globals.initialized == 1, "game_time_globals with uninitialized game_time_globals");
+    globals.game_time
 }

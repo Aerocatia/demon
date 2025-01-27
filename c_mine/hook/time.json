@@ -1,0 +1,7 @@
+{
+    "game_time_get": {
+        "cache": "0x00404CC8",
+        "tag": "0x00404025",
+        "replacement": "crate::timing::game_time_get"
+    }
+}

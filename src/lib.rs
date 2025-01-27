@@ -29,3 +29,4 @@ mod crc32;
 mod player;
 mod object;
 mod draw_string;
+mod motion_sensor;

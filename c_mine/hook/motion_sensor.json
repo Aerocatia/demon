@@ -1,0 +1,7 @@
+{
+    "motion_sensor_tick": {
+        "cache": "0x00409C00",
+        "tag": "0x00408FD5",
+        "replacement": "crate::motion_sensor::motion_sensor_tick"
+    }
+}
