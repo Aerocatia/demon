@@ -57,7 +57,7 @@ pub fn write_to_file(path: &str, what: &[u8]) -> Result<(), &'static str> {
             return Err("Failed to open the file!");
         }
 
-        let result = WriteFile(file, what.as_ptr(), what.len() as u32, null_mut(), null_mut());
+        let result = WriteFile(file, what.as_ptr(), what.len() as u32, &mut 0, null_mut());
 
         CloseHandle(file);
 
