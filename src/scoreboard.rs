@@ -1,5 +1,5 @@
 use c_mine::c_mine;
-use crate::timing::FixedTimer;
+use crate::timing::{FixedTimer, TICK_RATE};
 use crate::util::{PointerProvider, VariableProvider};
 
 const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = variable! {
@@ -29,7 +29,7 @@ const RULES_FADE: VariableProvider<f32> = variable! {
 
 #[c_mine]
 pub unsafe extern "C" fn game_engine_post_rasterize() {
-    static TIMER: FixedTimer = FixedTimer::new(1.0 / 30.0, 30);
+    static TIMER: FixedTimer = FixedTimer::new(1.0 / TICK_RATE, 30);
 
     if GAME_ENGINE.get().is_none() {
         return

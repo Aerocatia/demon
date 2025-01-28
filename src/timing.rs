@@ -4,6 +4,13 @@ use windows_sys::Win32::System::Performance::{QueryPerformanceCounter, QueryPerf
 use c_mine::c_mine;
 use crate::util::VariableProvider;
 
+/// The base tick rate of the game's engine (before `game_speed`).
+///
+/// # Regret
+///
+/// Changing this value leads to regret.
+pub const TICK_RATE: f64 = 30.0;
+
 #[derive(Default, Copy, Clone, Debug, PartialEq)]
 #[repr(transparent)]
 pub struct PerformanceCounter {
@@ -149,6 +156,9 @@ impl FixedTimer {
     }
 }
 
+/// Use for things that should NOT be tied to the game's tick rate.
+///
+/// If something ought to be tied to the tick rate, use `get_game_time_fractional()` instead.
 pub struct InterpolatedTimer {
     delay: AtomicU64,
     start: AtomicU64
@@ -207,18 +217,21 @@ impl InterpolatedTimer {
 }
 
 
-
 #[repr(C)]
 pub struct GameTimeGlobals {
     pub initialized: u8,
     pub active: u8,
-    pub _unknown_0x2: u16,
-    pub _unknown_0x4: u32,
-    pub _unknown_0x8: u32,
-    pub game_time: u32
+    pub _unknown_0x02: u16,
+    pub _unknown_0x04: u32,
+    pub _unknown_0x08: u32,
+    pub game_time: u32,
+    pub _unknown_0x10: u32,
+    pub _unknown_0x14: u32,
+    pub game_speed: f32,
+    pub time_since_last_tick: f32,
 }
 
-const _: () = assert!(size_of::<GameTimeGlobals>() == 0x10);
+const _: () = assert!(size_of::<GameTimeGlobals>() == 0x20);
 
 pub const GAME_TIME_GLOBALS: VariableProvider<Option<&GameTimeGlobals>> = variable! {
     name: "game_time_globals",
@@ -226,9 +239,24 @@ pub const GAME_TIME_GLOBALS: VariableProvider<Option<&GameTimeGlobals>> = variab
     tag_address: 0x00D106F4
 };
 
+/// Returns a tuple containing the number of ticks as well as a fractional part.
+///
+/// For example, it may return (30, 0.5) which means 30 and a half ticks.
+///
+/// The fractional part can be used for interpolation.
+///
+/// # Panics
+///
+/// Panics if `game_time_globals` has not yet been initialized.
+pub unsafe fn get_game_time_fractional() -> (u32, f32) {
+    let globals = GAME_TIME_GLOBALS.get().expect("get_game_time_fractional with null game_time_globals");
+    assert_eq!(globals.initialized, 1, "get_game_time_fractional with uninitialized game_time_globals");
+    (globals.game_time, (globals.time_since_last_tick * (TICK_RATE as f32) * globals.game_speed).clamp(0.0, 1.0))
+}
+
 #[c_mine]
 pub unsafe extern "C" fn game_time_get() -> u32 {
     let globals = GAME_TIME_GLOBALS.get().expect("game_time_get with null game_time_globals");
-    assert!(globals.initialized == 1, "game_time_globals with uninitialized game_time_globals");
+    assert_eq!(globals.initialized, 1, "game_time_globals with uninitialized game_time_globals");
     globals.game_time
 }

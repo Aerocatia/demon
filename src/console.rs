@@ -2,7 +2,7 @@ use c_mine::c_mine;
 use crate::id::ID;
 use crate::math::{ColorARGB, ColorRGB};
 use crate::memory::table::DataTable;
-use crate::timing::FixedTimer;
+use crate::timing::{FixedTimer, TICK_RATE};
 use crate::util::{PointerProvider, VariableProvider};
 
 pub const ERROR_WAS_SET: VariableProvider<u8> = variable! {
@@ -145,7 +145,7 @@ const TERMINAL_OUTPUT_TABLE: VariableProvider<Option<&mut TerminalOutputTable>> 
 };
 
 const LIMIT_TICKS: u32 = 150;
-const CONSOLE_FADE_FRAME_RATE: f64 = 30.0;
+const CONSOLE_FADE_FRAME_RATE: f64 = TICK_RATE;
 
 /// Fades all terminal output
 ///
