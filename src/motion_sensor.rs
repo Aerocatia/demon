@@ -1,5 +1,5 @@
 use c_mine::c_mine;
-use crate::timing::{game_time_get, FixedTimer};
+use crate::timing::{FixedTimer, InterpolatedTimer};
 use crate::util::{PointerProvider, VariableProvider};
 
 pub const MOTION_SENSOR_SWEEPER_THING: VariableProvider<f32> = variable! {
@@ -20,18 +20,38 @@ const MOTION_SENSOR_BLIPS: PointerProvider<unsafe extern "C" fn()> = pointer! {
     tag_address: 0x006493C0
 };
 
-#[c_mine]
-pub unsafe extern "C" fn motion_sensor_tick() {
-    static BLIP_TIMER: FixedTimer = FixedTimer::new(1.0 / 30.0, 1);
+unsafe fn motion_sensor_sweeper_tick() {
+    /// Equal to 2.1 * 30
+    const MOTION_SENSOR_SWEEP_CYCLE_TICKS: u64 = 63;
 
-    let time = game_time_get.get()() as f32;
-    let modulus = (time / 30.0) % 2.1;
+    static SWEEPER_TIMER: InterpolatedTimer = InterpolatedTimer::new(1.0 / 30.0);
+
+    let (time, offset) = SWEEPER_TIMER.value();
+
+    // FIX: The original math does ((float)time / 30.0) % 2.1, but this is susceptible to floating
+    // point rounding errors.
+    //
+    // The code below is changed to do integer modulo of 2.1*30 (63) before doing floating point
+    // math.
+    //
+    // We also use InterpolatedTimer so that the blip will update at any frame rate, not just 30.
+    let sweeper_state = (time % MOTION_SENSOR_SWEEP_CYCLE_TICKS) as f32 + offset as f32;
+    let modulus = sweeper_state / 30.0;
     if modulus >= 2.0375 {
         *MOTION_SENSOR_SWEEPER_SIZE.get_mut() = 0.4
     }
     else {
         *MOTION_SENSOR_SWEEPER_SIZE.get_mut() = 1.0 / ((modulus + 0.0625) * *MOTION_SENSOR_SWEEPER_THING.get())
     }
+}
 
+unsafe fn motion_sensor_blip_tick() {
+    static BLIP_TIMER: FixedTimer = FixedTimer::new(1.0 / 30.0, 4);
     BLIP_TIMER.run(|| MOTION_SENSOR_BLIPS.get()());
+}
+
+#[c_mine]
+pub unsafe extern "C" fn motion_sensor_tick() {
+    motion_sensor_sweeper_tick();
+    motion_sensor_blip_tick();
 }

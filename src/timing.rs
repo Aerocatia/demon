@@ -1,4 +1,4 @@
-use core::sync::atomic::{AtomicBool, AtomicI64, Ordering};
+use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use windows_sys::Win32::Foundation::TRUE;
 use windows_sys::Win32::System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency};
 use c_mine::c_mine;
@@ -7,7 +7,7 @@ use crate::util::VariableProvider;
 #[derive(Default, Copy, Clone, Debug, PartialEq)]
 #[repr(transparent)]
 pub struct PerformanceCounter {
-    pub counter: i64
+    pub counter: u64
 }
 impl PerformanceCounter {
     pub fn now() -> Self {
@@ -16,10 +16,22 @@ impl PerformanceCounter {
         // SAFETY: Points to a correct i64
         let success = unsafe { QueryPerformanceCounter(&mut counter) };
         assert_eq!(success, TRUE, "QueryPerformanceCounter error!");
-        Self { counter }
+
+        Self { counter: u64::try_from(counter).expect("QueryPerformanceCounter returned a negative counter!") }
     }
+
+    /// # Panics
+    ///
+    /// Panics if `self.counter` > `i64::MAX as u64` or `when.counter` > `i64::MAX as u64`
     pub fn time_since(self, when: PerformanceCounter) -> PerformanceCounterDelta {
-        let counter = self.counter - when.counter;
+        let Ok(self_counter) = i64::try_from(self.counter) else {
+            panic!("self.counter overflows an i64");
+        };
+        let Ok(when_counter) = i64::try_from(when.counter) else {
+            panic!("when.counter overflows an i64");
+        };
+
+        let counter = self_counter - when_counter;
         PerformanceCounterDelta { counter }
     }
 }
@@ -38,20 +50,25 @@ impl PerformanceCounterDelta {
         let frequency = Self::get_frequency();
         Self { counter: (frequency as f64 * sec) as i64 }
     }
-    fn get_frequency() -> i64 {
+    fn get_frequency() -> u64 {
         let mut frequency = 0i64;
 
         // SAFETY: Points to a correct i64
         let success = unsafe { QueryPerformanceFrequency(&mut frequency) };
         assert_eq!(success, TRUE, "QueryPerformanceFrequency error!");
-
-        frequency
+        assert!(frequency > 0, "QueryPerformanceFrequency returned a non-positive frequency! {frequency}");
+        frequency as u64
     }
 }
 
 /// Primitive for un-tying things from frame rate.
+///
+/// This is a band-aid solution that will break if frame time is higher than half of `delay`. Things
+/// that use this should eventually do ONE of the following:
+/// - Move to the tick loop (i.e. the 30 Hz loop that's also configurable with game_speed)
+/// - Be properly interpolated by a fixed rate (e.g. `InterpolatedTimer`)
 pub struct FixedTimer {
-    last_update: AtomicI64,
+    last_update: AtomicU64,
     guard: AtomicBool,
     max_ticks_behind: u16,
     delay: f64
@@ -70,7 +87,7 @@ impl FixedTimer {
     pub const fn new(delay: f64, max_ticks_behind: u16) -> Self {
         assert!(delay > 0.0, "FixedTimer::new with non-positive delay");
         Self {
-            last_update: AtomicI64::new(0),
+            last_update: AtomicU64::new(0),
             guard: AtomicBool::new(false),
             max_ticks_behind,
             delay
@@ -86,13 +103,13 @@ impl FixedTimer {
         }
 
         let tick_length = PerformanceCounterDelta::from_seconds(self.delay);
-        assert!(tick_length.counter > 0, "delta is 0 when calculated...");
+        let tick_length_counter = tick_length.counter as u64;
 
         let now = PerformanceCounter::now();
         let last_update_get = self.last_update.load(Ordering::Relaxed);
         let last_update_counter = PerformanceCounter { counter: last_update_get };
 
-        let iterations = (now.counter - last_update_counter.counter) / tick_length.counter;
+        let iterations = (now.counter - last_update_counter.counter) / tick_length_counter;
 
         if iterations <= 0 {
             self.unlock();
@@ -100,12 +117,12 @@ impl FixedTimer {
         }
 
         let new_value;
-        let max_backlog = self.max_ticks_behind as i64 + 1;
+        let max_backlog = self.max_ticks_behind as u64 + 1;
         if iterations > max_backlog {
-            new_value = now.counter - (max_backlog * tick_length.counter);
+            new_value = now.counter - (max_backlog * tick_length_counter);
         }
         else {
-            new_value = last_update_get + tick_length.counter;
+            new_value = last_update_get + tick_length_counter;
         }
 
         self.last_update.store(new_value, Ordering::Relaxed);
@@ -131,6 +148,65 @@ impl FixedTimer {
         assert!(self.guard.swap(false, Ordering::Relaxed), "FixedTimer::unlock when not locked...");
     }
 }
+
+pub struct InterpolatedTimer {
+    delay: AtomicU64,
+    start: AtomicU64
+}
+impl InterpolatedTimer {
+    /// Instantiate a new timer.
+    ///
+    /// `delay` is the number of seconds between ticks.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `delay` is non-positive.
+    pub const fn new(delay: f64) -> Self {
+        assert!(delay > 0.0, "InterpolatedTimer::new with non-positive delay");
+        Self {
+            start: AtomicU64::new(0),
+            delay: AtomicU64::new(delay.to_bits())
+        }
+    }
+
+    /// Get the current tick rate.
+    pub fn value(&self) -> (u64, f64) {
+        let now = PerformanceCounter::now();
+        let start = self.start.load(Ordering::Relaxed);
+        let start_counter = PerformanceCounter { counter: start };
+
+        let tick_length = PerformanceCounterDelta::from_seconds(self.get_delay());
+
+        let Some(delta) = now.counter.checked_sub(start_counter.counter) else {
+            panic!("InterpolatedTimer went backwards! (now: {}, start: {})", now.counter, start_counter.counter);
+        };
+
+        let tick_count = delta / (tick_length.counter as u64);
+        let tick_progress = delta % (tick_length.counter as u64);
+        let tick_progress_float = tick_progress as f64 / (tick_length.counter as f64);
+
+        (tick_count, tick_progress_float)
+    }
+
+    /// Start the timer.
+    pub fn start(&self) {
+        self.start.store(PerformanceCounter::now().counter, Ordering::Relaxed);
+    }
+
+    /// Get the delay of the timer.
+    #[inline(always)]
+    pub fn get_delay(&self) -> f64 {
+        f64::from_bits(self.delay.load(Ordering::Relaxed))
+    }
+
+    /// Set the delay of the timer.
+    #[inline(always)]
+    pub fn set_delay(&self, new_delay: f64) {
+        self.delay.store(new_delay.to_bits(), Ordering::Relaxed)
+    }
+}
+
+
 
 #[repr(C)]
 pub struct GameTimeGlobals {
