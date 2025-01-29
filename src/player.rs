@@ -13,6 +13,39 @@ pub type PlayerID = ID<PLAYER_ID_SALT>;
 pub const MAXIMUM_NUMBER_OF_LOCAL_PLAYERS: usize = 1;
 pub const MAXIMUM_NUMBER_OF_PLAYERS: usize = 16;
 
+#[repr(u16)]
+pub enum PlayerControlsAction {
+    Jump,
+    SwitchGrenade,
+    Action,
+    SwitchWeapon,
+    MeleeAttack,
+    Flashlight,
+    ThrowGrenade,
+    FireWeapon,
+    MenuAccept,
+    MenuBack,
+    Crouch,
+    ScopeZoom,
+    ShowScores,
+    Reload,
+    ExchangeWeapon,
+    Say,
+    SayToTeam,
+    SayToVehicle,
+    Screenshot,
+    MoveForward,
+    MoveBackward,
+    MoveLeft,
+    MoveRight,
+    LookUp,
+    LookDown,
+    LookLeft,
+    LookRight,
+    ShowRules,
+    ShowPlayerNames,
+}
+
 pub const PLAYER_CONTROLS: VariableProvider<Option<&mut PlayerControlTable>> = variable! {
     name: "PLAYER_CONTROLS",
     cache_address: 0x00C59620,

@@ -164,6 +164,13 @@ pub struct InterpolatedTimer {
     start: AtomicU64
 }
 impl InterpolatedTimer {
+    /// Instantiate a new timer with each tick being one second.
+    ///
+    /// This is the default timer.
+    pub const fn second_timer() -> Self {
+        Self::new(1.0)
+    }
+
     /// Instantiate a new timer.
     ///
     /// `delay` is the number of seconds between ticks.
@@ -222,6 +229,12 @@ impl InterpolatedTimer {
         let start = PerformanceCounter { counter: self.start.load(Ordering::Relaxed) };
         let now = PerformanceCounter::now();
         now.time_since(start).seconds()
+    }
+}
+
+impl Default for InterpolatedTimer {
+    fn default() -> Self {
+        Self::second_timer()
     }
 }
 
