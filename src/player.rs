@@ -90,7 +90,7 @@ struct PlayerGlobals {
 }
 const _: () = assert!(size_of::<PlayerGlobals>() == 0x98);
 
-const PLAYERS_TABLE: VariableProvider<Option<&mut DataTable<[u8; 0x1F4], PLAYER_ID_SALT>>> = variable! {
+pub const PLAYERS_TABLE: VariableProvider<Option<&mut DataTable<[u8; 0x1F4], PLAYER_ID_SALT>>> = variable! {
     name: "PLAYERS_TABLE",
     cache_address: 0x00C59150,
     tag_address: 0x00D1070C
@@ -101,6 +101,16 @@ const PLAYER_GLOBALS: VariableProvider<Option<&mut PlayerGlobals>> = variable! {
     cache_address: 0x00C59158,
     tag_address: 0x00D10708
 };
+
+const LOCAL_PLAYER_INDEX: VariableProvider<u16> = variable! {
+    name: "LOCAL_PLAYER_INDEX",
+    cache_address: 0x00ECFE00,
+    tag_address: 0x00F873C0
+};
+
+pub unsafe fn get_local_player_index() -> u16 {
+    *LOCAL_PLAYER_INDEX.get()
+}
 
 #[c_mine]
 pub unsafe extern "C" fn player_control_get(index: u16) -> &'static mut PlayerControl {

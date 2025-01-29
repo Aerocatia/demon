@@ -2,12 +2,12 @@
     "game_engine_post_rasterize": {
         "tag": "0x00404F5C",
         "cache": "0x00405EED",
-        "replacement": "crate::scoreboard::game_engine_post_rasterize"
+        "replacement": "crate::rasterizer::scoreboard::game_engine_post_rasterize"
     },
     "game_engine_nonplayer_post_rasterize": {
         "cache": "0x00403FD0",
         "tag": "0x004031D4",
-        "replacement": "crate::scoreboard::game_engine_nonplayer_post_rasterize"
+        "replacement": "crate::rasterizer::scoreboard::game_engine_nonplayer_post_rasterize"
     },
     "game_engine_post_rasterize_post_game": {
         "cache": "0x00404089",
@@ -17,6 +17,19 @@
     "game_engine_post_rasterize_scoreboard": {
         "cache": "0x005A4360",
         "tag": "0x005AA4C0",
+        "replacement": "forbid",
+        "sudo": true
+    },
+    "draw_scoreboard_screen": {
+        "cache": "0x005ABBB0",
+        "tag": "0x005B1D10",
+        "sudo": true,
+        "replacement": "original"
+    },
+    "draw_game_rules_screen": {
+        "cache": "0x005A67A0",
+        "tag": "0x005AC900",
+        "sudo": true,
         "replacement": "original"
     }
 }

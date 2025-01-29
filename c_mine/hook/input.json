@@ -2,6 +2,11 @@
     "mouse_sensitivity": {
         "cache": "0x00403666",
         "tag": "0x004027A7",
-        "replacement": "crate::mouse::mouse_sensitivity"
+        "replacement": "crate::input::mouse::mouse_sensitivity"
+    },
+    "input_get_button_state": {
+        "cache": "0x0060B180",
+        "tag": "0x00611EB0",
+        "replacement": "original"
     }
 }

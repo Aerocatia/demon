@@ -1,7 +1,24 @@
+use num_enum::TryFromPrimitive;
 use c_mine::{c_mine, pointer_from_hook};
-use crate::scoreboard::GameEngineGlobalsMode;
 use crate::ui::close_all_ui_widgets;
 use crate::util::{PointerProvider, VariableProvider};
+
+#[derive(Copy, Clone, TryFromPrimitive, Debug, PartialEq)]
+#[repr(u32)]
+pub enum GameEngineGlobalsMode {
+    /// Game is in progress
+    Active = 0,
+
+    /// Game ended; scoreboard is shown
+    PostgameDelay = 1,
+
+    /// Postgame Carnage Report without buttons
+    PostgameRasterizeDelay = 2,
+
+    // unknown what the original name was
+    /// Postgame Carnage Report with buttons
+    PostgameRasterize = 3
+}
 
 #[c_mine]
 pub unsafe extern "C" fn game_engine_end_game() {

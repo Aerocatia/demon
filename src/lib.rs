@@ -11,6 +11,7 @@ extern crate alloc;
 mod util;
 #[macro_use]
 mod console;
+mod input;
 
 mod allocator;
 mod panic;
@@ -19,8 +20,6 @@ mod tag;
 mod id;
 mod memory;
 mod timing;
-mod mouse;
-mod scoreboard;
 mod math;
 mod script;
 mod string;
@@ -33,3 +32,4 @@ mod motion_sensor;
 mod bink;
 mod multiplayer;
 mod ui;
+mod rasterizer;

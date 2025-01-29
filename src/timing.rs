@@ -214,6 +214,15 @@ impl InterpolatedTimer {
     pub fn set_delay(&self, new_delay: f64) {
         self.delay.store(new_delay.to_bits(), Ordering::Relaxed)
     }
+
+    /// Get the number of seconds.
+    #[inline(always)]
+    pub fn seconds(&self) -> f64 {
+        let (ticks, fraction) = self.value();
+        let start = PerformanceCounter { counter: self.start.load(Ordering::Relaxed) };
+        let now = PerformanceCounter::now();
+        now.time_since(start).seconds()
+    }
 }
 
 
