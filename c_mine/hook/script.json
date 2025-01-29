@@ -40,5 +40,10 @@
         "cache": "0x00603800",
         "replacement": "crate::script::hs_global_get_value",
         "sudo": true
+    },
+    "hs_enumerate_add_result": {
+        "tag": "0x005FD350",
+        "cache": "0x005F6A10",
+        "replacement": "original"
     }
 }

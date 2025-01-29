@@ -1,3 +1,4 @@
+use num_enum::TryFromPrimitive;
 use c_mine::c_mine;
 use crate::timing::{FixedTimer, TICK_RATE};
 use crate::util::{PointerProvider, VariableProvider};
@@ -9,7 +10,7 @@ const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = variable! {
 };
 
 // 1 = game_engine_mode_postgame_delay
-const GAME_ENGINE_GLOBALS_MODE: VariableProvider<u32> = variable! {
+pub const GAME_ENGINE_GLOBALS_MODE: VariableProvider<u32> = variable! {
     name: "game_engine_globals.mode",
     cache_address: 0x00C56FDC,
     tag_address: 0x00D0E594
@@ -27,6 +28,17 @@ const RULES_FADE: VariableProvider<f32> = variable! {
     tag_address: 0x00D0E59C
 };
 
+#[derive(Copy, Clone, TryFromPrimitive, Debug)]
+#[repr(u32)]
+pub enum GameEngineGlobalsMode {
+    Active = 0,
+    PostgameDelay = 1,
+    PostgameRasterizeDelay = 2,
+
+    // unknown what the original name was
+    PostgameRasterize = 3
+}
+
 #[c_mine]
 pub unsafe extern "C" fn game_engine_post_rasterize() {
     static TIMER: FixedTimer = FixedTimer::new(1.0 / TICK_RATE, 30);
@@ -38,8 +50,8 @@ pub unsafe extern "C" fn game_engine_post_rasterize() {
     let old_scoreboard_value = *SCOREBOARD_FADE.get();
     let old_rules_value = *RULES_FADE.get();
 
-    match *GAME_ENGINE_GLOBALS_MODE.get() {
-        0 | 1 => {
+    match GameEngineGlobalsMode::try_from(*GAME_ENGINE_GLOBALS_MODE.get()).expect("invalid game engine globals mode") {
+        GameEngineGlobalsMode::Active | GameEngineGlobalsMode::PostgameDelay => {
             const A: PointerProvider<extern "C" fn()> = pointer! {
                 name: "a",
                 cache_address: 0x005A4360,
@@ -47,15 +59,14 @@ pub unsafe extern "C" fn game_engine_post_rasterize() {
             };
             A.get()();
         },
-        2 | 3 => {
+        GameEngineGlobalsMode::PostgameRasterizeDelay | GameEngineGlobalsMode::PostgameRasterize => {
             const B: PointerProvider<extern "C" fn()> = pointer! {
                 name: "b",
                 cache_address: 0x00404089,
                 tag_address: 0x004032A6
             };
             B.get()();
-        },
-        n => panic!("game_engine_globals.mode is an unexpected value {n}")
+        }
     }
 
     // Evil hack to prevent tied to framerate memes that should be destroyed when this is decomped properly

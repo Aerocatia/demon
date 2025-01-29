@@ -1,4 +1,4 @@
-use c_mine::c_mine;
+use c_mine::{c_mine, pointer_from_hook};
 use crate::timing::{get_game_time_fractional, FixedTimer, TICK_RATE};
 use crate::util::{PointerProvider, VariableProvider};
 
@@ -12,12 +12,6 @@ pub const MOTION_SENSOR_SWEEPER_SIZE: VariableProvider<f32> = variable! {
     name: "MOTION_SENSOR_SWEEPER_SIZE",
     cache_address: 0x00C83914,
     tag_address: 0x00D3AEB0
-};
-
-const MOTION_SENSOR_BLIPS: PointerProvider<unsafe extern "C" fn()> = pointer! {
-    name: "MOTION_SENSOR_BLIPS",
-    cache_address: 0x00641B60,
-    tag_address: 0x006493C0
 };
 
 unsafe fn motion_sensor_sweeper_tick() {
@@ -44,8 +38,9 @@ unsafe fn motion_sensor_sweeper_tick() {
 }
 
 unsafe fn motion_sensor_blip_tick() {
+    const MOTION_SENSOR_BLIP_TICK: PointerProvider<unsafe extern "C" fn()> = pointer_from_hook!("motion_sensor_blip_tick");
     static BLIP_TIMER: FixedTimer = FixedTimer::new(1.0 / TICK_RATE, 4);
-    BLIP_TIMER.run(|| MOTION_SENSOR_BLIPS.get()());
+    BLIP_TIMER.run(|| MOTION_SENSOR_BLIP_TICK.get()());
 }
 
 #[c_mine]

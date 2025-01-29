@@ -34,6 +34,11 @@
         "cache": "0x004024EB",
         "replacement": "crate::memory::table::data_make_valid"
     },
+    "datum_new_at_index": {
+        "cache": "0x00406B86",
+        "tag": "0x00405BAA",
+        "replacement": "original"
+    },
     "data_delete_all": {
         "tag": "0x00407022",
         "cache": "0x00407E5f",

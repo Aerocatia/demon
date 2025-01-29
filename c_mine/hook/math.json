@@ -32,7 +32,7 @@
     "real_math_reset_precision": {
         "cache": "0x00409782",
         "tag": "0x00408B07",
-        "comment": "Calls '_control87(0x9001F,0xFFFFF);'",
+        "description": "Calls '_control87(0x9001F,0xFFFFF);'",
         "replacement": "original"
     }
 }

@@ -74,14 +74,29 @@ struct Hook {
 }
 
 #[proc_macro]
-pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
-    let mut tag_code = String::with_capacity(65536);
-    let mut cache_code = String::with_capacity(65536);
-    let mut forbidden_code = String::with_capacity(65536);
+pub fn pointer_from_hook(t: TokenStream) -> TokenStream {
+    let parsed: syn::LitStr = syn::parse(t).expect("expected a literal string");
+    let name = parsed.value();
+    let all_hooks = get_all_hooks();
+    let Some(hook) = all_hooks.get(&parsed.value()) else {
+        return format!("compile_error!(\"No such hook `{name}`\");").parse().expect(";-;")
+    };
 
-    let mut added = HashSet::new();
-    let mut added_tag = HashSet::new();
-    let mut added_cache = HashSet::new();
+    let cache = hook.cache.as_ref().map(String::as_str).unwrap_or("0x00000000");
+    let tag = hook.tag.as_ref().map(String::as_str).unwrap_or("0x00000000");
+
+    format!("
+pointer! {{
+    name: \"{name}\",
+    cache_address: {cache},
+    tag_address: {tag}
+}}").parse().expect(";-;")
+}
+
+fn get_all_hooks() -> HashMap<String, Hook> {
+    let mut hooks: HashMap<String, Hook> = HashMap::new();
+    let mut cache_addresses: HashSet<String> = HashSet::new();
+    let mut tag_addresses: HashSet<String> = HashSet::new();
 
     for i in std::fs::read_dir("c_mine/hook").expect("WHERE?").filter_map(|d| d.ok()) {
         let path = i.path();
@@ -90,63 +105,74 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
         }
         let data = std::fs::read(path).expect("failed to read hook JSON");
         let parsed: HashMap<String, Hook> = serde_json::from_slice(data.as_slice()).expect("failed to parse JSON");
-
         for (name, hook) in parsed {
-            let mut target = hook
-                .replacement
-                .as_str();
-
-            if target == "forbid" {
-                target = &name;
-                fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ panic!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
+            if hooks.contains_key(&name) {
+                panic!("Duplicate hook {name}")
             }
-
-            if target == "error" {
-                target = &name;
-                fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ error!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
+            if let Some(t) = hook.tags.as_ref() {
+                if tag_addresses.contains(t) {
+                    panic!("Duplicate tag build address {t}")
+                }
+                tag_addresses.insert(t.to_owned());
             }
-
-            if target == "nop" {
-                target = &name;
-                fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ }}")).expect(";-;");
+            if let Some(t) = hook.cache.as_ref() {
+                if cache_addresses.contains(t) {
+                    panic!("Duplicate cache build address {t}")
+                }
+                cache_addresses.insert(t.to_owned());
             }
-
-            if target == "original" {
-                continue
-            }
-
-            let write_fn = if hook.sudo == Some(true) {
-                "write_jmp"
-            }
-            else {
-                "overwrite_thunk"
-            };
-
             if hook.tags.is_some() {
                 panic!("{name} used tags! BUTTERFREE fainted!");
             }
+            hooks.insert(name, hook);
+        }
+    }
 
-            if let Some(tag) = hook.tag {
-                if added_tag.contains(&tag) {
-                    fmt::write(&mut forbidden_code, format_args!("{{ compile_error!(\"Duplicate tag addr {tag}\") }}")).expect(";-;");
-                    break;
-                }
-                fmt::write(&mut tag_code, format_args!("{write_fn}(\"{name}\", {tag} as *mut _, {target});")).expect("*sad Butterfree noises*");
-                added_tag.insert(tag);
-            }
-            if let Some(cache) = hook.cache {
-                if added_cache.contains(&cache) {
-                    fmt::write(&mut forbidden_code, format_args!("{{ compile_error!(\"Duplicate cache addr {cache}\") }}")).expect(";-;");
-                    break;
-                }
-                fmt::write(&mut cache_code, format_args!("{write_fn}(\"{name}\", {cache} as *mut _, {target});")).expect("*sad Butterfree noises*");
-                added_cache.insert(cache);
-            }
-            if added.contains(&name) {
-                fmt::write(&mut forbidden_code, format_args!("{{ compile_error!(\"Duplicate hook {name}\") }}")).expect(";-;");
-                break;
-            }
-            added.insert(name);
+    hooks
+}
+
+#[proc_macro]
+pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
+    let mut tag_code = String::with_capacity(65536);
+    let mut cache_code = String::with_capacity(65536);
+    let mut forbidden_code = String::with_capacity(65536);
+
+    for (name, hook) in get_all_hooks() {
+        let mut target = hook
+            .replacement
+            .as_str();
+
+        if target == "forbid" {
+            target = &name;
+            fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ panic!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
+        }
+
+        if target == "error" {
+            target = &name;
+            fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ error!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
+        }
+
+        if target == "nop" {
+            target = &name;
+            fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ }}")).expect(";-;");
+        }
+
+        if target == "original" {
+            continue
+        }
+
+        let write_fn = if hook.sudo == Some(true) {
+            "write_jmp"
+        }
+        else {
+            "overwrite_thunk"
+        };
+
+        if let Some(tag) = hook.tag {
+            fmt::write(&mut tag_code, format_args!("{write_fn}(\"{name}\", {tag} as *mut _, {target});")).expect("*sad Butterfree noises*");
+        }
+        if let Some(cache) = hook.cache {
+            fmt::write(&mut cache_code, format_args!("{write_fn}(\"{name}\", {cache} as *mut _, {target});")).expect("*sad Butterfree noises*");
         }
     }
 

@@ -1,7 +1,7 @@
 use core::ffi::{c_char, CStr};
 use core::mem::transmute;
 use core::ptr::null_mut;
-use c_mine::c_mine;
+use c_mine::{c_mine, pointer_from_hook};
 use crate::init::{get_exe_type, ExeType};
 use crate::memory::table::{data_make_valid, game_state_data_new, DataTable};
 use crate::tag::{global_scenario_get, Reflexive, String32, GLOBAL_SCENARIO_INDEX};
@@ -225,11 +225,7 @@ impl HSGlobal for ScenarioGlobal {
     }
 }
 
-const HS_ENUMERATE_ADD_RESULT: PointerProvider<unsafe extern "C" fn(what: *const u8)> = pointer! {
-    name: "hs_enumerate_add_result",
-    cache_address: 0x005F6A10,
-    tag_address: 0x005FD350
-};
+const HS_ENUMERATE_ADD_RESULT: PointerProvider<unsafe extern "C" fn(what: *const u8)> = pointer_from_hook!("hs_enumerate_add_result");
 
 #[c_mine]
 pub unsafe extern "C" fn hs_enumerate_globals() {
@@ -266,11 +262,7 @@ const HS_GLOBALS_TABLE: VariableProvider<Option<&mut DataTable<usize, 0x7368>>> 
     tag_address: 0x00D35404
 };
 
-const DATUM_NEW_AT_INDEX: PointerProvider<unsafe extern "C" fn(table: *mut DataTable<[u8; 0], 0>, index: u32) -> u32> = pointer! {
-    name: "datum_new_at_index",
-    cache_address: 0x00406B86,
-    tag_address: 0x00405bAA
-};
+const DATUM_NEW_AT_INDEX: PointerProvider<unsafe extern "C" fn(table: *mut DataTable<[u8; 0], 0>, index: u32) -> u32> = pointer_from_hook!("datum_new_at_index");
 
 const HS_EXTERNAL_GLOBALS_COUNT: VariableProvider<u16> = variable! {
     name: "HS_EXTERNAL_GLOBALS_COUNT",

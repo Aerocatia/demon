@@ -13,5 +13,30 @@
         "cache": "0x0040603C",
         "tag": "0x0040A0f6",
         "replacement": "crate::sound::main_menu_music::ui_main_menu_music_active"
+    },
+    "script_looping_sound_start": {
+        "cache": "0x0040912E",
+        "tag": "0x0040844F",
+        "replacement": "original"
+    },
+    "script_looping_sound_stop": {
+        "cache": "0x004025DB",
+        "tag": "0x0040AD30",
+        "replacement": "original"
+    },
+    "game_engine_play_multiplayer_sound": {
+        "cache": "0x00403846",
+        "tag": "0x004029C8",
+        "replacement": "original"
+    },
+    "ui_widgets_close_all": {
+        "cache": "0x00407937",
+        "tag": "0x00406A82",
+        "replacement": "original"
+    },
+    "game_engine_end_game": {
+        "cache": "0x005A6520",
+        "tag": "0x005AC680",
+        "replacement": "original"
     }
 }

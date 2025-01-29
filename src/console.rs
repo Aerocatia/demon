@@ -1,4 +1,4 @@
-use c_mine::c_mine;
+use c_mine::{c_mine, pointer_from_hook};
 use crate::id::ID;
 use crate::math::{ColorARGB, ColorRGB};
 use crate::memory::table::DataTable;
@@ -57,11 +57,7 @@ pub fn error_put_args(priority: ErrorPriority, fmt: core::fmt::Arguments) {
 }
 
 pub fn error_put_message(priority: ErrorPriority, error_bytes: &[u8]) {
-    const ERROR: PointerProvider<unsafe extern "C" fn(priority: i16, fmt: *const u8, arg: *const u8)> = pointer! {
-        name: "ERROR",
-        cache_address: 0x00408607,
-        tag_address: 0x0040785B
-    };
+    const ERROR: PointerProvider<unsafe extern "C" fn(priority: i16, fmt: *const u8, arg: *const u8)> = pointer_from_hook!("error");
 
     assert!(error_bytes.last() == Some(&0u8), "should be null-terminated");
 
@@ -103,11 +99,7 @@ pub fn console_put_args(color: Option<&ColorARGB>, fmt: core::fmt::Arguments) {
 }
 
 fn console_put_message(color: Option<&ColorARGB>, message_bytes: &[u8]) {
-    const CONSOLE_PRINTF: PointerProvider<unsafe extern "C" fn(color: Option<&ColorARGB>, fmt: *const u8, arg: *const u8)> = pointer! {
-        name: "CONSOLE_PRINTF",
-        cache_address: 0x0040917E,
-        tag_address: 0x0040A844
-    };
+    const CONSOLE_PRINTF: PointerProvider<unsafe extern "C" fn(color: Option<&ColorARGB>, fmt: *const u8, arg: *const u8)> = pointer_from_hook!("console_printf");
 
     assert!(message_bytes.last() == Some(&0u8), "should be null-terminated");
 
@@ -185,13 +177,8 @@ pub unsafe extern "C" fn terminal_update() {
         return
     }
 
-    const GET_CONSOLE_INPUT: PointerProvider<extern "C" fn()> = pointer! {
-        name: "GET_CONSOLE_INPUT",
-        cache_address: 0x00649720,
-        tag_address: 0x00650F80
-    };
-
-    GET_CONSOLE_INPUT.get()();
+    const POLL_CONSOLE_INPUT: PointerProvider<extern "C" fn()> = pointer_from_hook!("poll_console_input");
+    POLL_CONSOLE_INPUT.get()();
 
     let t = TERMINAL_OUTPUT_TABLE
         .get_mut()

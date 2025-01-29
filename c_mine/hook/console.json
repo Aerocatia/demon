@@ -13,5 +13,11 @@
         "cache": "0x004025F9",
         "tag": "0x00401BC7",
         "replacement": "crate::console::console_initialize"
+    },
+    "poll_console_input": {
+        "comment": "original function name is unknown",
+        "cache": "0x00649720",
+        "tag": "0x00650F80",
+        "replacement": "original"
     }
 }

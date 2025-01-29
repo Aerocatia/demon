@@ -3,5 +3,16 @@
         "cache": "0x00406C53",
         "tag": "0x00405C7C",
         "replacement": "crate::panic::gathering_exception_data"
+    },
+    "error": {
+        "cache": "0x00408607",
+        "tag": "0x0040785B",
+        "replacement": "original"
+    },
+    "console_printf": {
+        "comment": "This function is variadic. Rust functions cannot do this...",
+        "cache": "0x0040917E",
+        "tag": "0x0040A844",
+        "replacement": "original"
     }
 }
