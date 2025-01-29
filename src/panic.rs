@@ -308,7 +308,7 @@ pub unsafe extern "C" fn gathering_exception_data(pointers: &EXCEPTION_POINTERS)
     let _ = fmt::write(&mut register_dump, format_args!("- ESP: 0x{:08X}\n", context.Esp));
     let _ = fmt::write(&mut register_dump, format_args!("- EFlags: 0x{:08X}", context.EFlags));
 
-    panic!("Exception!\n\nCode:\n- 0x{code:08X}{error_kind}\n\nFlags:\n- {flags}\n\n{params}Address:{address_symbol_info}\n\nRegister dump:\n{register_dump}");
+    panic!("Exception!\n\nException code:\n- 0x{code:08X}{error_kind}\n\nException flags:\n- {flags}\n\n{params}Exception address:{address_symbol_info}\n\nException register dump:\n{register_dump}");
 }
 
 #[cfg(not(test))]
