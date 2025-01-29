@@ -9,12 +9,13 @@ use core::fmt;
 use core::mem::zeroed;
 use core::panic::PanicInfo;
 use core::ptr::{null, null_mut};
+use core::ops::Range;
 use core::sync::atomic::{AtomicBool, Ordering};
 use windows_sys::s;
 use windows_sys::Win32::Foundation;
 use windows_sys::Win32::Foundation::{GetLastError, HANDLE, HMODULE, TRUE};
 use windows_sys::Win32::System::Diagnostics::Debug::{RtlCaptureStackBackTrace, SymFromAddr, SymGetLineFromAddr64, SymInitialize, SymSetOptions, EXCEPTION_POINTERS, IMAGEHLP_LINE64, SYMBOL_INFO, SYMOPT_ALLOW_ABSOLUTE_SYMBOLS, SYMOPT_LOAD_ANYTHING, SYMOPT_LOAD_LINES};
-use windows_sys::Win32::System::ProcessStatus::GetModuleBaseNameA;
+use windows_sys::Win32::System::ProcessStatus::{EnumProcessModules, GetModuleBaseNameA, GetModuleInformation, MODULEINFO};
 use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess, TerminateProcess};
 use windows_sys::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK};
 
@@ -58,24 +59,40 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
         (full, brief.into_bytes())
     };
 
-    let mut bt_printed = false;
+    let process = GetCurrentProcess();
+    let enumerated_modules = enumerate_modules(process);
+
     let mut pointers = [null_mut(); u16::MAX as usize];
     let captured = RtlCaptureStackBackTrace(0, pointers.len() as u32, pointers.as_mut_ptr(), null_mut()) as usize;
-    let process = GetCurrentProcess();
 
+    fmt::write(&mut output_full, format_args!("\n\nBacktrace:")).ok()?;
     if initialize_sym_data(process) {
         let pointers = &pointers[..captured];
         for i in pointers.iter().copied() {
-            resolve_address_symbol_data(i as usize, &mut bt_printed, &mut output_full, process);
+            resolve_address_symbol_data(&enumerated_modules, i as usize, &mut output_full, process);
         }
     }
     else {
-        output_brief.extend_from_slice(b"\n\n(unable to load symbols)");
+        fmt::write(&mut output_full, format_args!("\n<no backtrace data due to an error>\n")).ok()?;
     }
 
-    output_full.push('\n');
+    fmt::write(&mut output_full, format_args!("\n\nLoaded modules:\n")).ok()?;
+    if let Some(m) = enumerated_modules.as_ref() {
+        for module in m {
+            let module_name = module.name();
+            if let Some(r) = &module.range {
+                fmt::write(&mut output_full, format_args!("- 0x{:08X}...0x{:08X}: {module_name}\n", r.start, r.end)).ok()?;
+            }
+            else {
+                fmt::write(&mut output_full, format_args!("- 0x{:08X} [GetModuleInformation() failed]: {module_name}\n", module.module as usize)).ok()?;
+            }
+        }
+    }
+    else {
+        fmt::write(&mut output_full, format_args!("...no module data\n")).ok();
+    }
 
-    let error_path = get_exe_dir() + "/demon-panic.txt";
+    let error_path = get_exe_dir() + "\\demon-panic.txt";
 
     match write_to_file(&error_path, output_full.as_bytes()) {
         Ok(_) => {
@@ -92,6 +109,63 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
     Some(output_brief)
 }
 
+struct EnumeratedModule {
+    name: [u8; 256],
+    module: HMODULE,
+    range: Option<Range<usize>>
+}
+impl EnumeratedModule {
+    fn name(&self) -> Cow<str> {
+        CStr::from_bytes_until_nul(&self.name)
+            .expect("must be null terminated")
+            .to_string_lossy()
+    }
+}
+
+unsafe fn enumerate_modules(process: HANDLE) -> Option<Vec<EnumeratedModule>> {
+    let mut modules: [HMODULE; 8192] = [null_mut(); 8192];
+    let mut actual_size = 0;
+    if EnumProcessModules(process, modules.as_mut_ptr(), size_of_val(&modules) as u32, &mut actual_size) != TRUE {
+        return None
+    }
+
+    let modules = &mut modules[..actual_size as usize / size_of::<HMODULE>()];
+    modules.sort();
+
+    let mut enumerated = Vec::with_capacity(modules.len());
+
+    for module in modules {
+        let mut module_name_bytes = [0u8; 256];
+        let module_name_length = GetModuleBaseNameA(
+            process,
+            *module,
+            module_name_bytes.as_mut_ptr(),
+            module_name_bytes.len() as u32 - 1
+        );
+        module_name_bytes[module_name_length as usize] = 0;
+
+        let mut module_info: MODULEINFO = zeroed();
+        let range = if GetModuleInformation(process, *module, &mut module_info, size_of_val(&module_info) as u32) == TRUE {
+            let start = module_info.lpBaseOfDll as usize;
+            let size = module_info.SizeOfImage as usize;
+            Some(start..start + size)
+        }
+        else {
+            None
+        };
+
+        let module_to_add = EnumeratedModule {
+            name: module_name_bytes,
+            module: *module,
+            range
+        };
+
+        enumerated.push(module_to_add);
+    }
+
+    Some(enumerated)
+}
+
 unsafe fn initialize_sym_data(process: HANDLE) -> bool {
     static SYM_DATA_LOADED: AtomicBool = AtomicBool::new(false);
     static SYM_DATA_RESULT: AtomicBool = AtomicBool::new(false);
@@ -103,7 +177,7 @@ unsafe fn initialize_sym_data(process: HANDLE) -> bool {
     SYM_DATA_RESULT.load(Ordering::Relaxed)
 }
 
-unsafe fn resolve_address_symbol_data(address: usize, bt_printed: &mut bool, output_full: &mut String, process: HANDLE) {
+unsafe fn resolve_address_symbol_data(enumerated_modules: &Option<Vec<EnumeratedModule>>, address: usize, output_full: &mut String, process: HANDLE) {
     const SYMBOL_LEN: usize = 2048;
     const NAME_LEN: usize = 512;
     let mut symbol_info: [u8; SYMBOL_LEN] = [0u8; SYMBOL_LEN];
@@ -113,11 +187,6 @@ unsafe fn resolve_address_symbol_data(address: usize, bt_printed: &mut bool, out
     let symbol_info_ref = &mut *symbol_info_ref;
     symbol_info_ref.MaxNameLen = NAME_LEN as u32;
     symbol_info_ref.SizeOfStruct = size_of_val(symbol_info_ref) as u32;
-
-    if !*bt_printed {
-        *bt_printed = true;
-        let _ = fmt::write(output_full, format_args!("\n\nBacktrace:"));
-    }
 
     let mut displacement = 0;
     let symbol = SymFromAddr(process, address as u64, &mut displacement, symbol_info_ref);
@@ -163,7 +232,16 @@ unsafe fn resolve_address_symbol_data(address: usize, bt_printed: &mut bool, out
         let _ = fmt::write(output_full, format_args!(" <no symbol>"));
     }
     else {
-        let _ = fmt::write(output_full, format_args!(" <no symbol> ({no_symbol_reason})"));
+        let _ = fmt::write(output_full, format_args!(" <no symbol due to error {no_symbol_reason}>"));
+    }
+
+    if symbol != TRUE {
+        if let Some(f) = enumerated_modules.as_ref().and_then(|m| m.iter().find(|m| m.range.clone().is_some_and(|r| r.contains(&address)))) {
+            let _ = fmt::write(output_full, format_args!(" ({})", f.name()));
+        }
+        else {
+            let _ = fmt::write(output_full, format_args!(" (can't get module)"));
+        }
     }
 }
 
@@ -214,7 +292,7 @@ pub unsafe extern "C" fn gathering_exception_data(pointers: &EXCEPTION_POINTERS)
 
     let process = GetCurrentProcess();
     if initialize_sym_data(process) {
-        resolve_address_symbol_data(address, &mut true, &mut address_symbol_info, process);
+        resolve_address_symbol_data(&enumerate_modules(process), address, &mut address_symbol_info, process);
     }
     else {
         let _ = fmt::write(&mut address_symbol_info, format_args!("\n0x{address:08X} (can't get any more info)"));
