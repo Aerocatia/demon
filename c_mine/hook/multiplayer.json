@@ -1,0 +1,8 @@
+{
+    "game_engine_end_game": {
+        "cache": "0x005A6520",
+        "tag": "0x005AC680",
+        "replacement": "crate::multiplayer::game_engine_end_game",
+        "sudo": true
+    }
+}

@@ -111,13 +111,13 @@ fn get_all_hooks() -> HashMap<String, Hook> {
             }
             if let Some(t) = hook.tags.as_ref() {
                 if tag_addresses.contains(t) {
-                    panic!("Duplicate tag build address {t}")
+                    panic!("Duplicate tag build address {t} ({name})")
                 }
                 tag_addresses.insert(t.to_owned());
             }
             if let Some(t) = hook.cache.as_ref() {
                 if cache_addresses.contains(t) {
-                    panic!("Duplicate cache build address {t}")
+                    panic!("Duplicate cache build address {t} ({name})")
                 }
                 cache_addresses.insert(t.to_owned());
             }

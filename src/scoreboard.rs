@@ -1,5 +1,6 @@
 use num_enum::TryFromPrimitive;
 use c_mine::c_mine;
+use crate::multiplayer::get_game_engine_globals_mode;
 use crate::timing::{FixedTimer, TICK_RATE};
 use crate::util::{PointerProvider, VariableProvider};
 
@@ -7,13 +8,6 @@ const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = variable! {
     name: "game_engine",
     cache_address: 0x00C56FF4,
     tag_address: 0x00D0E5AC
-};
-
-// 1 = game_engine_mode_postgame_delay
-pub const GAME_ENGINE_GLOBALS_MODE: VariableProvider<u32> = variable! {
-    name: "game_engine_globals.mode",
-    cache_address: 0x00C56FDC,
-    tag_address: 0x00D0E594
 };
 
 const SCOREBOARD_FADE: VariableProvider<f32> = variable! {
@@ -50,7 +44,7 @@ pub unsafe extern "C" fn game_engine_post_rasterize() {
     let old_scoreboard_value = *SCOREBOARD_FADE.get();
     let old_rules_value = *RULES_FADE.get();
 
-    match GameEngineGlobalsMode::try_from(*GAME_ENGINE_GLOBALS_MODE.get()).expect("invalid game engine globals mode") {
+    match get_game_engine_globals_mode() {
         GameEngineGlobalsMode::Active | GameEngineGlobalsMode::PostgameDelay => {
             const A: PointerProvider<extern "C" fn()> = pointer! {
                 name: "a",

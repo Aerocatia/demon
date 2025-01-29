@@ -33,10 +33,5 @@
         "cache": "0x00407937",
         "tag": "0x00406A82",
         "replacement": "original"
-    },
-    "game_engine_end_game": {
-        "cache": "0x005A6520",
-        "tag": "0x005AC680",
-        "replacement": "original"
     }
 }

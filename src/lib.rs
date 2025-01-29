@@ -31,3 +31,5 @@ mod object;
 mod draw_string;
 mod motion_sensor;
 mod bink;
+mod multiplayer;
+mod ui;
