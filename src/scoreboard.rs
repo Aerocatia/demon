@@ -1,5 +1,5 @@
 use num_enum::TryFromPrimitive;
-use c_mine::c_mine;
+use c_mine::{c_mine, pointer_from_hook};
 use crate::multiplayer::get_game_engine_globals_mode;
 use crate::timing::{FixedTimer, TICK_RATE};
 use crate::util::{PointerProvider, VariableProvider};
@@ -25,13 +25,22 @@ const RULES_FADE: VariableProvider<f32> = variable! {
 #[derive(Copy, Clone, TryFromPrimitive, Debug)]
 #[repr(u32)]
 pub enum GameEngineGlobalsMode {
+    /// Game is in progress
     Active = 0,
+
+    /// Game ended; scoreboard is shown
     PostgameDelay = 1,
+
+    /// Postgame Carnage Report without buttons
     PostgameRasterizeDelay = 2,
 
     // unknown what the original name was
+    /// Postgame Carnage Report with buttons
     PostgameRasterize = 3
 }
+
+const GAME_ENGINE_POST_RASTERIZE_SCOREBOARD: PointerProvider<extern "C" fn()> = pointer_from_hook!("game_engine_post_rasterize_scoreboard");
+const GAME_ENGINE_POST_RASTERIZE_POST_GAME: PointerProvider<extern "C" fn()> = pointer_from_hook!("game_engine_post_rasterize_post_game");
 
 #[c_mine]
 pub unsafe extern "C" fn game_engine_post_rasterize() {
@@ -46,20 +55,11 @@ pub unsafe extern "C" fn game_engine_post_rasterize() {
 
     match get_game_engine_globals_mode() {
         GameEngineGlobalsMode::Active | GameEngineGlobalsMode::PostgameDelay => {
-            const A: PointerProvider<extern "C" fn()> = pointer! {
-                name: "a",
-                cache_address: 0x005A4360,
-                tag_address: 0x005AA4C0
-            };
-            A.get()();
+            GAME_ENGINE_POST_RASTERIZE_SCOREBOARD.get()();
         },
         GameEngineGlobalsMode::PostgameRasterizeDelay | GameEngineGlobalsMode::PostgameRasterize => {
-            const B: PointerProvider<extern "C" fn()> = pointer! {
-                name: "b",
-                cache_address: 0x00404089,
-                tag_address: 0x004032A6
-            };
-            B.get()();
+            // This branch will never be hit.
+            GAME_ENGINE_POST_RASTERIZE_POST_GAME.get()();
         }
     }
 
@@ -67,5 +67,15 @@ pub unsafe extern "C" fn game_engine_post_rasterize() {
     if !TIMER.test() {
         *SCOREBOARD_FADE.get_mut() = old_scoreboard_value;
         *RULES_FADE.get_mut() = old_rules_value;
+    }
+}
+
+#[c_mine]
+pub unsafe extern "C" fn game_engine_nonplayer_post_rasterize() {
+    match get_game_engine_globals_mode() {
+        GameEngineGlobalsMode::Active | GameEngineGlobalsMode::PostgameDelay => {},
+        GameEngineGlobalsMode::PostgameRasterizeDelay | GameEngineGlobalsMode::PostgameRasterize => {
+            GAME_ENGINE_POST_RASTERIZE_POST_GAME.get()();
+        }
     }
 }
