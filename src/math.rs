@@ -56,6 +56,12 @@ impl Vector3D {
     }
 }
 
+/// 1 world unit = 10 feet = 3.048 meters
+#[inline(always)]
+pub const fn world_units_to_meters(world_units: f32) -> f32 {
+    world_units * 3.048
+}
+
 #[c_mine]
 pub extern "C" fn is_valid_real(real: f32) -> bool {
     !real.is_nan()
