@@ -68,7 +68,9 @@ struct Hook {
     pub tag: Option<String>,
     pub cache: Option<String>,
     pub replacement: Option<String>,
-    pub sudo: Option<bool>
+    pub sudo: Option<bool>,
+
+    pub tags: Option<String>
 }
 
 #[proc_macro]
@@ -104,6 +106,10 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
             else {
                 "overwrite_thunk"
             };
+
+            if hook.tags.is_some() {
+                panic!("{name} used tags! BUTTERFREE fainted!");
+            }
 
             if let Some(tag) = hook.tag {
                 if added_tag.contains(&tag) {

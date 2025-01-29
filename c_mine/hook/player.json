@@ -1,7 +1,12 @@
 {
     "player_control_get": {
-        "tags": "0x00403F6C",
+        "tag": "0x00403F6C",
         "cache": "0x00404C23",
         "replacement": "crate::player::player_control_get"
+    },
+    "local_player_get_player_index": {
+        "tag": "0x0040821A",
+        "cache": "0x00408F17",
+        "replacement": "crate::player::local_player_get_player_index"
     }
 }

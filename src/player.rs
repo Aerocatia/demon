@@ -61,7 +61,33 @@ pub unsafe fn get_player_control(player_index: u16) -> &'static mut PlayerContro
     c
 }
 
+pub unsafe fn get_player_id(player_index: u16) -> PlayerID {
+    let Some(c) = PLAYER_GLOBALS.get().player_indices.get(player_index as usize) else {
+        panic!("local_player_get_player_index tried to get player index {player_index} when only {MAXIMUM_NUMBER_OF_LOCAL_PLAYERS} local players are supported")
+    };
+    *c
+}
+
+#[repr(C)]
+struct PlayerGlobals {
+    _unknown: u32,
+    player_indices: [PlayerID; MAXIMUM_NUMBER_OF_LOCAL_PLAYERS]
+}
+
+const PLAYER_GLOBALS: VariableProvider<&PlayerGlobals> = variable! {
+    name: "player_globals",
+    cache_address: 0x00C59158,
+    tag_address: 0x00D10708
+};
+
 #[c_mine]
 pub unsafe extern "C" fn player_control_get(index: u16) -> &'static mut PlayerControl {
     get_player_control(index)
+}
+#[c_mine]
+pub unsafe extern "C" fn local_player_get_player_index(player_index: u16) -> PlayerID {
+    if player_index == 0xFFFF {
+        return PlayerID::NULL
+    }
+    get_player_id(player_index)
 }
