@@ -67,7 +67,7 @@ pub fn c_mine(_: TokenStream, token_stream: TokenStream) -> TokenStream {
 struct Hook {
     pub tag: Option<String>,
     pub cache: Option<String>,
-    pub replacement: Option<String>,
+    pub replacement: String,
     pub sudo: Option<bool>,
 
     pub tags: Option<String>
@@ -92,12 +92,18 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
         let parsed: HashMap<String, Hook> = serde_json::from_slice(data.as_slice()).expect("failed to parse JSON");
 
         for (name, hook) in parsed {
-            let target = hook
+            let mut target = hook
                 .replacement
-                .as_ref()
-                .unwrap_or(&name);
-            if hook.replacement.is_none() {
+                .as_str();
+
+            if target == "forbid" {
+                target = &name;
                 fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ panic!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
+            }
+
+            if target == "nop" {
+                target = &name;
+                fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ }}")).expect(";-;");
             }
 
             let write_fn = if hook.sudo == Some(true) {

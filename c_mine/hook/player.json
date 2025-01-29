@@ -17,6 +17,6 @@
     "player_control_initialize": {
         "tag": "0x004067C1",
         "cache": "0x00407699",
-        "replacement": null
+        "replacement": "forbid"
     }
 }
