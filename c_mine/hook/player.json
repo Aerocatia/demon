@@ -8,5 +8,15 @@
         "tag": "0x0040821A",
         "cache": "0x00408F17",
         "replacement": "crate::player::local_player_get_player_index"
+    },
+    "players_initialize": {
+        "tag": "0x00406D07",
+        "cache": "0x00407B7B",
+        "replacement": "crate::player::players_initialize"
+    },
+    "player_control_initialize": {
+        "tag": "0x004067C1",
+        "cache": "0x00407699",
+        "replacement": null
     }
 }
