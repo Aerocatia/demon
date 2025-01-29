@@ -28,5 +28,11 @@
         "cache": "0x004011DB",
         "tag": "0x0040A259",
         "replacement": "crate::math::is_valid_argb_color"
+    },
+    "real_math_reset_precision": {
+        "cache": "0x00409782",
+        "tag": "0x00408B07",
+        "comment": "Calls '_control87(0x9001F,0xFFFFF);'",
+        "replacement": "original"
     }
 }

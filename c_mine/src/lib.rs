@@ -101,9 +101,18 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
                 fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ panic!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
             }
 
+            if target == "error" {
+                target = &name;
+                fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ error!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
+            }
+
             if target == "nop" {
                 target = &name;
                 fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ }}")).expect(";-;");
+            }
+
+            if target == "original" {
+                continue
             }
 
             let write_fn = if hook.sudo == Some(true) {
