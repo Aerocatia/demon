@@ -1,4 +1,5 @@
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use libm::powf;
 use c_mine::{c_mine, pointer_from_hook};
 use crate::input::INPUT_GET_BUTTON_STATE;
 use crate::multiplayer::{get_game_engine_globals_mode, GameEngineGlobalsMode};
@@ -78,10 +79,10 @@ unsafe fn game_engine_post_rasterize_scoreboard() {
 
     // These screens are mutually exclusive and should not be drawn together
     if scoreboard_fade > 0.0 {
-        DRAW_SCOREBOARD_SCREEN.get()(player_index, scoreboard_fade)
+        DRAW_SCOREBOARD_SCREEN.get()(player_index, powf(scoreboard_fade, 1.9))
     }
     else if game_rules_fade > 0.0 {
-        DRAW_GAME_RULES_SCREEN.get()(game_rules_fade)
+        DRAW_GAME_RULES_SCREEN.get()(powf(game_rules_fade, 1.9))
     }
 }
 
