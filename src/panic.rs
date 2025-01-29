@@ -42,7 +42,7 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
         fmt::write(&mut brief, format_args!("A fatal error occurred!\n\nMessage: {}", panic_info.message())).ok()?;
 
         if let Some(location) = panic_info.location() {
-            fmt::write(&mut brief, format_args!("\n\nPanic location: {location}")).ok()?;
+            fmt::write(&mut brief, format_args!("\n\nPanic location:\n- {location}")).ok()?;
         }
 
         let exe_type = match get_exe_type_if_available() {
@@ -51,7 +51,7 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
             None => "unknown (not fully loaded)"
         };
 
-        fmt::write(&mut brief, format_args!("\n\nEXE type: {exe_type}")).ok()?;
+        fmt::write(&mut brief, format_args!("\n\nEXE type:\n- {exe_type}")).ok()?;
 
         let mut full = String::with_capacity(4096);
         full += &brief;
@@ -192,7 +192,7 @@ unsafe fn resolve_address_symbol_data(enumerated_modules: &Option<Vec<Enumerated
     let symbol = SymFromAddr(process, address as u64, &mut displacement, symbol_info_ref);
     let no_symbol_reason = GetLastError();
 
-    let _ = fmt::write(output_full, format_args!("\n0x{:08X}", address));
+    let _ = fmt::write(output_full, format_args!("\n- 0x{:08X}", address));
     if symbol == TRUE {
         let name = core::slice::from_raw_parts(symbol_info_ref.Name.as_ptr() as *const u8, NAME_LEN);
         let Ok(name_cstr) = CStr::from_bytes_until_nul(name) else {
@@ -225,7 +225,7 @@ unsafe fn resolve_address_symbol_data(enumerated_modules: &Option<Vec<Enumerated
 
         let mut displacement = 0;
         if SymGetLineFromAddr64(process, address as u64, &mut displacement, &mut img) == TRUE {
-            let _ = fmt::write(output_full, format_args!("\n           ...in {}:{}", CStr::from_ptr(img.FileName as *const _).to_string_lossy(), img.LineNumber));
+            let _ = fmt::write(output_full, format_args!("\n             ...in {}:{}", CStr::from_ptr(img.FileName as *const _).to_string_lossy(), img.LineNumber));
         }
     }
     else if no_symbol_reason == 487 {
@@ -308,7 +308,7 @@ pub unsafe extern "C" fn gathering_exception_data(pointers: &EXCEPTION_POINTERS)
     let _ = fmt::write(&mut register_dump, format_args!("- ESP: 0x{:08X}\n", context.Esp));
     let _ = fmt::write(&mut register_dump, format_args!("- EFlags: 0x{:08X}", context.EFlags));
 
-    panic!("Exception!\n\nCode = 0x{code:08X}{error_kind}\n\nFlags: {flags}\n\n{params}Address:{address_symbol_info}\n\nRegister dump:\n{register_dump}");
+    panic!("Exception!\n\nCode:\n- 0x{code:08X}{error_kind}\n\nFlags:\n- {flags}\n\n{params}Address:{address_symbol_info}\n\nRegister dump:\n{register_dump}");
 }
 
 #[cfg(not(test))]
