@@ -1,14 +1,29 @@
-use c_mine::pointer_from_hook;
+use core::fmt::{Debug, Formatter};
+use num_enum::TryFromPrimitive;
+use c_mine::c_mine;
 use crate::id::ID;
 use crate::math::Vector3D;
+use crate::memory::table::DataTable;
 use crate::tag::TagID;
-use crate::util::{PointerProvider, VariableProvider};
+use crate::util::VariableProvider;
 
 pub mod weapon;
 
-pub const OBJECT_GET_AND_VERIFY_TYPE: PointerProvider<unsafe extern "C" fn(object_id: ObjectID, object_type_bitfield: ObjectTypes) -> *const [u8; 0]> = pointer_from_hook!("object_get_and_verify_type");
+const OBJECT_SALT: u16 = 0x626F;
 
-pub type ObjectID = ID<0x626F>;
+pub type ObjectID = ID<OBJECT_SALT>;
+
+#[repr(C)]
+pub struct ObjectIndex {
+    pub _unknown_0x0: u32,
+    pub object_data: *mut [u8; 0]
+}
+
+pub const OBJECT_TABLE: VariableProvider<Option<&mut DataTable<ObjectIndex, OBJECT_SALT>>> = variable! {
+    name: "OBJECT_TABLE",
+    cache_address: 0x00DED5A8,
+    tag_address: 0x00EA4B68
+};
 
 #[repr(transparent)]
 pub struct BaseDynamicObjectFlags(pub u32);
@@ -47,6 +62,50 @@ impl ObjectTypes {
     }
 }
 
+impl Debug for ObjectTypes {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        f.write_str("ObjectTypes [ ")?;
+        if self.contains(ObjectType::Biped) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::Biped))?;
+        }
+        if self.contains(ObjectType::Vehicle) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::Vehicle))?;
+        }
+        if self.contains(ObjectType::Weapon) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::Weapon))?;
+        }
+        if self.contains(ObjectType::Equipment) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::Equipment))?;
+        }
+        if self.contains(ObjectType::Garbage) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::Garbage))?;
+        }
+        if self.contains(ObjectType::Projectile) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::Projectile))?;
+        }
+        if self.contains(ObjectType::Scenery) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::Scenery))?;
+        }
+        if self.contains(ObjectType::DeviceMachine) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::DeviceMachine))?;
+        }
+        if self.contains(ObjectType::DeviceControl) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::DeviceControl))?;
+        }
+        if self.contains(ObjectType::DeviceLightFixture) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::DeviceLightFixture))?;
+        }
+        if self.contains(ObjectType::Placeholder) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::Placeholder))?;
+        }
+        if self.contains(ObjectType::SoundScenery) {
+            f.write_fmt(format_args!(" {:?}", ObjectType::SoundScenery))?;
+        }
+        f.write_str(" ]")?;
+        Ok(())
+    }
+}
+
 impl From<ObjectType> for ObjectTypes {
     fn from(value: ObjectType) -> Self {
         Self::from_single(value)
@@ -54,7 +113,7 @@ impl From<ObjectType> for ObjectTypes {
 }
 
 // TODO: Use definitions
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug, TryFromPrimitive)]
 #[repr(u16)]
 pub enum ObjectType {
     Biped,
@@ -68,7 +127,7 @@ pub enum ObjectType {
     DeviceControl,
     DeviceLightFixture,
     Placeholder,
-    SoundScenery
+    SoundScenery,
 }
 
 pub const GLOBAL_OBJECT_MARKER: VariableProvider<u32> = variable! {
@@ -91,4 +150,23 @@ pub struct BaseObject {
 
     pub position: Vector3D,
     pub velocity: Vector3D
+}
+
+#[c_mine]
+pub unsafe extern "C" fn object_get_and_verify_type(object_id: ObjectID, object_types: ObjectTypes) -> *mut [u8; 0] {
+    let object = OBJECT_TABLE
+        .get_mut()
+        .as_mut()
+        .expect("object_get_and_verify_type called with null object table")
+        .get_element(object_id)
+        .expect("object_get_and_verify_type could not get an object");
+
+    let data = object.item.object_data;
+    let data_usize = object.item.object_data as usize;
+    let object_type: ObjectType = (*(data.wrapping_byte_add(0x70) as *const u16))
+        .try_into()
+        .unwrap_or_else(|_| panic!("object_get_and_verify_type got object {object_id:?} @ 0x{data_usize:08X} which has an invalid object type"));
+
+    assert!(object_types.contains(object_type), "object_get_and_verify_type got object {object_id:?} @ 0x{data_usize:08X} which is {object_type:?}, not {object_types:?}");
+    object.item.object_data
 }

@@ -2,7 +2,7 @@
     "object_get_and_verify_type": {
         "cache": "0x00404AE3",
         "tag": "0x00403DF0",
-        "replacement": "original"
+        "replacement": "crate::object::object_get_and_verify_type"
     },
     "get_cheat_infinite_ammo": {
         "cache": "0x00405993",

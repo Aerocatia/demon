@@ -9,5 +9,10 @@
         "cache": "0x0040A493",
         "tag": "0x00409912",
         "replacement": "crate::multiplayer::server::update_server_game_time"
+    },
+    "death": {
+        "_tag": "0x00402586",
+        "_cache": "0x00403468",
+        "replacement": "crate::multiplayer::death"
     }
 }

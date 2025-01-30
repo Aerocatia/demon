@@ -1,5 +1,5 @@
 use c_mine::{c_mine, get_hs_global};
-use crate::object::{ObjectID, ObjectType, OBJECT_GET_AND_VERIFY_TYPE};
+use crate::object::{object_get_and_verify_type, ObjectID, ObjectType};
 
 #[c_mine]
 pub unsafe extern "C" fn get_weapon_age(object_id: ObjectID) -> f32 {
@@ -8,7 +8,7 @@ pub unsafe extern "C" fn get_weapon_age(object_id: ObjectID) -> f32 {
         return 0.0
     }
 
-    let object = OBJECT_GET_AND_VERIFY_TYPE.get()(object_id, ObjectType::Weapon.into());
+    let object = object_get_and_verify_type.get()(object_id, ObjectType::Weapon.into());
 
     // FIXME: define in a struct
     *(object.wrapping_byte_add(0x200) as *mut f32)
