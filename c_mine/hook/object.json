@@ -1,0 +1,17 @@
+{
+    "object_get_and_verify_type": {
+        "cache": "0x00404AE3",
+        "tag": "0x00403DF0",
+        "replacement": "original"
+    },
+    "get_cheat_infinite_ammo": {
+        "cache": "0x00405993",
+        "tag": "0x00404C64",
+        "replacement": "crate::object::weapon::get_cheat_infinite_ammo"
+    },
+    "get_weapon_age": {
+        "cache": "0x0040A362",
+        "tag": "0x004097CD",
+        "replacement": "crate::object::weapon::get_weapon_age"
+    }
+}

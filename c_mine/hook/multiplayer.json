@@ -2,7 +2,12 @@
     "game_engine_end_game": {
         "cache": "0x005A6520",
         "tag": "0x005AC680",
-        "replacement": "crate::multiplayer::game_engine_end_game",
+        "replacement": "crate::multiplayer::game_engine::game_engine_end_game",
         "sudo": true
+    },
+    "update_server_game_time": {
+        "cache": "0x0040A493",
+        "tag": "0x00409912",
+        "replacement": "crate::multiplayer::server::update_server_game_time"
     }
 }

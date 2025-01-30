@@ -1,11 +1,11 @@
 use crate::input::INPUT_GET_BUTTON_STATE;
-use crate::multiplayer::{get_game_engine_globals_mode, GameEngineGlobalsMode};
 use crate::player::{get_local_player_index, local_player_get_player_index, PlayerControlsAction, PlayerID};
 use crate::timing::InterpolatedTimer;
 use crate::util::{PointerProvider, VariableProvider};
 use c_mine::{c_mine, pointer_from_hook};
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use libm::powf;
+use crate::multiplayer::game_engine::{get_game_engine_globals_mode, GameEngineGlobalsMode};
 
 const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = variable! {
     name: "game_engine",

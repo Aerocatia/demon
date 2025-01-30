@@ -253,7 +253,7 @@
     {"name":"debug_input","type":"Boolean","address":"0x00F0AFB7"},
     {"name":"debug_permanent_decals","type":"Boolean","address":"0x00F0AFB0"},
     {"name":"debug_fog_planes","type":"Boolean","address":"0x00F44570"},
-    {"name":"decals","type":"Boolean","address":"0x00A1C900"},
+    {"name":"decals","type":"Boolean","address":"0x00A1C900","comment": "this was listed twice; the second time was after 'breakable_surfaces'"},
     {"name":"debug_decals","type":"Boolean","address":"0x00C4BF9C"},
     {"name":"debug_object_lights","type":"Boolean","address":"0x00DED688"},
     {"name":"debug_lights","type":"Boolean","address":"0x00DED689"},
@@ -266,7 +266,7 @@
     {"name":"debug_material_effects","type":"Boolean","address":"0x00C550B8"},
     {"name":"weather","type":"Boolean","address":"0x00A1D78C"},
     {"name":"breakable_surfaces","type":"Boolean","address":"0x00A35C64"},
-    {"name":"decals","type":"Boolean","address":"0x00A1C900"},
+
     {"name":"profile_graph","type":"Boolean","address":"0x00C838E1"},
     {"name":"profile_display","type":"Boolean","address":"0x00C838E0"},
     {"name":"profile_timebase_ticks","type":"Boolean","address":"0x00B02B51"},

@@ -182,43 +182,39 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
 
 #[proc_macro]
 pub fn generate_hs_external_globals_array(_: TokenStream) -> TokenStream {
-    #[derive(Deserialize)]
-    struct Entry {
-        name: String,
-        r#type: String,
-        address: String
-    }
+    let all_globals = get_all_globals();
 
-    let cache_json_data = include_bytes!("../globals/cache.json");
-    let tag_json_data = include_bytes!("../globals/tag.json");
-    let demon_json_data = include_bytes!("../globals/demon.json");
-
-    let cache_entries: Vec<Entry> = serde_json::from_slice(cache_json_data).expect("failed to parse cache globals list");
-    let tag_entries: Vec<Entry> = serde_json::from_slice(tag_json_data).expect("failed to parse tags globals list");
-    let demon_entries: Vec<Entry> = serde_json::from_slice(demon_json_data).expect("failed to parse demon globals list");
-
-    fn make_data(entries: Vec<Entry>) -> String {
+    fn make_data(entries: &HashMap<String, ExternalGlobal>, address_type: &str) -> String {
         let mut data = String::with_capacity(4096);
-        for i in entries {
-            let name = i.name;
-            let global_type = i.r#type;
-            let mut address = i.address;
+        for i in entries.values() {
+            let name = &i.name;
+            let global_type = &i.r#type;
+            let Some(address) = match address_type {
+                "demon" => &i.address_demon,
+                "tag" => &i.address_tag,
+                "cache" => &i.address_cache,
+                _ => unreachable!()
+            }.as_ref() else {
+                continue
+            };
+
+            fmt::write(&mut data, format_args!("ExternalGlobal::new(b\"{name}\\x00\", ScriptValueType::{global_type}, ")).expect(";-;");
 
             if !address.starts_with("0x") {
-                address = format!("unsafe {{ core::mem::transmute(&mut {address} as *mut _) }}")
+                fmt::write(&mut data, format_args!("unsafe {{ core::mem::transmute(&mut {address} as *mut _) }}")).expect(";-;");
             }
             else {
-                address = format!("{address} as *mut [u8; 0]")
+                fmt::write(&mut data, format_args!("{address} as *mut [u8; 0]")).expect(";-;");
             }
 
-            fmt::write(&mut data, format_args!("ExternalGlobal::new(b\"{name}\\x00\", ScriptValueType::{global_type}, {address}),\n")).expect("A");
+            fmt::write(&mut data, format_args!("),\n")).expect(";-;");
         }
         data
     }
 
-    let mut cache_list = make_data(cache_entries);
-    let mut tag_list = make_data(tag_entries);
-    let demon_list = make_data(demon_entries);
+    let mut cache_list = make_data(&all_globals, "cache");
+    let mut tag_list = make_data(&all_globals, "tag");
+    let demon_list = make_data(&all_globals, "demon");
 
     cache_list += &demon_list;
     tag_list += &demon_list;
@@ -229,4 +225,128 @@ pub fn generate_hs_external_globals_array(_: TokenStream) -> TokenStream {
 
     (CACHE_DEFINITIONS, TAG_DEFINITIONS)
     }}").parse().expect("should've parsed")
+}
+
+/// # Safety
+///
+/// For Demon-internal globals, this is safe.
+///
+/// Otherwise, this will generate code that does pointer dereferencing. While the pointer does point
+/// to valid data, no guarantee is made that there isn't anything accessing it concurrently.
+#[proc_macro]
+pub fn get_hs_global(token_stream: TokenStream) -> TokenStream {
+    get_hs_global_with_borrow(token_stream, "&")
+}
+
+/// # Safety
+///
+/// For Demon-internal globals, this is safe.
+///
+/// Otherwise, this will generate code that does pointer dereferencing. While the pointer does point
+/// to valid data, no guarantee is made that there isn't anything accessing it concurrently.
+#[proc_macro]
+pub fn get_hs_global_mut(token_stream: TokenStream) -> TokenStream {
+    get_hs_global_with_borrow(token_stream, "&mut ")
+}
+
+fn get_hs_global_with_borrow(token_stream: TokenStream, borrow: &str) -> TokenStream {
+    let parsed: syn::LitStr = syn::parse(token_stream).expect("expected a literal string");
+    let name = parsed.value();
+    let all_globals = get_all_globals();
+    let Some(global) = all_globals.get(&parsed.value()) else {
+        return format!("compile_error!(\"No such global `{name}`\");").parse().expect(";-;")
+    };
+    if let Some(global) = global.address_demon.as_ref() {
+        return format!("{borrow}{global}").parse().expect(";-;")
+    };
+
+    let type_to_use = match global.r#type.as_str() {
+        // these should be zero or one, but we want to make doubly sure Rust won't explode
+        "Boolean" => "u8",
+        "Real" => "f32",
+        "Short" => "i16",
+        "Long" => "i32",
+        n => return format!("compile_error!(\"`{name}` is a {n} which cannot be used with get_hs_global_* methods\");").parse().expect(";-;")
+    };
+
+    let cache = match global.address_cache.as_ref() {
+        Some(n) => format!("{borrow}*({n} as *mut {type_to_use})"),
+        None => format!("panic!(\"{name} is not available on cache builds\")")
+    };
+
+    let tag = match global.address_tag.as_ref() {
+        Some(n) => format!("{borrow}*({n} as *mut {type_to_use})"),
+        None => format!("panic!(\"{name} is not available on tag builds\")")
+    };
+
+    format!("match crate::init::get_exe_type() {{ crate::init::ExeType::Cache => {cache}, crate::init::ExeType::Tag => {tag} }}").parse().expect(";-;")
+}
+
+#[derive(Deserialize)]
+struct ExternalGlobal {
+    name: String,
+    r#type: String,
+    address_demon: Option<String>,
+    address_cache: Option<String>,
+    address_tag: Option<String>,
+}
+
+fn get_all_globals() -> HashMap<String, ExternalGlobal> {
+    #[derive(Deserialize)]
+    struct ExternalGlobalEntry {
+        name: String,
+        r#type: String,
+        address: String,
+    }
+
+    let mut result = HashMap::new();
+    let mut insert_entry = |what: ExternalGlobalEntry, address_type: &str| {
+        let mut global = result.get_mut(&what.name);
+        if global.is_none() {
+            result.insert(what.name.clone(), ExternalGlobal {
+                name: what.name.clone(),
+                r#type: what.r#type.clone(),
+                address_cache: None,
+                address_demon: None,
+                address_tag: None
+            });
+            global = result.get_mut(&what.name);
+        }
+        let global = global.expect("we just inserted it!");
+        assert!(what.r#type == global.r#type, "type mismatch for {}", what.name);
+        let addr = match address_type {
+            "demon" => &mut global.address_demon,
+            "tag" => &mut global.address_tag,
+            "cache" => &mut global.address_cache,
+            _ => unreachable!()
+        };
+        if address_type == "demon" {
+            assert!(!what.address.starts_with("0x"), "demon-internal globals must not use hexadecimal addresses")
+        }
+        else {
+            assert!(what.address.starts_with("0x"), "non-demon-internal globals must use hexadecimal addresses")
+        }
+        assert!(addr.is_none(), "multiple entries for {} in the same build type {address_type} with different addresses", what.name);
+        *addr = Some(what.address);
+    };
+
+    let cache_json_data = include_bytes!("../globals/cache.json");
+    let tag_json_data = include_bytes!("../globals/tag.json");
+    let demon_json_data = include_bytes!("../globals/demon.json");
+
+    let cache_entries: Vec<ExternalGlobalEntry> = serde_json::from_slice(cache_json_data).expect("failed to parse cache globals list");
+    let tag_entries: Vec<ExternalGlobalEntry> = serde_json::from_slice(tag_json_data).expect("failed to parse tags globals list");
+    let demon_entries: Vec<ExternalGlobalEntry> = serde_json::from_slice(demon_json_data).expect("failed to parse demon globals list");
+
+    for i in cache_entries {
+        insert_entry(i, "cache");
+    }
+    for i in tag_entries {
+        insert_entry(i, "tag");
+    }
+    for i in demon_entries {
+        insert_entry(i, "demon");
+    }
+
+    result
 }
