@@ -1,3 +1,4 @@
+use core::ffi::CStr;
 use core::sync::atomic::{AtomicU16, Ordering};
 use num_enum::TryFromPrimitive;
 use c_mine::{c_mine, pointer_from_hook};
@@ -61,6 +62,19 @@ pub const SLAYER_SCORES: VariableProvider<[i32; MAXIMUM_NUMBER_OF_PLAYERS]> = va
     cache_address: 0x00C58FF0,
     tag_address: 0x00D105A8
 };
+
+pub const SERVER_MOTD: VariableProvider<[u8; 0x100]> = variable! {
+    name: "SERVER_MOTD",
+    cache_address: 0x00DE91B0,
+    tag_address: 0x00EA0870
+};
+
+pub unsafe fn get_server_motd() -> &'static str {
+    CStr::from_bytes_until_nul(SERVER_MOTD.get())
+        .ok()
+        .and_then(|m| m.to_str().ok())
+        .unwrap_or("")
+}
 
 #[derive(TryFromPrimitive, Copy, Clone, Debug)]
 #[repr(u16)]
@@ -128,6 +142,15 @@ impl ServerInfo {
             panic!("Invalid gametype index {gametype_index}")
         };
         gametype
+    }
+    pub fn scoring_uses_time(&self) -> bool {
+        match self.get_gametype() {
+            Gametype::King => true,
+            // FIXME: replace _unknown_0x199, etc. with actual gametype structs
+            // Juggernaut uses score. Reverse Tag and Normal Oddball use time.
+            Gametype::Oddball => self._unknown_0x199[119] != 2,
+            _ => false
+        }
     }
 }
 

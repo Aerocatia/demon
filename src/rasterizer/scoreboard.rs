@@ -253,9 +253,8 @@ pub static mut USE_TERMINAL_FONT: u8 = 0;
 #[repr(u16)]
 pub enum ScoreboardStyle {
     #[default]
-    Gearbox,
-    // Xbox
-    // Gearbox but it uses tag data
+    Verbose,
+    // Simple
 }
 
 pub const STATUS_COLOR: ColorRGB = ColorRGB { r: 0.7, g: 0.7, b: 0.7 };
@@ -269,14 +268,7 @@ pub const YELLOW_TEAM_COLOR: ColorRGB = ColorRGB { r: 0.6, g: 0.5, b: 0.3 };
 pub static mut USE_PLAYER_COLORS: u8 = 0;
 
 unsafe fn write_score_for_player<'a>(score: i32, score_buffer: &'a mut [u8], server_info: &ServerInfo) -> &'a str {
-    let time = match server_info.get_gametype() {
-        Gametype::King => true,
-        // TODO: check if juggernaut
-        Gametype::Oddball => true,
-        _ => false
-    };
-
-    if time {
+    if server_info.scoring_uses_time() {
         // Sadly we can't show ms here because the server only syncs the time once per second.
         // Also it wouldn't fit the scoreboard.
         let seconds = score / 30;
@@ -437,7 +429,7 @@ unsafe fn draw_scoreboard_screen(local_player: PlayerID, opacity: f32) {
     SCOREBOARD_STYLE = style as u16;
     let scoreboard_text = ScoreboardScreenText::load();
     match style {
-        ScoreboardStyle::Gearbox => draw_gearbox_scoreboard(local_player, opacity, &scoreboard_text, large_font, small_font, &sorted, server_info)
+        ScoreboardStyle::Verbose => draw_gearbox_scoreboard(local_player, opacity, &scoreboard_text, large_font, small_font, &sorted, server_info)
     }
 }
 
@@ -491,17 +483,21 @@ unsafe fn draw_gearbox_scoreboard(
         ColorARGB { alpha: opacity, color: STATUS_COLOR }
     );
 
-    // the Gearbox scoreboard bypasses tag data and uses a hardcoded value
-    let small_line_height = 15;
-    let small_line_margin = 2;
+    // originally hardcoded to 15, with an extra 2 pixels of leeway when doing the actual text draw
+    let small_line_height = get_font_tag_height(small_ui);
+    let large_line_height = get_font_tag_height(large_ui);
 
     let top = 60u16;
     let left = 10u16;
     let right = 630u16;
-    let bottom = 390u16;
+    // originally 390
+    let bottom = (top + small_line_height * (16 + 2) + 2)
+        // prevent the server name and IP from being overlapped
+        .min(480 - large_line_height * 2);
 
-    let mut score_offset = top - 1;
-    let mut next_score_line = |line_height: u16| { score_offset += line_height; DrawStringBounds { top: score_offset - small_line_height, left: 8, right: 640 - 5, bottom: bottom.min(score_offset + small_line_margin) }};
+    // originally top - 1
+    let mut score_offset = top;
+    let mut next_score_line = |line_height: u16| { score_offset += line_height; DrawStringBounds { top: score_offset - small_line_height, left: 8, right: 640 - 5, bottom: bottom.min(score_offset) }};
 
     draw_box(
         DrawStringBounds {
@@ -555,8 +551,7 @@ unsafe fn draw_gearbox_scoreboard(
             score = match server_info.get_gametype() {
                 Gametype::Race => &scoreboard_text.laps,
                 Gametype::King => &scoreboard_text.time,
-                // TODO: Change to "Score" if on juggernaut
-                Gametype::Oddball => &scoreboard_text.time,
+                Gametype::Oddball if server_info.scoring_uses_time() => &scoreboard_text.time,
                 _ => &scoreboard_text.score
             }
         ),
@@ -617,6 +612,7 @@ unsafe fn draw_gearbox_scoreboard(
             next_score_line(small_line_height)
         ).expect(";-;");
     }
+
 
     draw_server_info_gearbox(opacity, scoreboard_text, large_ui, server_info);
 }
