@@ -1,7 +1,7 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::char::decode_utf16;
-use core::fmt::{Debug, Formatter};
+use core::fmt::{Debug, Display, Formatter};
 use core::marker::PhantomData;
 use core::mem::transmute_copy;
 use core::ptr::{null, null_mut};
@@ -264,4 +264,45 @@ pub fn fmt_to_byte_array<'a>(bytes: &'a mut [u8], fmt: core::fmt::Arguments) -> 
 
     let length = buffer.offset;
     Ok(core::str::from_utf8(&bytes[..length]).expect("but we just formatted valid utf-8"))
+}
+
+pub struct PrintfFormatter<'a> {
+    pub printf_string: &'a str,
+    pub items: &'a [&'a dyn Display]
+}
+
+impl<'a> Display for PrintfFormatter<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        let mut current_item = self.items.iter();
+        let mut current_string = self.printf_string;
+        while !current_string.is_empty() {
+            let Some(n) = current_string.find("%") else {
+                f.write_str(current_string)?;
+                break;
+            };
+            let (before, after) = current_string.split_at(n);
+            f.write_str(before)?;
+
+            if after == "%" {
+                f.write_str(after)?;
+                break;
+            }
+            else if after.starts_with("%d") || after.starts_with("%f") || after.starts_with("%s") {
+                if let Some(i) = current_item.next() {
+                    Display::fmt(i, f)?;
+                }
+                else {
+                    panic!("{} requires more arguments than expected", self.printf_string);
+                }
+            }
+            else if after.starts_with("%%") {
+                f.write_str("%")?;
+            }
+            else {
+                panic!("{} contains an unknown formatter", self.printf_string);
+            }
+            current_string = &after[2..];
+        }
+        Ok(())
+    }
 }

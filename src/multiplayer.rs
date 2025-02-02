@@ -63,6 +63,36 @@ pub const SLAYER_SCORES: VariableProvider<[i32; MAXIMUM_NUMBER_OF_PLAYERS]> = va
     tag_address: 0x00D105A8
 };
 
+pub const CTF_TEAM_SCORES: VariableProvider<[i32; MAXIMUM_NUMBER_OF_PLAYERS]> = variable! {
+    name: "CTF_TEAM_SCORES",
+    cache_address: 0x00C57F3C,
+    tag_address: 0x00D0F4F4
+};
+
+pub const KING_TEAM_SCORES: VariableProvider<[i32; MAXIMUM_NUMBER_OF_PLAYERS]> = variable! {
+    name: "KING_TEAM_SCORES",
+    cache_address: 0x00C582B0,
+    tag_address: 0x00D0F868
+};
+
+pub const ODDBALL_TEAM_SCORES: VariableProvider<[i32; MAXIMUM_NUMBER_OF_PLAYERS]> = variable! {
+    name: "ODDBALL_TEAM_SCORES",
+    cache_address: 0x00C5885C,
+    tag_address: 0x00D0FE14
+};
+
+pub const RACE_TEAM_SCORES: VariableProvider<[i32; MAXIMUM_NUMBER_OF_PLAYERS]> = variable! {
+    name: "RACE_TEAM_SCORES",
+    cache_address: 0x00C58D10,
+    tag_address: 0x00D102C8
+};
+
+pub const SLAYER_TEAM_SCORES: VariableProvider<[i32; MAXIMUM_NUMBER_OF_PLAYERS]> = variable! {
+    name: "SLAYER_TEAM_SCORES",
+    cache_address: 0x00C58FB0,
+    tag_address: 0x00D10568
+};
+
 pub const SERVER_MOTD: VariableProvider<[u8; 0x100]> = variable! {
     name: "SERVER_MOTD",
     cache_address: 0x00DE91B0,
@@ -114,7 +144,7 @@ pub unsafe fn get_player_score(player_id: PlayerID, server_info: &ServerInfo) ->
 
 pub unsafe fn get_connected_ip_address() -> (u32, u16) {
     match get_game_connection_state.get()() {
-        GameConnectionState::ConnectedToServer => (*CONNECTED_SERVER_IP_ADDRESS.get(), *CONNECTED_SERVER_PORT.get()),
+        GameConnectionState::NetworkClient => (*CONNECTED_SERVER_IP_ADDRESS.get(), *CONNECTED_SERVER_PORT.get()),
         _ => (*HOSTED_SERVER_IP_ADDRESS.get(), *HOSTED_SERVER_PORT.get())
     }
 }
@@ -152,6 +182,19 @@ impl ServerInfo {
             _ => false
         }
     }
+    /// To be used if we add multi-team support.
+    pub fn show_red_blue_team_names(&self) -> bool {
+        self.is_team_game()
+    }
+    pub unsafe fn get_team_score(&self, team: u16) -> i32 {
+        match self.get_gametype() {
+            Gametype::King => KING_TEAM_SCORES.get().as_slice(),
+            Gametype::Oddball => ODDBALL_TEAM_SCORES.get().as_slice(),
+            Gametype::CTF => CTF_TEAM_SCORES.get().as_slice(),
+            Gametype::Race => RACE_TEAM_SCORES.get().as_slice(),
+            Gametype::Slayer => SLAYER_TEAM_SCORES.get().as_slice(),
+        }.get(team as usize).map(|c| *c).unwrap_or_default()
+    }
 }
 
 const _: () = assert!(size_of::<ServerInfo>() == 0x3E4);
@@ -165,8 +208,8 @@ pub unsafe fn play_multiplayer_sound(what: u32) {
 #[repr(u16)]
 pub enum GameConnectionState {
     None,
-    ConnectedToServer,
-    Hosting
+    NetworkClient,
+    NetworkServer
 }
 
 pub static GAME_CONNECTION_STATE: AtomicU16 = AtomicU16::new(GameConnectionState::None as u16);

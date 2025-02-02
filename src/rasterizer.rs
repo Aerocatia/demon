@@ -7,6 +7,7 @@ pub mod scoreboard;
 pub mod draw_string;
 pub mod motion_sensor;
 pub mod player_colors;
+pub mod font;
 
 const DRAW_BOX: PointerProvider<unsafe extern "C" fn(bounds: *const u16, color: u32)> = pointer_from_hook!("draw_box");
 
