@@ -1,7 +1,7 @@
 use crate::input::INPUT_GET_BUTTON_STATE;
 use crate::math::{ColorARGB, ColorRGB};
 use crate::multiplayer::game_engine::{get_game_engine_globals_mode, GameEngineGlobalsMode};
-use crate::multiplayer::{get_connected_ip_address, get_gametype, get_network_client_memery, get_player_score, is_team_game, Gametype};
+use crate::multiplayer::{get_connected_ip_address, get_server_info, get_player_score, Gametype, ServerInfo};
 use crate::player::{get_local_player_index, local_player_get_player_index, PlayerControlsAction, PlayerID, MAXIMUM_LIVES, MAXIMUM_NUMBER_OF_PLAYERS, PLAYERS_TABLE};
 use crate::rasterizer::draw_string::{DrawStringBounds, DrawStringJustification, DrawStringWriter, DEFAULT_WHITE};
 use crate::string::get_unicode_string_list_string;
@@ -268,11 +268,11 @@ pub const GREEN_TEAM_COLOR: ColorRGB = ColorRGB { r: 0.3, g: 0.6, b: 0.3 };
 pub const YELLOW_TEAM_COLOR: ColorRGB = ColorRGB { r: 0.6, g: 0.5, b: 0.3 };
 pub static mut USE_PLAYER_COLORS: u8 = 0;
 
-unsafe fn write_score_for_player(score: i32, score_buffer: &mut [u8]) -> &str {
-    let time = match get_gametype() {
-        Some(Gametype::King) => true,
-        // TODO
-        Some(Gametype::Oddball) => true,
+unsafe fn write_score_for_player<'a>(score: i32, score_buffer: &'a mut [u8], server_info: &ServerInfo) -> &'a str {
+    let time = match server_info.get_gametype() {
+        Gametype::King => true,
+        // TODO: check if juggernaut
+        Gametype::Oddball => true,
         _ => false
     };
 
@@ -308,8 +308,8 @@ struct SortableScore {
     placement: usize
 }
 
-unsafe fn sort_players_by_score(local_player: PlayerID, local_player_team: Option<u16>, players: &[PlayerID; MAXIMUM_NUMBER_OF_PLAYERS]) -> [SortableScore; MAXIMUM_NUMBER_OF_PLAYERS] {
-    let is_team_game = is_team_game();
+unsafe fn sort_players_by_score(local_player: PlayerID, local_player_team: Option<u16>, players: &[PlayerID; MAXIMUM_NUMBER_OF_PLAYERS], server_info: &ServerInfo) -> [SortableScore; MAXIMUM_NUMBER_OF_PLAYERS] {
+    let is_team_game = server_info.is_team_game();
 
     let mut scores: [SortableScore; MAXIMUM_NUMBER_OF_PLAYERS] = core::array::from_fn(|index| {
         let player = players[index];
@@ -331,7 +331,7 @@ unsafe fn sort_players_by_score(local_player: PlayerID, local_player_team: Optio
         };
 
         SortableScore {
-            score: get_player_score(player),
+            score: get_player_score(player, server_info),
             player_id: player,
             kills: player_data.kills,
             deaths: player_data.deaths,
@@ -411,6 +411,10 @@ unsafe fn sort_players_by_score(local_player: PlayerID, local_player_team: Optio
 }
 
 unsafe fn draw_scoreboard_screen(local_player: PlayerID, opacity: f32) {
+    let Some(server_info) = get_server_info() else {
+        return
+    };
+
     let fonts = get_interface_fonts();
     let large_font = fonts.full_screen_font;
     let small_font = if USE_TERMINAL_FONT != 0 { fonts.terminal_font } else { fonts.split_screen_font };
@@ -427,18 +431,18 @@ unsafe fn draw_scoreboard_screen(local_player: PlayerID, opacity: f32) {
         .get_element(local_player)
         .map(|e| e.get().team)
         .ok();
-    let sorted = sort_players_by_score(local_player, local_player_team, &mut player_ids);
+    let sorted = sort_players_by_score(local_player, local_player_team, &mut player_ids, server_info);
 
     let style = ScoreboardStyle::try_from(SCOREBOARD_STYLE).unwrap_or_default();
     SCOREBOARD_STYLE = style as u16;
     let scoreboard_text = ScoreboardScreenText::load();
     match style {
-        ScoreboardStyle::Gearbox => draw_gearbox_scoreboard(local_player, opacity, &scoreboard_text, large_font, small_font, &sorted)
+        ScoreboardStyle::Gearbox => draw_gearbox_scoreboard(local_player, opacity, &scoreboard_text, large_font, small_font, &sorted, server_info)
     }
 }
 
-unsafe fn get_scoreboard_color(player: PlayerID) -> ColorRGB {
-    if is_team_game() {
+unsafe fn get_scoreboard_color(player: PlayerID, server_info: &ServerInfo) -> ColorRGB {
+    if server_info.is_team_game() {
         let player = PLAYERS_TABLE
             .get_mut()
             .as_mut()
@@ -476,11 +480,11 @@ unsafe fn get_scoreboard_color(player: PlayerID) -> ColorRGB {
 unsafe fn draw_gearbox_scoreboard(
     local_player: PlayerID,
     opacity: f32,
-    scoreboard_text:
-    &ScoreboardScreenText,
+    scoreboard_text: &ScoreboardScreenText,
     large_ui: TagID,
     small_ui: TagID,
-    all_players: &[SortableScore]
+    all_players: &[SortableScore],
+    server_info: &ServerInfo
 ) {
     let mut score_writer = DrawStringWriter::new_simple(
         small_ui,
@@ -548,11 +552,11 @@ unsafe fn draw_gearbox_scoreboard(
             kills = scoreboard_text.kills,
             assists = scoreboard_text.assists,
             deaths = if maximum_lives > 0 { scoreboard_text.lives } else { scoreboard_text.deaths },
-            score = match get_gametype() {
-                Some(Gametype::Race) => &scoreboard_text.laps,
-                Some(Gametype::King) => &scoreboard_text.time,
+            score = match server_info.get_gametype() {
+                Gametype::Race => &scoreboard_text.laps,
+                Gametype::King => &scoreboard_text.time,
                 // TODO: Change to "Score" if on juggernaut
-                Some(Gametype::Oddball) => &scoreboard_text.time,
+                Gametype::Oddball => &scoreboard_text.time,
                 _ => &scoreboard_text.score
             }
         ),
@@ -567,7 +571,7 @@ unsafe fn draw_gearbox_scoreboard(
 
         let player = players.get_element(player_score_data.player_id).expect("player went away???").get();
 
-        let mut color = get_scoreboard_color(player_score_data.player_id);
+        let mut color = get_scoreboard_color(player_score_data.player_id, server_info);
 
         // highlight the local player
         if player_score_data.player_id == local_player {
@@ -585,7 +589,7 @@ unsafe fn draw_gearbox_scoreboard(
         let name = decode_utf16_inplace(&player.name, &mut name_buffer);
 
         let mut score_buffer = [0u8; 32];
-        let score: &str = write_score_for_player(player_score_data.score, &mut score_buffer);
+        let score: &str = write_score_for_player(player_score_data.score, &mut score_buffer, server_info);
 
         let mut deaths_buffer = [0u8; 32];
         let deaths: &str;
@@ -614,10 +618,10 @@ unsafe fn draw_gearbox_scoreboard(
         ).expect(";-;");
     }
 
-    draw_server_info_gearbox(opacity, scoreboard_text, large_ui);
+    draw_server_info_gearbox(opacity, scoreboard_text, large_ui, server_info);
 }
 
-unsafe fn draw_server_info_gearbox(opacity: f32, scoreboard_text: &ScoreboardScreenText, large_font: TagID) {
+unsafe fn draw_server_info_gearbox(opacity: f32, scoreboard_text: &ScoreboardScreenText, large_font: TagID, server_info: &ServerInfo) {
     if SHOW_SERVER_INFO == 0 {
         return
     }
@@ -631,10 +635,8 @@ unsafe fn draw_server_info_gearbox(opacity: f32, scoreboard_text: &ScoreboardScr
     let mut footer_offset = 480 - large_line_height * 2;
     let mut next_footer_line = |line_height: u16| { footer_offset += line_height; DrawStringBounds { top: footer_offset - large_line_height, left: 8, right: 640 - 5, bottom: 480.min(footer_offset) }};
 
-    let memery = get_network_client_memery();
-
     let mut server_name_buffer = [0u8; 66];
-    let server_name = decode_utf16_inplace(&memery.server_name, &mut server_name_buffer);
+    let server_name = decode_utf16_inplace(&server_info.server_name, &mut server_name_buffer);
 
     let mut server_ip_buffer = [0u8; 66];
     let server_ip = format_connected_server_ip(&mut server_ip_buffer);

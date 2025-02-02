@@ -7,25 +7,12 @@ use crate::util::{PointerProvider, VariableProvider};
 pub mod game_engine;
 pub mod server;
 
-pub unsafe fn get_network_client_memery() -> &'static NetworkClientMemery {
-    match get_game_connection_state.get()() {
-        GameConnectionState::ConnectedToServer => NETWORK_CLIENT_MEMERY_CLIENT.get(),
-        _ => NETWORK_CLIENT_MEMERY_SERVER.get()
+pub unsafe fn get_server_info() -> Option<&'static ServerInfo> {
+    if get_game_connection_state.get()() == GameConnectionState::None {
+        return None
     }
-
+    Some(SERVER_INFO.get()())
 }
-
-const NETWORK_CLIENT_MEMERY_SERVER: VariableProvider<NetworkClientMemery> = variable! {
-    name: "NETWORK_CLIENT_MEMERY_SERVER",
-    cache_address: 0x00DE82A8,
-    tag_address: 0x00E9F860
-};
-
-const NETWORK_CLIENT_MEMERY_CLIENT: VariableProvider<NetworkClientMemery> = variable! {
-    name: "NETWORK_CLIENT_MEMERY_CLIENT",
-    cache_address: 0x00DD18A0 + 0xB14,
-    tag_address: 0x00E88E60 + 0xB14
-};
 
 #[repr(C)]
 pub struct NetworkClientMemeryPlayer {
@@ -37,7 +24,7 @@ pub struct NetworkClientMemeryPlayer {
 }
 const _: () = assert!(size_of::<NetworkClientMemeryPlayer>() == 0x20);
 
-pub const MEME_GAMETYPE_DATA: PointerProvider<unsafe extern "C" fn() -> *mut [u8; 0]> = pointer_from_hook!("get_meme_gametype_data");
+pub const SERVER_INFO: PointerProvider<unsafe extern "C" fn() -> &'static ServerInfo> = pointer_from_hook!("get_meme_gametype_data");
 
 pub const HOSTED_SERVER_IP_ADDRESS: VariableProvider<u32> = variable! {
     name: "HOSTED_SERVER_IP_ADDRESS",
@@ -85,25 +72,7 @@ pub enum Gametype {
     Race
 }
 
-pub unsafe fn is_team_game() -> bool {
-    let gametype = MEME_GAMETYPE_DATA.get()();
-    if gametype.is_null() {
-        return false
-    }
-    let is_team = gametype.wrapping_byte_add(0x138) as *const u8;
-    *is_team != 0
-}
-
-pub unsafe fn get_gametype() -> Option<Gametype> {
-    let gametype = MEME_GAMETYPE_DATA.get()();
-    if gametype.is_null() {
-        return None
-    }
-    let gametype = gametype.wrapping_byte_add(0x104);
-    Gametype::try_from((*(gametype.wrapping_byte_add(0x30) as *const u16)).wrapping_sub(1)).ok()
-}
-
-pub unsafe fn get_player_score(player_id: PlayerID) -> i32 {
+pub unsafe fn get_player_score(player_id: PlayerID, server_info: &ServerInfo) -> i32 {
     let player_getter = || PLAYERS_TABLE
         .get_mut()
         .as_mut()
@@ -112,11 +81,7 @@ pub unsafe fn get_player_score(player_id: PlayerID) -> i32 {
         .expect("Failed to get player!")
         .get();
 
-    let Some(gametype) = get_gametype() else {
-        return i32::MIN
-    };
-
-    match gametype {
+    match server_info.get_gametype() {
         Gametype::Slayer => SLAYER_SCORES
             .get()
             .get(player_id.index().unwrap())
@@ -141,23 +106,39 @@ pub unsafe fn get_connected_ip_address() -> (u32, u16) {
 }
 
 #[repr(C)]
-pub struct NetworkClientMemery {
+pub struct ServerInfo {
     pub server_name: [u16; 66],
     pub map_name: [u8; 32],
     pub _unknown_0x104: [u8; 0x164 - 0x104],
     pub gametype_name: [u16; 12],
-    pub _unknown_0x11c: [u8; 0x244 - 0x17C],
+    pub _unknown_0x17c: [u8; 0x194 - 0x17C],
+    pub gametype: u16,
+    pub _unknown_0x196: u16,
+    pub is_team_game: u8,
+    pub _unknown_0x199: [u8; 0x244 - 0x199],
     pub players: [NetworkClientMemeryPlayer; 16]
 }
+impl ServerInfo {
+    pub fn is_team_game(&self) -> bool {
+        self.is_team_game != 0
+    }
+    pub fn get_gametype(&self) -> Gametype {
+        let gametype_index = self.gametype.wrapping_sub(1);
+        let Ok(gametype) = Gametype::try_from(gametype_index) else {
+            panic!("Invalid gametype index {gametype_index}")
+        };
+        gametype
+    }
+}
 
-const _: () = assert!(size_of::<NetworkClientMemery>() == 0x444 - 0x60);
+const _: () = assert!(size_of::<ServerInfo>() == 0x3E4);
 
 pub unsafe fn play_multiplayer_sound(what: u32) {
     const GAME_ENGINE_PLAY_MULTIPLAYER_SOUND: PointerProvider<unsafe extern "C" fn(index: u32, something: bool)> = pointer_from_hook!("game_engine_play_multiplayer_sound");
     GAME_ENGINE_PLAY_MULTIPLAYER_SOUND.get()(what, false)
 }
 
-#[derive(Copy, Clone, TryFromPrimitive, Debug)]
+#[derive(Copy, Clone, TryFromPrimitive, Debug, PartialEq)]
 #[repr(u16)]
 pub enum GameConnectionState {
     None,
