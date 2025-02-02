@@ -113,6 +113,8 @@ const TERMINAL_SALT: u16 = 0x6574;
 
 #[repr(C)]
 struct TerminalOutput {
+    pub identifier: u16,
+    pub unknown: u16,
     pub some_id: ID<TERMINAL_SALT>,
     pub unknown1: u32,
     pub unknown2: u8,
@@ -154,7 +156,7 @@ unsafe fn fade_console_text(table: &'static mut TerminalOutputTable) {
 
     RATE.run(|| {
         for i in table.iter() {
-            i.item.timer = (i.item.timer + 1).min(LIMIT_TICKS);
+            i.get_mut().timer = (i.get().timer + 1).min(LIMIT_TICKS);
         }
     });
 }

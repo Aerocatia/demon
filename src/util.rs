@@ -1,5 +1,6 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use core::char::decode_utf16;
 use core::fmt::{Debug, Formatter};
 use core::marker::PhantomData;
 use core::mem::transmute_copy;
@@ -91,6 +92,33 @@ impl<T: Sized> Debug for CFunctionProvider<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         f.write_fmt(format_args!("CFunction({})", self.get_name()))
     }
+}
+
+/// Decode the UTF-16 array into the target byte array.
+///
+/// Stops when it reaches the end of `from` or hits a null terminator.
+pub fn decode_utf16_inplace<'a>(from: &[u16], to: &'a mut [u8]) -> &'a str {
+    let max_length = to.len();
+    let mut index = 0;
+
+    let iterator = from
+        .iter()
+        .copied()
+        .take_while(|b| *b != 0);
+
+    for c in decode_utf16(iterator) {
+        let character = c.unwrap_or(char::REPLACEMENT_CHARACTER);
+
+        let c_len = character.len_utf8();
+        if index + c_len > max_length {
+            break;
+        }
+
+        character.encode_utf8(&mut to[index..]);
+        index += c_len;
+    }
+
+    core::str::from_utf8(&to[..index]).expect("we just decoded UTF though")
 }
 
 macro_rules! variable {
@@ -203,17 +231,17 @@ impl<T: Sized> PointerProvider<T> {
     }
 }
 
-/// Write the arguments `fmt` to a byte buffer `bytes`.
+/// Write the arguments `fmt` to a byte buffer `bytes`, returning a string reference backed by `bytes`.
 ///
 /// If the byte buffer is not large enough, it will be truncated.
 ///
-/// Returns `Err` if an error occurs (`bytes` will not be modified).
-pub fn fmt_to_byte_array<const LEN: usize>(bytes: &mut [u8; LEN], fmt: core::fmt::Arguments) -> core::fmt::Result {
-    struct ErrorBuffer<const LEN: usize> {
+/// Returns `Err` if an error occurs (`bytes` may be modified).
+pub fn fmt_to_byte_array<'a>(bytes: &'a mut [u8], fmt: core::fmt::Arguments) -> Result<&'a str, core::fmt::Error> {
+    struct ErrorBuffer<'a> {
         offset: usize,
-        data: [u8; LEN]
+        data: &'a mut [u8]
     }
-    impl<const LEN: usize> core::fmt::Write for ErrorBuffer<LEN> {
+    impl<'a> core::fmt::Write for ErrorBuffer<'a> {
         fn write_str(&mut self, s: &str) -> core::fmt::Result {
             let max_len = self.data.len();
             let remainder = &mut self.data[self.offset..max_len-1];
@@ -227,14 +255,13 @@ pub fn fmt_to_byte_array<const LEN: usize>(bytes: &mut [u8; LEN], fmt: core::fmt
         }
     }
 
-    let mut buffer: ErrorBuffer<LEN> = ErrorBuffer {
+    let mut buffer = ErrorBuffer {
         offset: 0,
-        data: [0u8; LEN]
+        data: bytes
     };
 
     core::fmt::write(&mut buffer, fmt)?;
 
-    *bytes = buffer.data;
-
-    Ok(())
+    let length = buffer.offset;
+    Ok(core::str::from_utf8(&bytes[..length]).expect("but we just formatted valid utf-8"))
 }

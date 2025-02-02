@@ -113,6 +113,26 @@ impl<T: Sized> Debug for Reflexive<T> {
 
 /// These methods are unsafe as we cannot guarantee yet that the tag data is not being accessed
 /// concurrently.
+#[repr(C)]
+pub struct TagReference {
+    pub tag_group: TagGroupUnsafe,
+    pub _unknown_0x4: u32,
+    pub _unknown_0x8: u32,
+    pub tag_id: TagID
+}
+impl TagReference {
+    pub unsafe fn get(&self) -> Option<&dyn TagIndex> {
+        if self.tag_id.is_null() {
+            return None
+        }
+        let tag = get_tag_info(self.tag_id).expect("failed to get tag");
+        tag.verify_tag_group(self.tag_group).expect("tag reference has an incorrect tag group");
+        Some(tag)
+    }
+}
+
+/// These methods are unsafe as we cannot guarantee yet that the tag data is not being accessed
+/// concurrently.
 #[derive(Debug)]
 #[repr(C)]
 pub struct TagData {
@@ -252,6 +272,8 @@ impl TagIndex for CacheTagInstance {
 /// Used only in tag builds.
 #[repr(C)]
 pub struct TagTagInstance {
+    pub identifier: u16,
+    pub _unknown: u16,
     pub tag_path: [u8; 256],
     pub primary_tag_group: TagGroupUnsafe,
     pub secondary_tag_group: TagGroupUnsafe,
@@ -317,12 +339,12 @@ pub unsafe fn lookup_tag(path: &str, group: TagGroupUnsafe) -> Option<(&dyn TagI
 
             let mut iterator = table.iter();
             let Some(tag) = (&mut iterator)
-                .filter(|tag| tag.item.get_primary_tag_group() == group && tag.item.get_tag_path() == path)
+                .filter(|tag| tag.get().get_primary_tag_group() == group && tag.get().get_tag_path() == path)
                 .next() else {
                 return None
             };
 
-            Some((&tag.item, iterator.id()))
+            Some((tag.get(), iterator.id()))
         },
         ExeType::Cache => get_cache_file_tags()
             .iter()
@@ -585,14 +607,14 @@ pub unsafe fn get_tag_info(id: TagID) -> Option<&'static dyn TagIndex> {
                 panic!("TAGS_TAG_INSTANCES is null!");
             };
             let tag = table.get_element(id).ok()?;
-            Some(&tag.item)
+            Some(tag.get())
         }
     }
 
 }
 
 /// Gets the tag data.
-pub unsafe fn get_tag_data_checking_tag_group(group: TagGroupUnsafe, id: TagID) -> Result<*mut [u8; 0], GetTagDataError> {
+pub unsafe fn get_tag_data_checking_tag_group(id: TagID, group: TagGroupUnsafe) -> Result<*mut [u8; 0], GetTagDataError> {
     get_tag_info(id)
         .ok_or(GetTagDataError::NoMatch { id })
         .and_then(|tag| tag.verify_tag_group(group).map(|_| tag.get_tag_data()))
@@ -600,7 +622,7 @@ pub unsafe fn get_tag_data_checking_tag_group(group: TagGroupUnsafe, id: TagID) 
 
 #[c_mine]
 pub unsafe extern "C" fn tag_get(group: TagGroupUnsafe, id: TagID) -> *mut [u8; 0] {
-    get_tag_data_checking_tag_group(group, id).expect("tag_get failed!")
+    get_tag_data_checking_tag_group(id, group).expect("tag_get failed!")
 }
 
 #[c_mine]

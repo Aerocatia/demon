@@ -151,7 +151,7 @@ impl<T: Sized + 'static, const SALT: u16> DataTable<T, SALT> {
         self.count = 0;
         self.unknown_3 = 0;
         for i in self.iter() {
-            i.identifier_bytes = [0u8; 4]
+            i.set_identifier(0);
         }
         self.reset_next_id();
     }
@@ -266,8 +266,7 @@ impl<'a, T: Sized + 'static, const SALT: u16> Iterator for TableIterator<'a, T, 
             };
 
             if instance.is_active() {
-                let bytes = instance.identifier_bytes;
-                let salt = (u16::from_ne_bytes([bytes[0], bytes[1]]) as u32) << 16;
+                let salt = (instance.identifier() as u32) << 16;
                 self.id = salt | (index as u32);
                 return Some(instance);
             }
@@ -277,17 +276,24 @@ impl<'a, T: Sized + 'static, const SALT: u16> Iterator for TableIterator<'a, T, 
     }
 }
 
-#[repr(C)]
-pub struct TableElement<T: Sized + 'static> {
-    pub identifier_bytes: [u8; 4],
-    pub item: T
-}
+#[repr(transparent)]
+pub struct TableElement<T: Sized + 'static>(T);
+
 impl<T: Sized + 'static> TableElement<T> {
+    pub const fn get(&self) -> &T {
+        &self.0
+    }
+    pub const fn get_mut(&mut self) -> &mut T {
+        &mut self.0
+    }
     pub const fn is_active(&self) -> bool {
         self.identifier() != 0
     }
     pub const fn identifier(&self) -> u16 {
-        u16::from_ne_bytes([self.identifier_bytes[0], self.identifier_bytes[1]])
+        unsafe { *((&self.0 as *const _) as *const u16) }
+    }
+    pub const unsafe fn set_identifier(&mut self, identifier: u16) {
+        unsafe { *((&mut self.0 as *mut _) as *mut u16) = identifier }
     }
 }
 

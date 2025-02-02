@@ -13,6 +13,12 @@ pub type PlayerID = ID<PLAYER_ID_SALT>;
 pub const MAXIMUM_NUMBER_OF_LOCAL_PLAYERS: usize = 1;
 pub const MAXIMUM_NUMBER_OF_PLAYERS: usize = 16;
 
+pub const MAXIMUM_LIVES: VariableProvider<u32> = variable! {
+    name: "MAXIMUM_LIVES",
+    cache_address: 0x00C56E28,
+    tag_address: 0x00D0E3E0
+};
+
 #[repr(u16)]
 pub enum PlayerControlsAction {
     Jump,
@@ -123,7 +129,105 @@ struct PlayerGlobals {
 }
 const _: () = assert!(size_of::<PlayerGlobals>() == 0x98);
 
-pub const PLAYERS_TABLE: VariableProvider<Option<&mut DataTable<[u8; 0x1F4], PLAYER_ID_SALT>>> = variable! {
+// everything is what it is + 0x4 because of the ID
+#[repr(C)]
+pub struct Player {
+    pub salt: u16,
+    pub local_player_index: u16,
+
+    /// Name (11 characters + null terminator)
+    pub name: [u16; 12],
+
+    /// Team (0 = red, 1 = blue...)
+    pub team: u16,
+
+    /// ????
+    pub _unknown_0x1e: u16,
+
+    /// ????
+    pub _unknown_0x20: [u8; 0x30 - 0x20],
+
+    /// Unit of the player
+    pub unit: ObjectID,
+
+    /// ????
+    pub _unknown_0x34: [u8; 0x44 - 0x34],
+
+    /// Another copy of the name (11 characters + null terminator)
+    pub name_again: [u16; 12],
+
+    /// Armor color (FFA)
+    pub color: u16,
+
+    /// 0xFFFF
+    pub _unknown_0x5e: u16,
+
+    /// ????
+    pub _unknown_0x60: [u8; 0x98 - 0x60],
+
+    /// Number of kills the player has
+    pub kills: u16,
+
+    /// ????
+    pub _unknown_0x9a: u16,
+
+    /// ????
+    pub _unknown_0x9c: u32,
+
+    /// Number of assists the player has
+    pub assists: u16,
+
+    /// ????
+    pub _unknown_0xa2: u16,
+
+    /// ????
+    pub _unknown_0xa4: [u8; 0xAA - 0xA4],
+
+    /// Number of deaths the player has
+    pub deaths: u16,
+
+    /// ????
+    pub _unknown_0xac: [u8; 0xC0 - 0xAC],
+
+    /// In King, this is time on the hill in ticks.
+    ///
+    /// In CTF, the upper 16 bits are number of times it's been returned, and the lower 16 bits are the number of times it's been picked up.
+    ///
+    /// In Race, the upper 16 bits are laps and the lower 16 bits are fuck you.
+    pub score_data: i32,
+
+    /// In CTF, this is the number of times the flag has been captured.
+    pub score_data_2: i32,
+
+    /// ????
+    pub _unknown_0xc8: [u8; 0xD0 - 0xC8],
+
+    /// ????
+    pub _unknown_0xd0: u8,
+
+    /// If non-zero, the player has quit
+    pub quit: u8,
+
+    /// ????
+    pub _unknown_0xd2: u16,
+
+    /// Ping in milliseconds
+    pub ping: u16,
+
+    /// ????
+    pub _unknown_0xd6: [u8; 0x1F8 - 0xD6]
+}
+
+impl Player {
+    pub unsafe fn out_of_lives(&self) -> bool {
+        let lives = *MAXIMUM_LIVES.get();
+        self.unit.is_null() && lives > 0 && (self.deaths as u32) >= lives
+    }
+}
+
+const _: () = assert!(size_of::<Player>() == 0x1F8);
+
+pub const PLAYERS_TABLE: VariableProvider<Option<&mut DataTable<Player, PLAYER_ID_SALT>>> = variable! {
     name: "PLAYERS_TABLE",
     cache_address: 0x00C59150,
     tag_address: 0x00D1070C

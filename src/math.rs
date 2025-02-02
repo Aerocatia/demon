@@ -25,6 +25,14 @@ impl ColorARGB {
     pub fn is_valid(&self) -> bool {
         (0.0..=1.0).contains(&self.alpha) && self.color.is_valid()
     }
+    pub fn to_a8r8g8b8(&self) -> u32 {
+        let alpha = (self.alpha * 255.0) as u32;
+        let red = (self.color.r * 255.0) as u32;
+        let green = (self.color.g * 255.0) as u32;
+        let blue = (self.color.b * 255.0) as u32;
+
+        (alpha << 24) | (red << 16) | (green << 8) | blue
+    }
 }
 
 pub type Euler2D = Vector2D;

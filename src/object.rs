@@ -15,7 +15,9 @@ pub type ObjectID = ID<OBJECT_SALT>;
 
 #[repr(C)]
 pub struct ObjectIndex {
-    pub _unknown_0x0: u32,
+    pub identifier: u16,
+    pub _unknown_0x2: u16,
+    pub _unknown_0x4: u32,
     pub object_data: *mut [u8; 0]
 }
 
@@ -161,12 +163,12 @@ pub unsafe extern "C" fn object_get_and_verify_type(object_id: ObjectID, object_
         .get_element(object_id)
         .expect("object_get_and_verify_type could not get an object");
 
-    let data = object.item.object_data;
-    let data_usize = object.item.object_data as usize;
+    let data = object.get().object_data;
+    let data_usize = data as usize;
     let object_type: ObjectType = (*(data.wrapping_byte_add(0x70) as *const u16))
         .try_into()
         .unwrap_or_else(|_| panic!("object_get_and_verify_type got object {object_id:?} @ 0x{data_usize:08X} which has an invalid object type"));
 
     assert!(object_types.contains(object_type), "object_get_and_verify_type got object {object_id:?} @ 0x{data_usize:08X} which is {object_type:?}, not {object_types:?}");
-    object.item.object_data
+    data
 }

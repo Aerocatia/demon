@@ -67,7 +67,7 @@ pub fn c_mine(_: TokenStream, token_stream: TokenStream) -> TokenStream {
 struct Hook {
     pub tag: Option<String>,
     pub cache: Option<String>,
-    pub replacement: String,
+    pub replacement: Option<String>,
     pub sudo: Option<bool>,
 
     pub tags: Option<String>
@@ -140,7 +140,9 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
     for (name, hook) in get_all_hooks() {
         let mut target = hook
             .replacement
-            .as_str();
+            .as_ref()
+            .map(String::as_str)
+            .unwrap_or("original");
 
         if target == "forbid" {
             target = &name;

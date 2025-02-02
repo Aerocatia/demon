@@ -18,5 +18,10 @@
         "cache": "0x00401B27",
         "tag": "0x0040A713",
         "replacement": "crate::rasterizer::draw_string::draw_string_setup"
+    },
+    "draw_string_set_tab_stops": {
+        "cache": "0x004017D5",
+        "tag": "0x00401451",
+        "replacement": "crate::rasterizer::draw_string::draw_string_set_tab_stops"
     }
 }

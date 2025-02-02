@@ -14,5 +14,19 @@
         "_tag": "0x00402586",
         "_cache": "0x00403468",
         "replacement": "crate::multiplayer::death"
+    },
+    "get_game_connection_state": {
+        "cache": "0x004082CE",
+        "tag": "0x004074E1",
+        "replacement": "crate::multiplayer::get_game_connection_state"
+    },
+    "set_game_connection_state": {
+        "cache": "0x00404511",
+        "tag": "0x004037A1",
+        "replacement": "crate::multiplayer::set_game_connection_state"
+    },
+    "get_meme_gametype_data": {
+        "cache": "0x004050DD",
+        "tag": "0x00404480"
     }
 }

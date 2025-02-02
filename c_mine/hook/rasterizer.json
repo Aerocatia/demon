@@ -11,25 +11,29 @@
     },
     "game_engine_post_rasterize_post_game": {
         "cache": "0x00404089",
-        "tag": "0x004032A6",
-        "replacement": "original"
+        "tag": "0x004032A6"
     },
     "game_engine_post_rasterize_scoreboard": {
         "cache": "0x005A4360",
         "tag": "0x005AA4C0",
-        "replacement": "forbid",
         "sudo": true
     },
     "draw_scoreboard_screen": {
         "cache": "0x005ABBB0",
         "tag": "0x005B1D10",
-        "sudo": true,
-        "replacement": "original"
+        "sudo": true
     },
     "draw_game_rules_screen": {
         "cache": "0x005A67A0",
         "tag": "0x005AC900",
-        "sudo": true,
-        "replacement": "original"
+        "sudo": true
+    },
+    "rasterizer_draw_unicode_string": {
+        "cache": "0x00401E33",
+        "tag": "0x004017D0"
+    },
+    "draw_box": {
+        "cache": "0x00406D02",
+        "tag": "0x00405D3F"
     }
 }

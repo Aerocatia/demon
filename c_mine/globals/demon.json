@@ -1,3 +1,7 @@
 [
-    { "name": "demon_mouse_sensitivity", "type": "Real", "address": "crate::input::mouse::MOUSE_SENSITIVITY" }
+    { "name": "demon_mouse_sensitivity", "type": "Real", "address": "crate::input::mouse::MOUSE_SENSITIVITY" },
+    { "name": "demon_scoreboard_show_server_info", "type": "Boolean", "address": "crate::rasterizer::scoreboard::SHOW_SERVER_INFO" },
+    { "name": "demon_scoreboard_style", "type": "Short", "address": "crate::rasterizer::scoreboard::SCOREBOARD_STYLE" },
+    { "name": "demon_scoreboard_use_terminal_font", "type": "Boolean", "address": "crate::rasterizer::scoreboard::USE_TERMINAL_FONT" },
+    { "name": "demon_scoreboard_use_player_colors", "type": "Boolean", "address": "crate::rasterizer::scoreboard::USE_PLAYER_COLORS" }
 ]

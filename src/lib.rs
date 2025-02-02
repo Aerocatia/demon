@@ -31,3 +31,4 @@ mod bink;
 mod multiplayer;
 mod ui;
 mod rasterizer;
+mod globals;

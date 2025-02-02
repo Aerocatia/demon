@@ -250,13 +250,20 @@ pub unsafe extern "C" fn hs_global_get_type(index: u16) -> ScriptValueType {
     get_global_by_index(index).global_type()
 }
 
-const HS_THREAD_TABLE: VariableProvider<Option<&mut DataTable<[u8; 0xFC], 0x7368>>> = variable! {
+const HS_THREAD_TABLE: VariableProvider<Option<&mut DataTable<[u8; 0x100], 0x7368>>> = variable! {
     name: "hs_thread_table",
     cache_address: 0x00C7DE48,
     tag_address: 0x00D35400
 };
 
-const HS_GLOBALS_TABLE: VariableProvider<Option<&mut DataTable<usize, 0x7368>>> = variable! {
+#[repr(C)]
+struct HSGlobalTableEntry {
+    pub identifier: u16,
+    pub unknown: u16,
+    pub value: u32
+}
+
+const HS_GLOBALS_TABLE: VariableProvider<Option<&mut DataTable<HSGlobalTableEntry, 0x7368>>> = variable! {
     name: "hs_globals_table",
     cache_address: 0x00C7DE4C,
     tag_address: 0x00D35404
@@ -318,7 +325,7 @@ pub unsafe extern "C" fn hs_global_get_value(index: u16) -> u32 {
             .as_mut()
             .unwrap()
             .get_element(transmute(actual_index))
-            .map(|g| g.item as u32) else {
+            .map(|g| g.get().value) else {
             panic!("Failed to get scenario global {index} ({actual_index} in table)")
         };
 
