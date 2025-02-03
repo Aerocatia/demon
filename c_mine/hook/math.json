@@ -34,5 +34,10 @@
         "tag": "0x00408B07",
         "description": "Calls '_control87(0x9001F,0xFFFFF);'",
         "replacement": "original"
+    },
+    "dot_product_3d": {
+        "cache": "0x00401212",
+        "tag": "0x00401104",
+        "replacement": "crate::math::dot_product_3d"
     }
 }

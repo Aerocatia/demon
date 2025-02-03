@@ -62,6 +62,9 @@ impl Vector3D {
     pub fn is_valid(&self) -> bool {
         !self.x.is_nan() && !self.y.is_nan() && !self.z.is_nan()
     }
+    pub fn dot(&self, other: &Vector3D) -> f32 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
 }
 
 /// 1 world unit = 10 feet = 3.048 meters
@@ -103,4 +106,9 @@ pub extern "C" fn is_valid_vector3d(vector: &Vector3D) -> bool {
 #[c_mine]
 pub extern "C" fn is_valid_point3d(point: &Vector3D) -> bool {
     point.is_valid()
+}
+
+#[c_mine]
+pub extern "C" fn dot_product_3d(a: &Vector3D, b: &Vector3D) -> f32 {
+    a.dot(b)
 }
