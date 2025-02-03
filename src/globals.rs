@@ -3,7 +3,8 @@ use crate::util::VariableProvider;
 
 pub const GLOBAL_GAME_GLOBALS: VariableProvider<*const [u8; 0]> = variable! {
     name: "global_game_globals",
-    cache_address: 0x00F1A68C
+    cache_address: 0x00F1A68C,
+    tag_address: 0x00FD1C54
 };
 
 pub struct InterfaceBitmaps {
