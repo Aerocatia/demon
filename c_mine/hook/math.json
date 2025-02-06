@@ -2,32 +2,32 @@
     "is_valid_real": {
         "cache": "0x00403972",
         "tag": "0x00402B0D",
-        "replacement": "crate::math::is_valid_real"
+        "replacement": "crate::math::c::is_valid_real"
     },
     "is_valid_vector2d": {
         "cache": "0x0040A015",
         "tag": "0x0040944E",
-        "replacement": "crate::math::is_valid_vector2d"
+        "replacement": "crate::math::c::is_valid_vector2d"
     },
     "is_valid_point2d": {
         "cache": "0x004088CD",
         "tag": "0x00407B4E",
-        "replacement": "crate::math::is_valid_point2d"
+        "replacement": "crate::math::c::is_valid_point2d"
     },
     "is_valid_rgb_color": {
         "cache": "0x00408C88",
         "tag": "0x00407F4F",
-        "replacement": "crate::math::is_valid_rgb_color"
+        "replacement": "crate::math::c::is_valid_rgb_color"
     },
     "is_valid_point3d": {
         "cache": "0x00401032",
         "tag": "0x0040A15F",
-        "replacement": "crate::math::is_valid_point3d"
+        "replacement": "crate::math::c::is_valid_point3d"
     },
     "is_valid_argb_color": {
         "cache": "0x004011DB",
         "tag": "0x0040A259",
-        "replacement": "crate::math::is_valid_argb_color"
+        "replacement": "crate::math::c::is_valid_argb_color"
     },
     "real_math_reset_precision": {
         "cache": "0x00409782",
@@ -38,11 +38,61 @@
     "dot_product_3d": {
         "cache": "0x00401212",
         "tag": "0x00401104",
-        "replacement": "crate::math::dot_product_3d"
+        "replacement": "crate::math::c::dot_product_3d"
     },
     "scale_vector_3d": {
         "cache": "0x00404D77",
         "tag": "0x004040E8",
-        "replacement": "crate::math::scale_vector_3d"
+        "replacement": "crate::math::c::scale_vector_3d"
+    },
+    "magnitude3d": {
+        "cache": "0x004052D6",
+        "tag": "0x00404692",
+        "replacement": "crate::math::c::magnitude3d"
+    },
+    "magnitude_squared3d": {
+        "cache": "0x004090E3",
+        "tag": "0x004083FF",
+        "replacement": "crate::math::c::magnitude_squared3d"
+    },
+    "sqrt_with_extra_steps": {
+        "cache": "0x00408ABC",
+        "tag": "0x00407D6A",
+        "replacement": "crate::math::c::sqrt"
+    },
+    "sqrt_with_extra_steps_but_not_as_many_as_sqrt_with_extra_steps": {
+        "cache": "0x0040311B",
+        "tag": "0x0040B33E",
+        "replacement": "crate::math::c::sqrt"
+    },
+    "sqrt": {
+        "cache": "0x0040801C",
+        "tag": "0x004071F8",
+        "replacement": "forbid"
+    },
+    "pow_with_extra_steps": {
+        "cache": "0x00406307",
+        "tag": "0x004052AE",
+        "replacement": "crate::math::c::powf"
+    },
+    "modulo_with_extra_steps": {
+        "cache": "0x00409AA7",
+        "tag": "0x00408E68",
+        "replacement": "crate::math::c::fmod"
+    },
+    "powi": {
+        "cache": "0x0040631B",
+        "tag": "0x004052C2",
+        "replacement": "crate::math::c::powi"
+    },
+    "pow": {
+        "cache": "0x00404E62",
+        "tag": "0x004041DD",
+        "replacement": "forbid"
+    },
+    "fmod": {
+        "cache": "0x00408A71",
+        "tag": "0x00407D15",
+        "replacement": "forbid"
     }
 }

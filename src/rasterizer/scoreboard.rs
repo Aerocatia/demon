@@ -7,7 +7,6 @@ use crate::timing::InterpolatedTimer;
 use crate::util::{fmt_to_byte_array, PointerProvider, VariableProvider};
 use c_mine::{c_mine, pointer_from_hook};
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
-use libm::powf;
 use num_enum::TryFromPrimitive;
 
 mod strings;
@@ -21,6 +20,7 @@ pub use color::USE_PLAYER_COLORS;
 use crate::rasterizer::scoreboard::sortable_score::SortableScore;
 use crate::rasterizer::scoreboard::verbose::draw_verbose_scoreboard;
 use strings::ScoreboardScreenText;
+use crate::math::powf::Powf;
 
 const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = variable! {
     name: "game_engine",
@@ -116,10 +116,10 @@ unsafe fn game_engine_post_rasterize_scoreboard() {
     // These screens are mutually exclusive and should not be drawn together
     // Note that 1.9 is a magic number from the game...
     if scoreboard_fade > 0.0 {
-        draw_scoreboard_screen(player_index, powf(scoreboard_fade, 1.9))
+        draw_scoreboard_screen(player_index, scoreboard_fade.powf(1.9))
     }
     else if game_rules_fade > 0.0 {
-        DRAW_GAME_RULES_SCREEN.get()(powf(game_rules_fade, 1.9))
+        DRAW_GAME_RULES_SCREEN.get()(game_rules_fade.powf(1.9))
     }
 }
 

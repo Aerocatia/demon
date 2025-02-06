@@ -1,4 +1,9 @@
-use c_mine::c_mine;
+use crate::math::sqrt::Sqrt;
+
+pub mod c;
+pub mod sqrt;
+pub mod powf;
+pub mod powi;
 
 #[derive(Copy, Clone, Default, Debug, PartialEq)]
 #[repr(C)]
@@ -72,56 +77,10 @@ impl Vector3D {
             z: self.z * by
         }
     }
-}
-
-/// 1 world unit = 10 feet = 3.048 meters
-#[inline(always)]
-pub const fn world_units_to_meters(world_units: f32) -> f32 {
-    world_units * 3.048
-}
-
-#[c_mine]
-pub extern "C" fn is_valid_real(real: f32) -> bool {
-    !real.is_nan()
-}
-
-#[c_mine]
-pub extern "C" fn is_valid_rgb_color(rgb: &ColorRGB) -> bool {
-    rgb.is_valid()
-}
-
-#[c_mine]
-pub extern "C" fn is_valid_argb_color(argb: &ColorARGB) -> bool {
-    argb.is_valid()
-}
-
-#[c_mine]
-pub extern "C" fn is_valid_vector2d(vector: &Vector2D) -> bool {
-    vector.is_valid()
-}
-
-#[c_mine]
-pub extern "C" fn is_valid_point2d(point: &Vector2D) -> bool {
-    point.is_valid()
-}
-
-#[c_mine]
-pub extern "C" fn is_valid_vector3d(vector: &Vector3D) -> bool {
-    vector.is_valid()
-}
-
-#[c_mine]
-pub extern "C" fn is_valid_point3d(point: &Vector3D) -> bool {
-    point.is_valid()
-}
-
-#[c_mine]
-pub extern "C" fn dot_product_3d(a: &Vector3D, b: &Vector3D) -> f32 {
-    a.dot(b)
-}
-
-#[c_mine]
-pub extern "C" fn scale_vector_3d(from: &Vector3D, by: f32, to: &mut Vector3D) -> *mut Vector3D {
-    *to = from.scale(by);
-    to
+    pub fn magnitude_squared(self) -> f32 {
+        self.x * self.x + self.y * self.y + self.z * self.z
+    }
+    pub fn magnitude(self) -> f32 {
+        self.magnitude_squared().sqrt()
+    }
 }
