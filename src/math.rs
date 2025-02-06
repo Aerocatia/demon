@@ -65,6 +65,13 @@ impl Vector3D {
     pub fn dot(&self, other: &Vector3D) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
+    pub fn scale(self, by: f32) -> Self {
+        Self {
+            x: self.x * by,
+            y: self.y * by,
+            z: self.z * by
+        }
+    }
 }
 
 /// 1 world unit = 10 feet = 3.048 meters
@@ -111,4 +118,10 @@ pub extern "C" fn is_valid_point3d(point: &Vector3D) -> bool {
 #[c_mine]
 pub extern "C" fn dot_product_3d(a: &Vector3D, b: &Vector3D) -> f32 {
     a.dot(b)
+}
+
+#[c_mine]
+pub extern "C" fn scale_vector_3d(from: &Vector3D, by: f32, to: &mut Vector3D) -> *mut Vector3D {
+    *to = from.scale(by);
+    to
 }

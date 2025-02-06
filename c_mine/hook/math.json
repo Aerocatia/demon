@@ -39,5 +39,10 @@
         "cache": "0x00401212",
         "tag": "0x00401104",
         "replacement": "crate::math::dot_product_3d"
+    },
+    "scale_vector_3d": {
+        "cache": "0x00404D77",
+        "tag": "0x004040E8",
+        "replacement": "crate::math::scale_vector_3d"
     }
 }
