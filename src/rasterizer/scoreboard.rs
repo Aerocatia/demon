@@ -4,7 +4,7 @@ use crate::multiplayer::game_engine::{get_game_engine_globals_mode, GameEngineGl
 use crate::multiplayer::{get_server_info, ServerInfo};
 use crate::player::{get_local_player_index, local_player_get_player_index, PlayerControlsAction, PlayerID, MAXIMUM_NUMBER_OF_PLAYERS, PLAYERS_TABLE};
 use crate::timing::InterpolatedTimer;
-use crate::util::{fmt_to_byte_array, PointerProvider, VariableProvider};
+use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
 use c_mine::{c_mine, pointer_from_hook};
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use num_enum::TryFromPrimitive;
@@ -135,17 +135,17 @@ pub enum ScoreboardStyle {
     // Simple
 }
 
-unsafe fn format_score<'a>(score: i32, score_buffer: &'a mut [u8], server_info: &ServerInfo) -> &'a str {
+unsafe fn format_score<'a>(score: i32, server_info: &ServerInfo) -> StaticStringBytes<32> {
     if server_info.scoring_uses_time() {
         // Sadly we can't show ms here because the server only syncs the time once per second.
         // Also it wouldn't fit the scoreboard.
         let seconds = score / 30;
         let minutes = seconds / 60;
         let seconds_trunc = seconds % 60;
-        fmt_to_byte_array(score_buffer, format_args!("{minutes}:{seconds_trunc:02}")).unwrap()
+        StaticStringBytes::from_fmt(format_args!("{minutes}:{seconds_trunc:02}")).expect(";-;")
     }
     else {
-        fmt_to_byte_array(score_buffer, format_args!("{score}")).unwrap()
+        StaticStringBytes::from_fmt(format_args!("{score}")).expect(";-;")
     }
 }
 

@@ -1,8 +1,9 @@
-use core::ffi::{c_char, CStr};
+use core::ffi::CStr;
 use core::fmt::{Debug, Formatter};
 use c_mine::c_mine;
 use crate::id::ID;
 use crate::memory::allocate_into_game_state;
+use crate::util::CStrPtr;
 
 pub const DATA_FOURCC: u32 = 0x64407440;
 
@@ -352,8 +353,8 @@ pub extern "C" fn data_allocation_size(count: u16, element_size: u16) -> usize {
 }
 
 #[c_mine]
-pub unsafe extern "C" fn data_initialize(data_table: &mut DataTable<[u8; 0], 0>, name: *const c_char, count: u16, element_size: u16) {
-    let name = CStr::from_ptr(name).to_str().expect("initializing data table but name is not valid UTF-8");
+pub unsafe extern "C" fn data_initialize(data_table: &mut DataTable<[u8; 0], 0>, name: CStrPtr, count: u16, element_size: u16) {
+    let name = name.as_str();
     let ptr: *mut DataTable<[u8; 0], 0> = data_table as *mut _;
     *data_table = DataTable::init(
         name,
@@ -364,10 +365,10 @@ pub unsafe extern "C" fn data_initialize(data_table: &mut DataTable<[u8; 0], 0>,
 }
 
 #[c_mine]
-pub unsafe extern "C" fn game_state_data_new(name: *const c_char, count: u16, element_size: u16) -> *mut DataTable<[u8; 0], 0> {
+pub unsafe extern "C" fn game_state_data_new(name: CStrPtr, count: u16, element_size: u16) -> *mut DataTable<[u8; 0], 0> {
     let size = data_allocation_size.get()(count, element_size);
     let data = allocate_into_game_state(
-        || { CStr::from_ptr(name).to_str().expect("game_state_data_new with invalid name") },
+        name,
         size
     ) as *mut DataTable<[u8; 0], 0>;
     data_initialize.get()(&mut *data, name, count, element_size);

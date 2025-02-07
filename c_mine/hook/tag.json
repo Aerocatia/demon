@@ -2,26 +2,30 @@
     "tag_loaded": {
         "tag": "0x004067C6",
         "cache": "0x0040769E",
-        "replacement": "crate::tag::tag_loaded"
+        "replacement": "crate::tag::c::tag_loaded"
     },
     "tag_get": {
         "tag": "0x0040952F",
         "cache": "0x0040A0DD",
-        "replacement": "crate::tag::tag_get"
+        "replacement": "crate::tag::c::tag_get"
     },
     "tag_block_get_element_with_size": {
         "tag": "0x00404EEE",
         "cache": "0x00405E16",
-        "replacement": "crate::tag::tag_block_get_element_with_size"
+        "replacement": "crate::tag::c::tag_block_get_element_with_size"
     },
     "tag_block_get_address": {
         "tag": "0x004067A8",
         "cache": "0x00407685",
-        "replacement": "crate::tag::tag_block_get_address"
+        "replacement": "crate::tag::c::tag_block_get_address"
     },
     "global_scenario_get": {
         "tag": "0x0040643D",
         "cache": "0x0040736A",
-        "replacement": "crate::tag::global_scenario_get"
+        "replacement": "crate::tag::c::global_scenario_get"
+    },
+    "tag_name_strip_path": {
+        "cache": "0x0040935E",
+        "replacement": "crate::tag::c::tag_name_strip_path"
     }
 }

@@ -11,7 +11,7 @@ use crate::rasterizer::scoreboard::heading::fmt_scoreboard_heading;
 use crate::rasterizer::scoreboard::sortable_score::SortableScore;
 use crate::rasterizer::scoreboard::strings::ScoreboardScreenText;
 use crate::tag::TagID;
-use crate::util::{decode_utf16_inplace, fmt_to_byte_array};
+use crate::util::StaticStringBytes;
 
 pub unsafe fn draw_verbose_scoreboard(
     local_player: PlayerID,
@@ -65,9 +65,7 @@ pub unsafe fn draw_verbose_scoreboard(
         .iter()
         .find(|s| s.player_id == local_player);
 
-    let mut score_header_buffer = [0u8; 64];
     let score_heading = fmt_scoreboard_heading(
-        &mut score_header_buffer,
         scoreboard_text,
         local_player_score_data,
         server_info
@@ -163,22 +161,16 @@ unsafe fn draw_player_score(
         color
     });
 
-    let mut name_buffer = [0u8; 256];
-    let name = decode_utf16_inplace(&player.name, &mut name_buffer);
-
-    let mut score_buffer = [0u8; 32];
-    let score: &str = format_score(player_score_data.score, &mut score_buffer, server_info);
-
-    let mut deaths_buffer = [0u8; 32];
-    let deaths: &str;
-    if player.quit != 0 {
-        deaths = scoreboard_text.quit.as_str();
+    let name = StaticStringBytes::<256>::from_utf16(&player.name);
+    let score = format_score(player_score_data.score, server_info);
+    let deaths: StaticStringBytes<16> = if player.quit != 0 {
+        StaticStringBytes::from_display(scoreboard_text.quit.as_str())
     } else if maximum_lives == 0 {
-        deaths = fmt_to_byte_array(&mut deaths_buffer, format_args!("{}", player.deaths)).expect(";-;")
+        StaticStringBytes::from_display(player.deaths)
     } else if player.out_of_lives() {
-        deaths = scoreboard_text.dead.as_str();
+        StaticStringBytes::from_display(scoreboard_text.dead.as_str())
     } else {
-        deaths = fmt_to_byte_array(&mut deaths_buffer, format_args!("{}", maximum_lives - player.deaths as u32)).expect(";-;")
+        StaticStringBytes::from_display(maximum_lives - player.deaths as u32)
     };
 
     score_writer.draw(
@@ -208,20 +200,16 @@ unsafe fn draw_server_info(opacity: f32, scoreboard_text: &ScoreboardScreenText,
     let mut footer_offset = 480 - large_line_height * 2;
     let mut next_footer_line = |line_height: u16| { footer_offset += line_height; DrawStringBounds { top: footer_offset - large_line_height, left: 8, right: 640 - 5, bottom: 480.min(footer_offset) }};
 
-    let mut server_name_buffer = [0u8; 66];
-    let server_name = decode_utf16_inplace(&server_info.server_name, &mut server_name_buffer);
-
-    let mut server_ip_buffer = [0u8; 66];
-    let server_ip = format_connected_server_ip(&mut server_ip_buffer);
+    let server_name = StaticStringBytes::<66>::from_utf16(&server_info.server_name);
+    let server_ip = format_connected_server_ip();
 
     footer_writer.draw(format_args!("{server_name}"), next_footer_line(large_line_height)).expect(";-;");
     footer_writer.draw(format_args!("{}{server_ip}", scoreboard_text.server_ip_address), next_footer_line(large_line_height)).expect(";-;");
 }
 
-unsafe fn format_connected_server_ip(buffer: &mut [u8]) -> &str {
+unsafe fn format_connected_server_ip() -> StaticStringBytes<66> {
     let (ip,port) = get_connected_ip_address();
-    fmt_to_byte_array(
-        buffer,
+    StaticStringBytes::from_fmt(
         format_args!(
             "{}.{}.{}.{}:{}",
             (ip >> 24) & 0xFF,

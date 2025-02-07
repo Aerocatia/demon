@@ -1,8 +1,7 @@
-use core::ffi::{c_char, CStr};
 use core::sync::atomic::{AtomicUsize, Ordering};
 use c_mine::c_mine;
 use crate::crc32::CRC32;
-use crate::util::VariableProvider;
+use crate::util::{CStrPtr, VariableProvider};
 
 pub mod table;
 
@@ -31,40 +30,30 @@ pub fn update_game_state_crc(data: &[u8]) {
     unsafe { GAME_STATE_CRC.get_mut() }.update(data);
 }
 
-fn allocate_into_game_state<R: FnOnce() -> &'static str>(name_resolver: R, size: usize) -> *mut u8 {
-    if unsafe { *GAME_STATE_GLOBALS_LOCKED.get() } == 1 {
-        let name = name_resolver();
+unsafe fn allocate_into_game_state(name: CStrPtr, size: usize) -> *mut u8 {
+    let name = name.display_lossy();
+    if *GAME_STATE_GLOBALS_LOCKED.get() == 1 {
         panic!("Unable to allocate {name}: Game state globals locked; cannot allocate into the game state anymore!")
     }
     if size > GAME_STATE_CPU_SIZE {
-        let name = name_resolver();
         panic!("Unable to allocate {name}: Cannot allocate {size} bytes (too big)")
     }
 
     let offset = CPU_ALLOCATION_SIZE.fetch_add(size, Ordering::Relaxed);
     if size + offset > GAME_STATE_CPU_SIZE {
-        let name = name_resolver();
         panic!("Unable to allocate {name}: Cannot allocate {size} bytes; only {} bytes remaining", GAME_STATE_CPU_SIZE.saturating_sub(offset));
     }
-
-    unsafe { *ALLOCATION_ADDRESS.get() }.wrapping_byte_add(offset)
+    ALLOCATION_ADDRESS.get().wrapping_byte_add(offset)
 }
 
 #[c_mine]
 pub unsafe extern "C" fn game_state_malloc(
-    name: *const c_char,
-    _data_type: *const c_char,
+    name: CStrPtr,
+    _data_type: *const u8,
     size: usize
 ) -> *mut u8 {
-    let resolve_name = || {
-        if name.is_null() {
-            return "(null)"
-        };
-        CStr::from_ptr(name).to_str().expect("name passed was not UTF-8???")
-    };
-
     update_game_state_crc(&size.to_ne_bytes());
-    allocate_into_game_state(resolve_name, size)
+    allocate_into_game_state(name, size)
 }
 
 #[c_mine]

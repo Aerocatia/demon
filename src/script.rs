@@ -1,11 +1,12 @@
-use core::ffi::{c_char, CStr};
+use core::ffi::CStr;
 use core::mem::transmute;
 use core::ptr::null_mut;
 use c_mine::{c_mine, pointer_from_hook};
 use crate::init::{get_exe_type, ExeType};
 use crate::memory::table::{data_make_valid, game_state_data_new, DataTable};
-use crate::tag::{global_scenario_get, Reflexive, String32, GLOBAL_SCENARIO_INDEX};
-use crate::util::{PointerProvider, VariableProvider};
+use crate::tag::{Reflexive, String32, GLOBAL_SCENARIO_INDEX};
+use crate::tag::c::global_scenario_get;
+use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -111,12 +112,12 @@ pub enum ScriptValueType {
 
 
 #[c_mine]
-pub unsafe extern "C" fn main_crash(param: *const c_char) {
+pub unsafe extern "C" fn main_crash(param: CStrPtr) {
     for i in get_external_globals().iter().take(1) {
         console!("{}", i.name());
     }
-    let message = CStr::from_ptr(param).to_string_lossy();
-    panic!("crash command called with message:\n\n{}", message.as_ref());
+    let message = param.as_str();
+    panic!("crash command called with message:\n\n{message}");
 }
 
 #[c_mine]
@@ -146,6 +147,7 @@ pub unsafe fn get_scenario_globals() -> &'static Reflexive<ScenarioGlobal> {
         return &Reflexive { count: 0, objects: null_mut(), unknown: 0 };
     }
 
+    // TODO: use definitions
     let scenario = global_scenario_get.get()().wrapping_byte_add(0x4A8) as *const Reflexive<ScenarioGlobal>;
     &*scenario
 }
@@ -162,10 +164,8 @@ trait HSGlobal {
 }
 
 #[c_mine]
-pub unsafe extern "C" fn hs_find_global_by_name(name: *const c_char) -> u32 {
-    let Ok(name) = CStr::from_ptr(name).to_str() else {
-        return u32::MAX
-    };
+pub unsafe extern "C" fn hs_find_global_by_name(name: CStrPtr) -> u32 {
+    let name = name.as_str();
 
     const MAX_GLOBALS: usize = 0x8000;
 
@@ -280,7 +280,7 @@ const HS_EXTERNAL_GLOBALS_COUNT: VariableProvider<u16> = variable! {
 #[c_mine]
 pub unsafe extern "C" fn hs_runtime_initialize() {
     let hs_thread_table = game_state_data_new.get()(
-        b"hs thread\x00".as_ptr() as *const c_char,
+        CStrPtr::from_bytes(b"hs thread\x00"),
         0x100,
         0x218
     );
@@ -288,7 +288,7 @@ pub unsafe extern "C" fn hs_runtime_initialize() {
         panic!("hs_runtime_initialize failed to allocate hs_thread_table")
     }
     let hs_globals_table = game_state_data_new.get()(
-        b"hs globals\x00".as_ptr() as *const c_char,
+        CStrPtr::from_bytes(b"hs globals\x00"),
         0x400,
         8
     );

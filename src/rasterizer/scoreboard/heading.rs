@@ -1,28 +1,27 @@
+use core::fmt::Display;
 use crate::multiplayer::game_engine::{get_game_engine_globals_mode, GameEngineGlobalsMode};
 use crate::multiplayer::ServerInfo;
 use crate::player::{MAXIMUM_LIVES, PLAYERS_TABLE};
 use crate::rasterizer::scoreboard::format_score;
 use crate::rasterizer::scoreboard::sortable_score::SortableScore;
 use crate::rasterizer::scoreboard::strings::ScoreboardScreenText;
-use crate::util::{fmt_to_byte_array, PrintfFormatter};
+use crate::util::{PrintfFormatter, StaticStringBytes};
 
 pub unsafe fn fmt_scoreboard_heading<'a>(
-    score_header_buffer: &'a mut [u8],
     scoreboard_text: &'a ScoreboardScreenText,
     local_player_score_data: Option<&SortableScore>,
     server_info: &ServerInfo
-) -> &'a str {
+) -> StaticStringBytes<64> {
     if let Some(local_score) = local_player_score_data {
         if unsafe { get_game_engine_globals_mode() } == GameEngineGlobalsMode::Active {
             fmt_scoreboard_heading_game_in_progress(
-                score_header_buffer,
                 scoreboard_text,
                 local_score,
                 server_info
             )
         }
         else {
-            if server_info.show_red_blue_team_names() {
+            let str = if server_info.show_red_blue_team_names() {
                 let your_team_score = server_info.get_team_score(local_score.team);
                 let enemy_team_score = server_info.get_team_score((local_score.team + 1) & 1);
                 match your_team_score.cmp(&enemy_team_score) {
@@ -45,48 +44,44 @@ pub unsafe fn fmt_scoreboard_heading<'a>(
             else {
                 // multi-team support not implemented
                 ""
-            }
+            };
+            StaticStringBytes::from_display(str)
         }
     }
     else {
-        ""
+        StaticStringBytes::default()
     }
 }
 
 unsafe fn fmt_scoreboard_heading_game_in_progress<'a>(
-    buffer: &'a mut [u8],
     scoreboard_text: &ScoreboardScreenText,
     score_data: &SortableScore,
     server_info: &ServerInfo
-) -> &'a str {
-    let mut lives_buffer = [0u8; 32];
-    let lives = match *MAXIMUM_LIVES.get() {
-        0 => "",
+) -> StaticStringBytes<64> {
+    let lives: StaticStringBytes<32> = match *MAXIMUM_LIVES.get() {
+        0 => StaticStringBytes::default(),
         lives => {
             let remaining_lives = lives.saturating_sub(score_data.deaths as u32);
             match remaining_lives {
-                0 => scoreboard_text.no_lives.as_str(),
-                1 => scoreboard_text.one_life.as_str(),
+                0 => StaticStringBytes::from_display(scoreboard_text.no_lives),
+                1 => StaticStringBytes::from_display(scoreboard_text.one_life),
                 n => {
                     let formatter = PrintfFormatter {
                         printf_string: scoreboard_text.n_lives.as_str(),
                         items: &[&n]
                     };
-                    fmt_to_byte_array(&mut lives_buffer, format_args!("{formatter}")).expect(";-;")
+                    StaticStringBytes::from_fmt(format_args!("{formatter}")).expect(";-;")
                 }
             }
         }
     };
 
     if server_info.show_red_blue_team_names() {
-        let mut red_team_score_buffer = [0u8; 32];
-        let mut blue_team_score_buffer = [0u8; 32];
-
         let red_team_score = server_info.get_team_score(0);
         let blue_team_score = server_info.get_team_score(1);
 
-        let red_team_score_str = format_score(red_team_score, &mut red_team_score_buffer, server_info);
-        let blue_team_score_str = format_score(blue_team_score, &mut blue_team_score_buffer, server_info);
+        let red_team_score_str = format_score(red_team_score, server_info);
+        let blue_team_score_str = format_score(blue_team_score, server_info);
 
         // Tied
         if red_team_score == blue_team_score {
@@ -97,7 +92,7 @@ unsafe fn fmt_scoreboard_heading_game_in_progress<'a>(
                     &lives
                 ]
             };
-            return fmt_to_byte_array(buffer, format_args!("{formatter}")).expect(";-;");
+            return StaticStringBytes::from_fmt(format_args!("{formatter}")).expect(";-;");
         }
 
         let printf_string;
@@ -124,12 +119,11 @@ unsafe fn fmt_scoreboard_heading_game_in_progress<'a>(
             ]
         };
 
-        fmt_to_byte_array(buffer, format_args!("{formatter}")).expect(";-;")
+        StaticStringBytes::from_fmt(format_args!("{formatter}")).expect(";-;")
     }
     else if server_info.is_team_game() {
         // TODO: multiple teams
         write_nth_place(
-            buffer,
             server_info.get_team_score(PLAYERS_TABLE.get_mut().as_mut().unwrap().get_element(score_data.player_id).unwrap().get().team),
             false,
             usize::MAX,
@@ -140,7 +134,6 @@ unsafe fn fmt_scoreboard_heading_game_in_progress<'a>(
     }
     else {
         write_nth_place(
-            buffer,
             score_data.score,
             score_data.is_tied,
             score_data.placement,
@@ -152,22 +145,20 @@ unsafe fn fmt_scoreboard_heading_game_in_progress<'a>(
 }
 
 unsafe fn write_nth_place<'a>(
-    buffer: &'a mut [u8],
     score: i32,
     is_tied: bool,
     placement: usize,
-    lives: &str,
+    lives: impl Display,
     server_info: &ServerInfo,
     scoreboard_text: &ScoreboardScreenText,
-) -> &'a str {
+) -> StaticStringBytes<64> {
     let placement = scoreboard_text
         .placements
         .get(placement)
         .map(|s| s.as_str())
         .unwrap_or("?th");
 
-    let mut score_buffer = [0u8; 32];
-    let score = format_score(score, &mut score_buffer, server_info);
+    let score_buffer = format_score(score, server_info);
 
     let scoreboard = PrintfFormatter {
         printf_string: if is_tied {
@@ -178,9 +169,9 @@ unsafe fn write_nth_place<'a>(
         },
         items: &[
             &placement,
-            &score,
+            &score_buffer,
             &lives
         ]
     };
-    fmt_to_byte_array(buffer, format_args!("{scoreboard}")).expect(";-;")
+    StaticStringBytes::from_fmt(format_args!("{scoreboard}")).expect(";-;")
 }

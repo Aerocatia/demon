@@ -1,10 +1,11 @@
-use core::ffi::{c_char, CStr};
+use core::ffi::CStr;
 use core::fmt::{Debug, Display, Formatter};
-use c_mine::c_mine;
 use crate::id::ID;
 use crate::init::{get_exe_type, ExeType};
 use crate::memory::table::DataTable;
-use crate::util::VariableProvider;
+use crate::util::{CStrPtr, VariableProvider};
+
+pub mod c;
 
 pub const TAG_ID_SALT: u16 = 0x6174;
 pub type TagID = ID<TAG_ID_SALT>;
@@ -237,7 +238,7 @@ pub struct CacheTagInstance {
     pub secondary_tag_group: TagGroupUnsafe,
     pub tertiary_tag_group: TagGroupUnsafe,
     pub tag_id: TagID,
-    pub tag_path: *const c_char,
+    pub tag_path: CStrPtr,
     pub tag_data: *mut [u8; 0],
     pub external: u32,
     pub padding: u32
@@ -256,8 +257,7 @@ impl TagIndex for CacheTagInstance {
     }
 
     unsafe fn get_tag_path(&self) -> &str {
-        assert!(!self.tag_path.is_null(), "Tag path is null!");
-        CStr::from_ptr(self.tag_path).to_str().expect("Tag path is not UTF-8!")
+        self.tag_path.as_str()
     }
 
     fn get_tag_data(&self) -> *mut [u8; 0] {
@@ -354,12 +354,6 @@ pub unsafe fn lookup_tag(path: &str, group: TagGroupUnsafe) -> Option<(&dyn TagI
                 (f as &dyn TagIndex, tag_id)
             })
     }
-}
-
-#[c_mine]
-pub unsafe extern "C" fn tag_loaded(group: TagGroupUnsafe, path: *const c_char) -> TagID {
-    let path = CStr::from_ptr(path).to_str().expect("input tag is not UTF-8");
-    lookup_tag(path, group).map(|t| t.1).unwrap_or(TagID::NULL)
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -618,44 +612,4 @@ pub unsafe fn get_tag_data_checking_tag_group(id: TagID, group: TagGroupUnsafe) 
     get_tag_info(id)
         .ok_or(GetTagDataError::NoMatch { id })
         .and_then(|tag| tag.verify_tag_group(group).map(|_| tag.get_tag_data()))
-}
-
-#[c_mine]
-pub unsafe extern "C" fn tag_get(group: TagGroupUnsafe, id: TagID) -> *mut [u8; 0] {
-    get_tag_data_checking_tag_group(id, group).expect("tag_get failed!")
-}
-
-#[c_mine]
-pub unsafe extern "C" fn tag_block_get_address(reflexive: Option<&Reflexive<[u8; 0]>>) -> *mut [u8; 0] {
-    reflexive.expect("tag_block_get_address with null reflexive").objects
-}
-
-#[c_mine]
-pub unsafe extern "C" fn tag_block_get_element_with_size(
-    reflexive: Option<&Reflexive<[u8; 0]>>,
-    index: usize,
-    element_size: usize
-) -> *mut [u8; 0] {
-    let reflexive = reflexive.expect("tag_block_get_element_with_size with null reflexive");
-    assert!(
-        index < reflexive.len(),
-        "tag_block_get_element_with_size with out-of-bounds index {index} < {} @ 0x{:08X}",
-        reflexive.len(),
-        (reflexive as *const _) as usize
-    );
-
-    let offset = index.checked_mul(element_size)
-        .and_then(|v| isize::try_from(v).ok())
-        .expect("tag_block_get_element_with_size with invalid offset/element size");
-
-    reflexive
-        .objects
-        .wrapping_byte_offset(offset)
-}
-
-#[c_mine]
-pub unsafe extern "C" fn global_scenario_get() -> *mut u8 {
-    let global_scenario = *GLOBAL_SCENARIO.get();
-    assert!(!global_scenario.is_null(), "global_scenario_get(): global_scenario is null!");
-    global_scenario
 }

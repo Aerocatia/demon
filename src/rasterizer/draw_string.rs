@@ -3,7 +3,7 @@ use num_enum::TryFromPrimitive;
 use c_mine::{c_mine, pointer_from_hook};
 use crate::math::{ColorARGB, ColorRGB};
 use crate::tag::{get_tag_info, TagGroup, TagID};
-use crate::util::{PointerProvider, VariableProvider};
+use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
 
 pub const RASTERIZER_DRAW_UNICODE_STRING: PointerProvider<unsafe extern "C" fn(
     rectangle: *const [u32; 2],
@@ -154,9 +154,7 @@ impl DrawStringWriter {
     /// string parameters are not being done somewhere else concurrently.
     pub unsafe fn draw(&self, fmt: core::fmt::Arguments, bounds: DrawStringBounds) -> core::fmt::Result {
         // Rust uses UTF-8
-        let mut buffer = [0u8; 512];
-        crate::util::fmt_to_byte_array(&mut buffer, fmt)?;
-        let buffer_str = core::str::from_utf8(&buffer).expect("fmt_to_byte_array always produces valid utf-8");
+        let buffer = StaticStringBytes::<512>::from_fmt(fmt)?;
 
         // Note that Halo's "unicode", while 16 bits wide, is NOT actual UTF-16 but UCS-2.
         //
@@ -167,7 +165,7 @@ impl DrawStringWriter {
         // We are intending to add proper UTF-8 support later along with support for TTF/OTF fonts.
 
         let mut doubled_up_buffer = [0u16; 512];
-        let mut encoder = buffer_str.encode_utf16();
+        let mut encoder = buffer.as_str().encode_utf16();
         doubled_up_buffer.fill_with(|| encoder.next().unwrap_or(0));
         *doubled_up_buffer.last_mut().expect("should be a last character") = 0;
 

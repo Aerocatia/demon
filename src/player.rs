@@ -5,7 +5,7 @@ use crate::math::{Euler2D, Vector2D};
 use crate::memory::game_state_malloc;
 use crate::memory::table::{game_state_data_new, DataTable};
 use crate::object::ObjectID;
-use crate::util::VariableProvider;
+use crate::util::{CStrPtr, VariableProvider};
 
 pub const PLAYER_ID_SALT: u16 = 0x6C70;
 pub type PlayerID = ID<PLAYER_ID_SALT>;
@@ -265,12 +265,12 @@ pub unsafe extern "C" fn local_player_get_player_index(player_index: u16) -> Pla
 #[c_mine]
 pub unsafe extern "C" fn players_initialize() {
     *PLAYERS_TABLE.get_mut() = Some(&mut *(game_state_data_new.get()(
-        b"players\x00".as_ptr() as *const _,
+        CStrPtr::from_bytes(b"players\x00"),
         MAXIMUM_NUMBER_OF_PLAYERS as u16,
         0x1F8
     ) as *mut _));
     *PLAYER_GLOBALS.get_mut() = Some(&mut *(game_state_malloc.get()(
-        b"players globals\x00".as_ptr() as *const _,
+        CStrPtr::from_bytes(b"players globals\x00"),
         null(),
         0x98
     ) as *mut PlayerGlobals));
@@ -281,7 +281,7 @@ pub unsafe extern "C" fn players_initialize() {
     globals._unknown_0x00 = 0xFFFFFFFF;
 
     *PLAYER_CONTROLS.get_mut() = Some(&mut *(game_state_malloc.get()(
-        b"player control globals\x00".as_ptr() as *const _,
+        CStrPtr::from_bytes(b"player control globals\x00"),
         null(),
         size_of::<PlayerControlTable>()
     ) as *mut _));

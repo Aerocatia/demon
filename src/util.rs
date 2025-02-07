@@ -1,7 +1,9 @@
+use alloc::borrow::Cow;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::char::decode_utf16;
-use core::fmt::{Debug, Display, Formatter};
+use core::ffi::{c_char, CStr};
+use core::fmt::{Debug, Display, Formatter, Write};
 use core::marker::PhantomData;
 use core::mem::transmute_copy;
 use core::ptr::{null, null_mut};
@@ -16,7 +18,7 @@ pub fn get_exe_path() -> String {
     let mut path = [0u8; 1 + MAX_PATH as usize];
     unsafe { GetModuleFileNameA(null_mut(), path.as_mut_ptr(), path.len() as u32); }
 
-    core::ffi::CStr::from_bytes_until_nul(&path)
+    CStr::from_bytes_until_nul(&path)
         .expect("should have gotten something")
         .to_str()
         .expect("non-utf8 exe path???")
@@ -30,7 +32,7 @@ pub fn get_exe_dir() -> String {
         GetModuleFileNameA(null_mut(), path.as_mut_ptr(), path.len() as u32);
         PathRemoveFileSpecA(path.as_mut_ptr());
 
-        core::ffi::CStr::from_bytes_until_nul(&path)
+        CStr::from_bytes_until_nul(&path)
             .expect("should have gotten something")
             .to_str()
             .expect("non-utf8 exe path???")
@@ -231,6 +233,54 @@ impl<T: Sized> PointerProvider<T> {
     }
 }
 
+#[derive(Copy, Clone)]
+pub struct StaticStringBytes<const SIZE: usize>([u8; SIZE], usize);
+
+impl<const SIZE: usize> StaticStringBytes<SIZE> {
+    pub fn from_fmt(fmt: core::fmt::Arguments) -> Result<StaticStringBytes<SIZE>, core::fmt::Error> {
+        let mut bytes = [0u8; SIZE];
+        let length = fmt_to_byte_array(&mut bytes[..SIZE - 1], fmt)?.len();
+        Ok(StaticStringBytes(bytes, length))
+    }
+
+    pub fn from_utf16(utf16: &[u16]) -> StaticStringBytes<SIZE> {
+        let mut bytes = [0u8; SIZE];
+        let length = decode_utf16_inplace(utf16, &mut bytes[..SIZE - 1]).len();
+        StaticStringBytes(bytes, length)
+    }
+
+    pub fn from_display(display: impl Display) -> StaticStringBytes<SIZE> {
+        StaticStringBytes::from_fmt(format_args!("{display}")).expect(";-;")
+    }
+
+    pub fn as_str(&self) -> &str {
+        // Safety: This is guaranteed to be valid UTF-8 because from_fmt guarantees this.
+        unsafe { core::str::from_utf8_unchecked(self.as_bytes()) }
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0[..self.1]
+    }
+
+    pub fn as_bytes_with_null(&self) -> &[u8] {
+        &self.0[..self.1 + 1]
+    }
+}
+
+impl<const SIZE: usize> Default for StaticStringBytes<SIZE> {
+    fn default() -> Self {
+        Self([0u8; SIZE], 0)
+    }
+}
+
+impl<const SIZE: usize> Display for StaticStringBytes<SIZE> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        let str = core::str::from_utf8(&self.0[..self.1])
+            .expect("fmt_to_allocated_byte_array exploded");
+        f.write_str(str)
+    }
+}
+
 /// Write the arguments `fmt` to a byte buffer `bytes`, returning a string reference backed by `bytes`.
 ///
 /// If the byte buffer is not large enough, it will be truncated.
@@ -302,6 +352,53 @@ impl<'a> Display for PrintfFormatter<'a> {
                 panic!("{} contains an unknown formatter", self.printf_string);
             }
             current_string = &after[2..];
+        }
+        Ok(())
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+#[repr(transparent)]
+pub struct CStrPtr(pub *const c_char);
+impl CStrPtr {
+    pub fn from_bytes(bytes: &[u8]) -> Self {
+        if bytes.contains(&0) {
+            Self(bytes.as_ptr() as *const _)
+        }
+        else {
+            panic!("from_bytes with non-null terminated NonNullCStrPtr")
+        }
+    }
+    pub unsafe fn as_str(&self) -> &str {
+        self.as_cstr()
+            .to_str()
+            .expect("got a non-UTF-8 string")
+    }
+    pub unsafe fn to_str_lossy(&self) -> Cow<str> {
+        self.as_cstr()
+            .to_string_lossy()
+    }
+    pub unsafe fn as_cstr(&self) -> &CStr {
+        assert!(!self.0.is_null(), "NonNullCString with null pointer");
+        CStr::from_ptr(self.0)
+    }
+
+    /// Returns an object that can be used to display this string.
+    pub unsafe fn display_lossy<'a>(&'a self) -> LossyStringDisplayer<'a> {
+        LossyStringDisplayer(self.as_cstr().to_bytes())
+    }
+}
+
+/// Object that can be used to display a string lossy without performing any heap allocations.
+#[repr(transparent)]
+pub struct LossyStringDisplayer<'a>(pub &'a [u8]);
+impl<'a> Display for LossyStringDisplayer<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        for c in self.0.utf8_chunks() {
+            f.write_str(c.valid())?;
+            if !c.invalid().is_empty() {
+                f.write_char(char::REPLACEMENT_CHARACTER)?;
+            }
         }
         Ok(())
     }

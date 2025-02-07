@@ -3,7 +3,7 @@ use crate::id::ID;
 use crate::math::{ColorARGB, ColorRGB};
 use crate::memory::table::DataTable;
 use crate::timing::{FixedTimer, TICK_RATE};
-use crate::util::{PointerProvider, VariableProvider};
+use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
 
 pub const ERROR_WAS_SET: VariableProvider<u8> = variable! {
     name: "ERROR_WAS_SET",
@@ -45,15 +45,9 @@ pub enum ErrorPriority {
 }
 
 pub fn error_put_args(priority: ErrorPriority, fmt: core::fmt::Arguments) {
-    // format
-    let mut data = [0u8; 0xFFE];
-    crate::util::fmt_to_byte_array(&mut data, fmt).expect("failed to write error");
-
-    // null terminate
-    *data.last_mut().expect("should be a last one???") = 0;
-
-    // done
-    error_put_message(priority, &data);
+    let err = StaticStringBytes::<0xFFE>::from_fmt(fmt)
+        .expect("failed to write error");
+    error_put_message(priority, err.as_bytes_with_null());
 }
 
 pub fn error_put_message(priority: ErrorPriority, error_bytes: &[u8]) {
@@ -87,15 +81,9 @@ macro_rules! console_color {
 }
 
 pub fn console_put_args(color: Option<&ColorARGB>, fmt: core::fmt::Arguments) {
-    // format
-    let mut data = [0u8; 0xFE];
-    crate::util::fmt_to_byte_array(&mut data, fmt).expect("failed to write console message");
-
-    // null terminate
-    *data.last_mut().expect("should be a last one???") = 0;
-
-    // done
-    console_put_message(color, &data);
+    let data = StaticStringBytes::<0xFE>::from_fmt(fmt)
+        .expect("failed to write console message");
+    console_put_message(color, data.as_bytes_with_null());
 }
 
 fn console_put_message(color: Option<&ColorARGB>, message_bytes: &[u8]) {
