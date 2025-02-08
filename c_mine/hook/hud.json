@@ -1,0 +1,59 @@
+{
+    "hud_draw_screen": {
+        "tag": "0x00409D04",
+        "cache": "0x00405871",
+        "replacement": "crate::rasterizer::hud::c::hud_draw_screen"
+    },
+    "director_get_perspective": {
+        "tag": "0x0040775C",
+        "cache": "0x0040852B"
+    },
+    "rasterizer_hud_begin": {
+        "tag": "0x0040A7BD",
+        "cache": "0x00401C44"
+    },
+    "hud_draw_screen_unknown_0": {
+        "cache": "0x004012E9",
+        "tag": "0x0040A2EF"
+    },
+    "hud_draw_screen_unknown_1": {
+        "cache": "0x00621B40",
+        "tag": "0x006287D0"
+    },
+    "hud_draw_screen_unknown_2": {
+        "cache": "0x006222A0",
+        "tag": "0x00628F30"
+    },
+    "hud_unit_play_sounds": {
+        "cache": "0x004029A0",
+        "tag": "0x0040AF29"
+    },
+    "hud_render_weapon_interface": {
+        "cache": "0x004016E5",
+        "tag": "0x004013B1"
+    },
+    "hud_render_unit_interface": {
+        "cache": "0x00404787",
+        "tag": "0x00403A35"
+    },
+    "hud_render_nav_points": {
+        "cache": "0x00405F79",
+        "tag": "0x0040A083"
+    },
+    "hud_render_damage_indicators": {
+        "cache": "0x0040542A",
+        "tag": "0x004047FF"
+    },
+    "hud_messaging_update": {
+        "cache": "0x00404AF7",
+        "tag": "0x00403E09"
+    },
+    "rasterizer_hud_end": {
+        "cache": "0x00406F4B",
+        "tag": "0x00405fAB"
+    },
+    "draw_temporary_hud": {
+        "cache": "0x006231D0",
+        "tag": "0x00628B12"
+    }
+}

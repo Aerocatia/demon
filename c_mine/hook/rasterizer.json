@@ -35,5 +35,10 @@
     "draw_box": {
         "cache": "0x00406D02",
         "tag": "0x00405D3F"
+    },
+    "pow_1_point_9_with_extra_steps": {
+        "cache": "0x00407D29",
+        "tag": "0x00406ED8",
+        "replacement": "forbid"
     }
 }

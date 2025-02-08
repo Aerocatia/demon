@@ -1,4 +1,4 @@
-use c_mine::{c_mine, pointer_from_hook};
+use c_mine::pointer_from_hook;
 use crate::timing::{get_game_time_fractional, FixedTimer, TICK_RATE};
 use crate::util::{PointerProvider, VariableProvider};
 
@@ -43,8 +43,7 @@ unsafe fn motion_sensor_blip_tick() {
     BLIP_TIMER.run(|| MOTION_SENSOR_BLIP_TICK.get()());
 }
 
-#[c_mine]
-pub unsafe extern "C" fn motion_sensor_tick() {
+pub unsafe fn update_motion_sensor() {
     motion_sensor_sweeper_tick();
     motion_sensor_blip_tick();
 }

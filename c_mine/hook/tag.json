@@ -9,6 +9,11 @@
         "cache": "0x0040A0DD",
         "replacement": "crate::tag::c::tag_get"
     },
+    "tag_get_name": {
+        "tag": "0x00403C6F",
+        "cache": "0x0040499E",
+        "replacement": "crate::tag::c::tag_get_name"
+    },
     "tag_block_get_element_with_size": {
         "tag": "0x00404EEE",
         "cache": "0x00405E16",

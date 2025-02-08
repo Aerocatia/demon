@@ -32,3 +32,4 @@ mod multiplayer;
 mod ui;
 mod rasterizer;
 mod globals;
+mod game_engine;

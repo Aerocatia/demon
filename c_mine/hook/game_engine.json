@@ -1,0 +1,10 @@
+{
+    "game_engine_running": {
+        "cache": "0x004088D7",
+        "tag": "0x00407B58"
+    },
+    "cinematic_in_progress": {
+        "tag": "0x00408F71",
+        "cache": "0x00409B9C"
+    }
+}

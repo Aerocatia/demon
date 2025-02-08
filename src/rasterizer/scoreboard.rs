@@ -17,10 +17,10 @@ mod color;
 
 pub use color::USE_PLAYER_COLORS;
 
+use crate::math::powf::Powf;
 use crate::rasterizer::scoreboard::sortable_score::SortableScore;
 use crate::rasterizer::scoreboard::verbose::draw_verbose_scoreboard;
 use strings::ScoreboardScreenText;
-use crate::math::powf::Powf;
 
 const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = variable! {
     name: "game_engine",

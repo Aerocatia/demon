@@ -1,6 +1,6 @@
 use core::ffi::c_char;
 use c_mine::c_mine;
-use crate::tag::{get_tag_data_checking_tag_group, lookup_tag, Reflexive, TagGroupUnsafe, TagID, GLOBAL_SCENARIO};
+use crate::tag::{get_tag_data_checking_tag_group, get_tag_info, lookup_tag, Reflexive, TagGroupUnsafe, TagID, GLOBAL_SCENARIO};
 use crate::util::CStrPtr;
 
 #[c_mine]
@@ -58,4 +58,13 @@ pub unsafe extern "C" fn tag_name_strip_path(path: CStrPtr) -> CStrPtr {
         .map(|b| (b as *const u8).wrapping_byte_add(1) as *const c_char)
         .map(CStrPtr)
         .unwrap_or(path)
+}
+
+#[c_mine]
+pub unsafe extern "C" fn tag_get_name(tag_id: TagID) -> CStrPtr {
+    let path = get_tag_info(tag_id)
+        .expect("failed to get the tag name")
+        .get_tag_path()
+        .as_ptr() as *const c_char;
+    CStrPtr(path)
 }
