@@ -57,8 +57,8 @@ unsafe fn draw_hud_for_local_player(local_player_index: u16) {
         error!("Can't draw hud for player {player_id:?} because that ID is not valid!");
         return;
     };
-    let player = player.get_mut();
 
+    let player = player.get_mut();
     let perspective = Perspective::from_local_player(local_player_index);
 
     let game_engine_running = GAME_ENGINE_RUNNING.get()();
@@ -70,23 +70,19 @@ unsafe fn draw_hud_for_local_player(local_player_index: u16) {
         update_motion_sensor();
     }
 
-    let globals = HUD_SCRIPTED_GLOBALS.get();
-    match globals {
-        Some(n) => {
-            HUD_DRAW_SCREEN_UNKNOWN_2.get()(player_id);
-            HUD_UNIT_PLAY_SOUNDS.get()(player, **n);
-            if !player.unit.is_null() && perspective.player_has_camera_control() {
-                HUD_RENDER_WEAPON_INTERFACE.get()(player);
-                HUD_RENDER_UNIT_INTERFACE.get()(player);
-                HUD_RENDER_NAV_POINTS.get()(local_player_index);
-                HUD_RENDER_DAMAGE_INDICATORS.get()(local_player_index);
-            }
-        },
-        None => {
-            HUD_UNIT_PLAY_SOUNDS.get()(player, 0);
+    let should_show_hud = *HUD_SCRIPTED_GLOBALS.get().unwrap_or(&0);
+
+    if should_show_hud != 0 {
+        HUD_DRAW_SCREEN_UNKNOWN_2.get()(player_id);
+        if !player.unit.is_null() && perspective.player_has_camera_control() {
+            HUD_RENDER_WEAPON_INTERFACE.get()(player);
+            HUD_RENDER_UNIT_INTERFACE.get()(player);
+            HUD_RENDER_NAV_POINTS.get()(local_player_index);
+            HUD_RENDER_DAMAGE_INDICATORS.get()(local_player_index);
         }
     }
 
+    HUD_UNIT_PLAY_SOUNDS.get()(player, should_show_hud);
     HUD_MESSAGING_UPDATE.get()(local_player_index);
 }
 
