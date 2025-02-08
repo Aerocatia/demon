@@ -2,8 +2,8 @@ use crate::math::{ColorARGB, ColorRGB};
 use crate::memory::table::DataTable;
 use crate::multiplayer::{get_connected_ip_address, Gametype, ServerInfo};
 use crate::player::{Player, PlayerID, MAXIMUM_LIVES, PLAYERS_TABLE};
-use crate::rasterizer::draw_box;
-use crate::rasterizer::draw_string::{DrawStringBounds, DrawStringJustification, DrawStringWriter, DEFAULT_WHITE};
+use crate::rasterizer::{draw_box, InterfaceCanvasBounds};
+use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter, DEFAULT_WHITE};
 use crate::rasterizer::font::get_font_tag_height;
 use crate::rasterizer::scoreboard::color::{get_scoreboard_color, HEADER_COLOR, HEADING_COLOR, HIGHLIGHT_BOOST};
 use crate::rasterizer::scoreboard::{format_score, SHOW_SERVER_INFO};
@@ -41,10 +41,10 @@ pub unsafe fn draw_verbose_scoreboard(
 
     // originally top - 1
     let mut score_offset = top;
-    let mut next_score_line = |line_height: u16| { score_offset += line_height; DrawStringBounds { top: score_offset - small_line_height, left: 8, right: 640 - 5, bottom: bottom.min(score_offset) }};
+    let mut next_score_line = |line_height: u16| { score_offset += line_height; InterfaceCanvasBounds { top: score_offset - small_line_height, left: 8, right: 640 - 5, bottom: bottom.min(score_offset) }};
 
     draw_box(
-        DrawStringBounds {
+        InterfaceCanvasBounds {
             top,
             left,
             right,
@@ -140,7 +140,7 @@ unsafe fn draw_player_score(
     server_info: &ServerInfo,
     score_writer: &mut DrawStringWriter,
     small_line_height: u16,
-    bounds: DrawStringBounds,
+    bounds: InterfaceCanvasBounds,
     maximum_lives: u32,
     players: &mut &mut DataTable<Player, 27760>,
     player_score_data: &SortableScore
@@ -198,7 +198,7 @@ unsafe fn draw_server_info(opacity: f32, scoreboard_text: &ScoreboardScreenText,
     );
     footer_writer.set_justification(DrawStringJustification::Right);
     let mut footer_offset = 480 - large_line_height * 2;
-    let mut next_footer_line = |line_height: u16| { footer_offset += line_height; DrawStringBounds { top: footer_offset - large_line_height, left: 8, right: 640 - 5, bottom: 480.min(footer_offset) }};
+    let mut next_footer_line = |line_height: u16| { footer_offset += line_height; InterfaceCanvasBounds { top: footer_offset - large_line_height, left: 8, right: 640 - 5, bottom: 480.min(footer_offset) }};
 
     let server_name = StaticStringBytes::<66>::from_utf16(&server_info.server_name);
     let server_ip = format_connected_server_ip();

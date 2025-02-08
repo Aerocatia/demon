@@ -1,7 +1,6 @@
 use num_enum::TryFromPrimitive;
 use c_mine::pointer_from_hook;
 use crate::math::ColorARGB;
-use crate::rasterizer::draw_string::DrawStringBounds;
 use crate::util::PointerProvider;
 
 pub mod scoreboard;
@@ -10,6 +9,41 @@ pub mod motion_sensor;
 pub mod player_colors;
 pub mod font;
 pub mod hud;
+
+/// Global canvas bounds for drawing interfaces.
+///
+/// TODO: Currently this is just 640x480, but this is intended to be adapted to the user's current
+///       aspect ratio, and sub-interfaces will use their own internal scaling.
+pub fn get_global_interface_canvas_bounds() -> InterfaceCanvasBounds {
+    InterfaceCanvasBounds {
+        top: 0,
+        left: 0,
+        right: 640,
+        bottom: 480
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct InterfaceCanvasBounds {
+    pub top: u16,
+    pub left: u16,
+    pub right: u16,
+    pub bottom: u16
+}
+
+impl InterfaceCanvasBounds {
+    pub const fn width(&self) -> u16 {
+        self.assert_valid();
+        self.right - self.left
+    }
+    pub const fn height(&self) -> u16 {
+        self.assert_valid();
+        self.bottom - self.top
+    }
+    pub const fn assert_valid(&self) {
+        assert!(self.left <= self.right && self.bottom <= self.top)
+    }
+}
 
 const DIRECTOR_GET_PERSPECTIVE: PointerProvider<extern "C" fn(u16) -> u16> = pointer_from_hook!("director_get_perspective");
 
@@ -38,7 +72,7 @@ impl Perspective {
 
 const DRAW_BOX: PointerProvider<unsafe extern "C" fn(bounds: *const u16, color: u32)> = pointer_from_hook!("draw_box");
 
-pub unsafe fn draw_box(bounds: DrawStringBounds, color: ColorARGB) {
+pub unsafe fn draw_box(bounds: InterfaceCanvasBounds, color: ColorARGB) {
     let b = [
         bounds.top,
         bounds.left,

@@ -1,11 +1,18 @@
+use core::sync::atomic::{AtomicU32, Ordering};
 use c_mine::{get_hs_global, pointer_from_hook};
 use crate::game_engine::GAME_ENGINE_RUNNING;
+use crate::globals::get_interface_fonts;
 use crate::player::{get_local_player_index, local_player_get_player_index, Player, PlayerID, PLAYERS_TABLE};
+use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter};
+use crate::rasterizer::font::get_font_tag_height;
 use crate::rasterizer::motion_sensor::update_motion_sensor;
-use crate::rasterizer::Perspective;
+use crate::rasterizer::{get_global_interface_canvas_bounds, InterfaceCanvasBounds, Perspective};
+use crate::timing::InterpolatedTimer;
 use crate::util::{PointerProvider, VariableProvider};
 
 pub mod c;
+
+pub static mut SHOW_FPS: bool = false;
 
 const RASTERIZER_HUD_BEGIN: PointerProvider<extern "C" fn()> = pointer_from_hook!("rasterizer_hud_begin");
 const RASTERIZER_HUD_END: PointerProvider<extern "C" fn()> = pointer_from_hook!("rasterizer_hud_end");
@@ -33,6 +40,10 @@ pub unsafe fn draw_hud() {
     RASTERIZER_HUD_END.get()();
     if *get_hs_global!("temporary_hud") != 0 {
         DRAW_TEMPORARY_HUD.get()();
+    }
+
+    if SHOW_FPS {
+        show_fps();
     }
 }
 
@@ -77,4 +88,43 @@ unsafe fn draw_hud_for_local_player(local_player_index: u16) {
     }
 
     HUD_MESSAGING_UPDATE.get()(local_player_index);
+}
+
+pub unsafe fn show_fps() {
+    pub static TIMER: InterpolatedTimer = InterpolatedTimer::second_timer();
+    pub static FPS_SHOWN: AtomicU32 = AtomicU32::new(0);
+    pub static FRAMES_IN_LAST_INTERVAL: AtomicU32 = AtomicU32::new(0);
+    pub static CURRENT_TIMER_INT: AtomicU32 = AtomicU32::new(u32::MAX);
+
+    let mut current_timer_int_value = CURRENT_TIMER_INT.load(Ordering::Relaxed);
+    if current_timer_int_value == u32::MAX {
+        TIMER.start();
+        current_timer_int_value = 0;
+        CURRENT_TIMER_INT.swap(0, Ordering::Relaxed);
+    }
+
+    let intervals = TIMER.value().0 as u32;
+    if intervals != current_timer_int_value {
+        CURRENT_TIMER_INT.swap(intervals, Ordering::Relaxed);
+        FPS_SHOWN.store(FRAMES_IN_LAST_INTERVAL.swap(0, Ordering::Relaxed), Ordering::Relaxed);
+    }
+
+    FRAMES_IN_LAST_INTERVAL.fetch_add(1, Ordering::Relaxed);
+
+    let fonts = get_interface_fonts();
+    let terminal_font = fonts.terminal_font;
+    if terminal_font.is_null() {
+        return
+    }
+
+    let mut writer = DrawStringWriter::new_simple(terminal_font, fonts.hud_text_color);
+    writer.set_justification(DrawStringJustification::Right);
+
+    let fps = FPS_SHOWN.load(Ordering::Relaxed);
+    let (height, leading) = get_font_tag_height(terminal_font);
+    let height = height + leading;
+    writer.draw(format_args!("{fps}"), InterfaceCanvasBounds {
+        bottom: height,
+        ..get_global_interface_canvas_bounds()
+    }).expect(";-;");
 }

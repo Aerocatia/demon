@@ -2,6 +2,7 @@ use core::ptr::null;
 use num_enum::TryFromPrimitive;
 use c_mine::{c_mine, pointer_from_hook};
 use crate::math::{ColorARGB, ColorRGB};
+use crate::rasterizer::InterfaceCanvasBounds;
 use crate::tag::{get_tag_info, TagGroup, TagID};
 use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
 
@@ -79,13 +80,6 @@ pub const DEFAULT_WHITE: ColorARGB = ColorARGB {
     }
 };
 
-pub struct DrawStringBounds {
-    pub top: u16,
-    pub left: u16,
-    pub right: u16,
-    pub bottom: u16
-}
-
 pub struct DrawStringWriter {
     font_tag: TagID,
     style: DrawStringStyle,
@@ -152,7 +146,7 @@ impl DrawStringWriter {
     ///
     /// This function is not thread-safe, and no guarantees are made that the state of the draw
     /// string parameters are not being done somewhere else concurrently.
-    pub unsafe fn draw(&self, fmt: core::fmt::Arguments, bounds: DrawStringBounds) -> core::fmt::Result {
+    pub unsafe fn draw(&self, fmt: core::fmt::Arguments, bounds: InterfaceCanvasBounds) -> core::fmt::Result {
         // Rust uses UTF-8
         let buffer = StaticStringBytes::<512>::from_fmt(fmt)?;
 

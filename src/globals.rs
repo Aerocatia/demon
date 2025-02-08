@@ -1,3 +1,4 @@
+use crate::math::ColorARGB;
 use crate::tag::{get_tag_data_checking_tag_group, Reflexive, TagGroup, TagID, TagReference};
 use crate::util::VariableProvider;
 
@@ -40,7 +41,8 @@ pub unsafe fn get_interface_bitmaps() -> &'static InterfaceBitmaps {
 pub struct InterfaceFonts {
     pub terminal_font: TagID,
     pub full_screen_font: TagID,
-    pub split_screen_font: TagID
+    pub split_screen_font: TagID,
+    pub hud_text_color: ColorARGB
 }
 
 pub unsafe fn get_interface_fonts() -> InterfaceFonts {
@@ -49,10 +51,12 @@ pub unsafe fn get_interface_fonts() -> InterfaceFonts {
 
     let full_screen = hud_globals.wrapping_byte_add(0x48) as *const TagReference;
     let split_screen = hud_globals.wrapping_byte_add(0x58) as *const TagReference;
+    let hud_text_color = hud_globals.wrapping_byte_add(0x80) as *const ColorARGB;
 
     InterfaceFonts {
         terminal_font: interface.font_terminal.tag_id,
         full_screen_font: (*full_screen).tag_id,
         split_screen_font: (*split_screen).tag_id,
+        hud_text_color: *hud_text_color
     }
 }
