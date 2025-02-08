@@ -16,11 +16,13 @@
     "game_engine_post_rasterize_scoreboard": {
         "cache": "0x005A4360",
         "tag": "0x005AA4C0",
+        "replacement": "forbid",
         "sudo": true
     },
     "draw_scoreboard_screen": {
         "cache": "0x005ABBB0",
         "tag": "0x005B1D10",
+        "replacement": "forbid",
         "sudo": true
     },
     "draw_game_rules_screen": {
