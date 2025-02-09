@@ -13,5 +13,17 @@
         "cache": "0x0040A362",
         "tag": "0x004097CD",
         "replacement": "crate::object::weapon::get_weapon_age"
+    },
+    "object_disconnect_from_map": {
+        "cache": "0x004084D6",
+        "tag": "0x00407702"
+    },
+    "object_reconnect_to_map": {
+        "cache": "0x004093DB",
+        "tag": "0x00408729"
+    },
+    "object_set_position": {
+        "cache": "0x00404F75",
+        "tag": "0x004042FF"
     }
 }

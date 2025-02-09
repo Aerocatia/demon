@@ -84,3 +84,21 @@ pub extern "C" fn fmod(base: f32, modulo: f32) -> f32 {
 pub extern "C" fn powi(base: f32, exponent: i32) -> f32 {
     base.powi(exponent)
 }
+
+#[c_mine]
+pub extern "C" fn fabs(float: f32) -> f32 {
+    float.fabs()
+}
+
+#[c_mine]
+pub extern "C" fn normalize_3d(vector: &mut Vector3D) -> f32 {
+    let magnitude = vector.magnitude();
+    if let Some(normalized) = vector.normalized() {
+        *vector = normalized;
+        magnitude
+    }
+    else {
+        // ...don't actually normalize the vector, and then hope that the game doesn't explode!
+        0.0
+    }
+}

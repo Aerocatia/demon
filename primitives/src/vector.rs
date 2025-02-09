@@ -1,5 +1,7 @@
 use crate::float::FloatFunctions;
 
+pub const MIN_MAGNITUDE: f32 = 0.0001;
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct Matrix3x3 {
@@ -55,6 +57,16 @@ impl Vector3D {
     }
     pub fn magnitude(self) -> f32 {
         self.magnitude_squared().sqrt()
+    }
+    pub fn normalized(self) -> Option<Self> {
+        let magnitude = self.magnitude();
+        if magnitude < MIN_MAGNITUDE {
+            None
+        }
+        else {
+            // Bad for floating point precision, but needed to be accurate to the original...
+            Some(self.scale(1.0 / magnitude))
+        }
     }
 }
 
