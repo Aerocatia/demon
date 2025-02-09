@@ -1,0 +1,9 @@
+[package]
+name = "tag_structs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+primitives = { path = "../primitives" }
+tag_structs_gen = { path = "../tag_structs_gen" }
+num_enum = { version = "0.7.3", default-features = false }

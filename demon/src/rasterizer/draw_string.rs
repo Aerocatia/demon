@@ -1,7 +1,7 @@
 use core::ptr::null;
 use num_enum::TryFromPrimitive;
 use c_mine::{c_mine, pointer_from_hook};
-use crate::math::{ColorARGB, ColorRGB};
+use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use crate::rasterizer::InterfaceCanvasBounds;
 use crate::tag::{get_tag_info, TagGroup, TagID};
 use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
@@ -72,7 +72,7 @@ const DRAW_STRING_FONT: VariableProvider<TagID> = variable! {
 };
 
 pub const DEFAULT_WHITE: ColorARGB = ColorARGB {
-    alpha: 1.0,
+    a: 1.0,
     color: ColorRGB {
         r: 1.0,
         g: 1.0,

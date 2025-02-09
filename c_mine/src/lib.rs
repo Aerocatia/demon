@@ -200,7 +200,7 @@ pub fn generate_hs_external_globals_array(_: TokenStream) -> TokenStream {
                 continue
             };
 
-            fmt::write(&mut data, format_args!("ExternalGlobal::new(b\"{name}\\x00\", ScriptValueType::{global_type}, ")).expect(";-;");
+            fmt::write(&mut data, format_args!("ExternalGlobal::new(b\"{name}\\x00\", ScenarioScriptValueType::{global_type}, ")).expect(";-;");
 
             if !address.starts_with("0x") {
                 fmt::write(&mut data, format_args!("unsafe {{ core::mem::transmute(&mut {address} as *mut _) }}")).expect(";-;");

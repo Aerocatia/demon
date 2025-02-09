@@ -1,4 +1,4 @@
-use crate::math::ColorRGB;
+use tag_structs::primitives::color::ColorRGB;
 
 pub const PLAYER_ICON_COLORS: [ColorRGB; 18] = [
     ColorRGB { b: 0xFF as f32 / 255.0, g: 0xFF as f32 / 255.0, r: 0xFF as f32 / 255.0 },

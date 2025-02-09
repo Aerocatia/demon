@@ -1,6 +1,6 @@
 use num_enum::TryFromPrimitive;
 use c_mine::pointer_from_hook;
-use crate::math::ColorARGB;
+use tag_structs::primitives::color::{ColorARGB, Pixel32};
 use crate::util::PointerProvider;
 
 pub mod scoreboard;
@@ -70,7 +70,7 @@ impl Perspective {
 }
 
 
-const DRAW_BOX: PointerProvider<unsafe extern "C" fn(bounds: *const u16, color: u32)> = pointer_from_hook!("draw_box");
+const DRAW_BOX: PointerProvider<unsafe extern "C" fn(bounds: *const u16, color: Pixel32)> = pointer_from_hook!("draw_box");
 
 pub unsafe fn draw_box(bounds: InterfaceCanvasBounds, color: ColorARGB) {
     let b = [
@@ -80,5 +80,5 @@ pub unsafe fn draw_box(bounds: InterfaceCanvasBounds, color: ColorARGB) {
         bounds.right
     ];
 
-    DRAW_BOX.get()(b.as_ptr(), color.to_a8r8g8b8());
+    DRAW_BOX.get()(b.as_ptr(), color.to_pixel32());
 }

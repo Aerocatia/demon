@@ -1,4 +1,4 @@
-use crate::math::{ColorARGB, ColorRGB};
+use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use crate::memory::table::DataTable;
 use crate::multiplayer::{get_connected_ip_address, Gametype, ServerInfo};
 use crate::player::{Player, PlayerID, MAXIMUM_LIVES, PLAYERS_TABLE};
@@ -24,7 +24,7 @@ pub unsafe fn draw_verbose_scoreboard(
 ) {
     let mut score_writer = DrawStringWriter::new_simple(
         small_ui,
-        ColorARGB { alpha: opacity, color: HEADING_COLOR }
+        ColorARGB { a: opacity, color: HEADING_COLOR }
     );
 
     // originally hardcoded to 15, with an extra 2 pixels of leeway when doing the actual text draw
@@ -51,7 +51,7 @@ pub unsafe fn draw_verbose_scoreboard(
             bottom
         },
         ColorARGB {
-            alpha: opacity * 0.69,
+            a: opacity * 0.69,
             color: ColorRGB {
                 r: 0.125,
                 g: 0.125,
@@ -87,7 +87,7 @@ pub unsafe fn draw_verbose_scoreboard(
         560
     ]);
 
-    score_writer.set_color(ColorARGB { alpha: opacity, color: HEADER_COLOR });
+    score_writer.set_color(ColorARGB { a: opacity, color: HEADER_COLOR });
 
     score_writer.draw(
         format_args!(
@@ -157,7 +157,7 @@ unsafe fn draw_player_score(
     }
 
     score_writer.set_color(ColorARGB {
-        alpha: opacity,
+        a: opacity,
         color
     });
 
@@ -194,7 +194,7 @@ unsafe fn draw_server_info(opacity: f32, scoreboard_text: &ScoreboardScreenText,
     let large_line_height = get_font_tag_height(large_font).0;
     let mut footer_writer = DrawStringWriter::new_simple(
         large_font,
-        ColorARGB { alpha: opacity, color: DEFAULT_WHITE.color }
+        ColorARGB { a: opacity, color: DEFAULT_WHITE.color }
     );
     footer_writer.set_justification(DrawStringJustification::Right);
     let mut footer_offset = 480 - large_line_height * 2;

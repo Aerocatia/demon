@@ -1,10 +1,10 @@
 use core::ffi::CStr;
 use core::mem::transmute;
-use core::ptr::null_mut;
 use c_mine::{c_mine, pointer_from_hook};
+use tag_structs::{ScenarioGlobal, ScenarioScriptValueType};
 use crate::init::{get_exe_type, ExeType};
 use crate::memory::table::{data_make_valid, game_state_data_new, DataTable};
-use crate::tag::{Reflexive, String32, GLOBAL_SCENARIO_INDEX};
+use crate::tag::{ReflexiveImpl, GLOBAL_SCENARIO_INDEX};
 use crate::tag::c::global_scenario_get;
 use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 
@@ -12,7 +12,7 @@ use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 #[derive(Copy, Clone)]
 pub struct HSExternalGlobalDefinition {
     name: *const u8,
-    global_type: ScriptValueType,
+    global_type: ScenarioScriptValueType,
     padding: u16,
     ptr: *mut [u8; 0],
     unknown: u32
@@ -23,7 +23,7 @@ pub struct ExternalGlobal {
     definition: HSExternalGlobalDefinition
 }
 impl ExternalGlobal {
-    pub const fn new(name: &'static [u8], global_type: ScriptValueType, address: *mut [u8; 0]) -> Self {
+    pub const fn new(name: &'static [u8], global_type: ScenarioScriptValueType, address: *mut [u8; 0]) -> Self {
         Self {
             name_buffer: name,
             definition: HSExternalGlobalDefinition {
@@ -56,61 +56,6 @@ pub fn get_external_globals() -> &'static [ExternalGlobal] {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-#[repr(u16)]
-pub enum ScriptValueType {
-    Unparsed,
-    SpecialForm,
-    FunctionName,
-    Passthrough,
-    Void,
-    Boolean,
-    Real,
-    Short,
-    Long,
-    String,
-    Script,
-    TriggerVolume,
-    CutsceneFlag,
-    CutsceneCameraPoint,
-    CutsceneTitle,
-    CutsceneRecording,
-    DeviceGroup,
-    Ai,
-    AiCommandList,
-    StartingProfile,
-    Conversation,
-    Navpoint,
-    HudMessage,
-    ObjectList,
-    Sound,
-    Effect,
-    Damage,
-    LoopingSound,
-    AnimationGraph,
-    ActorVariant,
-    DamageEffect,
-    ObjectDefinition,
-    GameDifficulty,
-    Team,
-    AiDefaultState,
-    ActorType,
-    HudCorner,
-    Object,
-    Unit,
-    Vehicle,
-    Weapon,
-    Device,
-    Scenery,
-    ObjectName,
-    UnitName,
-    VehicleName,
-    WeaponName,
-    DeviceName,
-    SceneryName,
-}
-
-
 #[c_mine]
 pub unsafe extern "C" fn main_crash(param: CStrPtr) {
     for i in get_external_globals().iter().take(1) {
@@ -131,25 +76,11 @@ pub extern "C" fn hs_global_external_get(index: u16) -> &'static HSExternalGloba
     &global.definition
 }
 
-// TODO: use definitions
-#[repr(C)]
-pub struct ScenarioGlobal {
-    pub name: String32,
-    pub global_type: ScriptValueType,
-    pub padding: u16,
-    pub more_padding: u32,
-    pub initialization_expression_index: u32,
-    pub even_more_padding: [u8; 48]
-}
-
-pub unsafe fn get_scenario_globals() -> &'static Reflexive<ScenarioGlobal> {
+pub unsafe fn get_scenario_globals() -> &'static [ScenarioGlobal] {
     if GLOBAL_SCENARIO_INDEX.get().is_null() {
-        return &Reflexive { count: 0, objects: null_mut(), unknown: 0 };
+        return &[];
     }
-
-    // TODO: use definitions
-    let scenario = global_scenario_get.get()().wrapping_byte_add(0x4A8) as *const Reflexive<ScenarioGlobal>;
-    &*scenario
+    global_scenario_get.get()().globals.as_slice()
 }
 
 trait HSGlobal {
@@ -160,7 +91,7 @@ trait HSGlobal {
     fn name_bytes(&'static self) -> &'static [u8];
 
     /// Type of global
-    fn global_type(&self) -> ScriptValueType;
+    fn global_type(&self) -> ScenarioScriptValueType;
 }
 
 #[c_mine]
@@ -176,8 +107,8 @@ pub unsafe extern "C" fn hs_find_global_by_name(name: CStrPtr) -> u32 {
         }
     }
 
-    for (index, global) in get_scenario_globals().as_slice().iter().take(MAX_GLOBALS).enumerate() {
-        if global.name.as_str() == name {
+    for (index, global) in get_scenario_globals().iter().take(MAX_GLOBALS).enumerate() {
+        if global.name.to_str() == name {
             return index as u32
         }
     }
@@ -208,20 +139,20 @@ impl HSGlobal for ExternalGlobal {
     fn name_bytes(&'static self) -> &'static [u8] {
         self.name_buffer
     }
-    fn global_type(&self) -> ScriptValueType {
+    fn global_type(&self) -> ScenarioScriptValueType {
         self.definition.global_type
     }
 }
 
 impl HSGlobal for ScenarioGlobal {
     fn name(&'static self) -> &'static str {
-        self.name.as_str()
+        self.name.to_str()
     }
     fn name_bytes(&'static self) -> &'static [u8] {
-        self.name.data.as_slice()
+        self.name.to_str().as_bytes()
     }
-    fn global_type(&self) -> ScriptValueType {
-        self.global_type
+    fn global_type(&self) -> ScenarioScriptValueType {
+        self.r#type.get()
     }
 }
 
@@ -235,8 +166,8 @@ pub unsafe extern "C" fn hs_enumerate_globals() {
         }
         HS_ENUMERATE_ADD_RESULT.get()(i.name_buffer.as_ptr())
     }
-    for i in get_scenario_globals().as_slice() {
-        HS_ENUMERATE_ADD_RESULT.get()(i.name.as_str().as_ptr())
+    for i in get_scenario_globals() {
+        HS_ENUMERATE_ADD_RESULT.get()(i.name.to_str().as_ptr())
     }
 }
 
@@ -246,7 +177,7 @@ pub unsafe extern "C" fn hs_global_get_name(index: u16) -> *const u8 {
 }
 
 #[c_mine]
-pub unsafe extern "C" fn hs_global_get_type(index: u16) -> ScriptValueType {
+pub unsafe extern "C" fn hs_global_get_type(index: u16) -> ScenarioScriptValueType {
     get_global_by_index(index).global_type()
 }
 

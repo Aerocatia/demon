@@ -1,5 +1,7 @@
 use core::ffi::CStr;
 use core::fmt::{Debug, Display, Formatter};
+use tag_structs::primitives::NamedTagStruct;
+use tag_structs::Scenario;
 use crate::id::ID;
 use crate::init::{get_exe_type, ExeType};
 use crate::memory::table::DataTable;
@@ -9,8 +11,14 @@ pub mod c;
 
 pub const TAG_ID_SALT: u16 = 0x6174;
 pub type TagID = ID<TAG_ID_SALT>;
+impl From<tag_structs::primitives::data::TagID> for TagID {
+    fn from(value: tag_structs::primitives::data::TagID) -> Self {
+        Self::from_full_id(value.0)
+    }
+}
 
-pub const GLOBAL_SCENARIO: VariableProvider<*mut u8> = variable! {
+
+pub const GLOBAL_SCENARIO: VariableProvider<Option<&mut Scenario>> = variable! {
     name: "global_scenario",
     cache_address: 0x00F1A67C,
     tag_address: 0x00FD1C44
@@ -59,56 +67,62 @@ impl String32 {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub struct UnknownType;
+impl NamedTagStruct for UnknownType {
+    fn name() -> &'static str {
+        "(unknown)"
+    }
+}
+
 /// These methods are unsafe as we cannot guarantee yet that the tag data is not being accessed
 /// concurrently.
-#[repr(C)]
-pub struct Reflexive<T: Sized + 'static> {
-    pub count: usize,
-    pub objects: *mut T,
-    pub unknown: u32
+pub unsafe trait ReflexiveImpl<T: Sized + 'static>: Copy + Clone {
+    fn len(self) -> usize;
+    fn is_empty(self) -> bool;
+    unsafe fn as_slice(self) -> &'static [T];
+    unsafe fn as_mut_slice(self) -> &'static mut [T];
+    unsafe fn get(self, index: usize) -> Option<&'static T>;
+    unsafe fn get_mut(self, index: usize) -> Option<&'static mut T>;
 }
-impl<T: Sized + 'static> Reflexive<T> {
-    pub const fn len(&self) -> usize {
-        self.count
+
+unsafe impl<T: Sized + Copy + Clone + Debug + 'static + NamedTagStruct> ReflexiveImpl<T> for tag_structs::primitives::data::Reflexive<T> {
+    fn len(self) -> usize {
+        self.count as usize
     }
-    pub const fn is_empty(&self) -> bool {
-        self.len() == 0
+
+    fn is_empty(self) -> bool {
+        self.count == 0
     }
-    pub unsafe fn as_slice(&self) -> &[T] {
+
+    unsafe fn as_slice(self) -> &'static [T] {
         if self.is_empty() {
             return &[]
         }
-        if self.objects.is_null() {
-            panic!("as_slice() -> Bad reflexive: {self:?} @ 0x{:08X}", (self as *const _) as usize);
+        let address = self.address.0 as *const T;
+        if address.is_null() {
+            panic!("as_slice() -> Bad reflexive {}: {self:?}", T::name());
         }
-        core::slice::from_raw_parts(self.objects, self.count)
+        core::slice::from_raw_parts(address, self.len())
     }
-    pub unsafe fn as_mut_slice(&self) -> &mut [T] {
+
+    unsafe fn as_mut_slice(self) -> &'static mut [T] {
         if self.is_empty() {
             return &mut []
         }
-
-        if self.objects.is_null() {
-            panic!("as_mut_slice() -> Bad reflexive: {self:?} @ 0x{:08X}", (self as *const _) as usize);
+        let address = self.address.0 as *mut T;
+        if address.is_null() {
+            panic!("as_slice() -> Bad reflexive {}: {self:?}", T::name());
         }
-        core::slice::from_raw_parts_mut(self.objects, self.count)
+        core::slice::from_raw_parts_mut(address, self.len())
     }
-    pub unsafe fn get(&self, index: usize) -> Option<&T> {
+
+    unsafe fn get(self, index: usize) -> Option<&'static T> {
         self.as_slice().get(index)
     }
-    pub unsafe fn get_mut(&self, index: usize) -> Option<&mut T> {
+
+    unsafe fn get_mut(self, index: usize) -> Option<&'static mut T> {
         self.as_mut_slice().get_mut(index)
-    }
-}
-impl<T: Sized> Debug for Reflexive<T> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
-        f.write_fmt(
-            format_args!(
-                "Reflexive<{type_name}> {{ count={count}, objects=0x{objects:08X} }}",
-                type_name=core::any::type_name::<T>(),
-                count=self.count,
-                objects=self.objects as usize
-            ))
     }
 }
 
@@ -134,39 +148,39 @@ impl TagReference {
 
 /// These methods are unsafe as we cannot guarantee yet that the tag data is not being accessed
 /// concurrently.
-#[derive(Debug)]
-#[repr(C)]
-pub struct TagData {
-    size: usize,
-    flags: u32,
-    file_offset: u32,
-    data: *mut u8,
-    unknown: u32,
+pub unsafe trait TagData: Copy + Clone {
+    fn len(self) -> usize;
+    fn is_empty(self) -> bool;
+    unsafe fn as_slice(self) -> &'static [u8];
+    unsafe fn as_mut_slice(self) -> &'static mut [u8];
 }
-impl TagData {
-    pub const fn len(&self) -> usize {
-        self.size
+
+unsafe impl TagData for tag_structs::primitives::data::Data {
+    fn len(self) -> usize {
+        self.size as usize
     }
-    pub const fn is_empty(&self) -> bool {
+    fn is_empty(self) -> bool {
         self.len() == 0
     }
-    pub unsafe fn as_slice(&self) -> &[u8] {
+    unsafe fn as_slice(self) -> &'static [u8] {
         if self.is_empty() {
             return &[]
         }
-        if self.data.is_null() {
-            panic!("as_slice() -> Bad data: {self:?} @ 0x{:08X}", (self as *const _) as usize);
+        let data = (self.data.0 as usize) as *const u8;
+        if data.is_null() {
+            panic!("as_slice() -> Bad data: {self:?}");
         }
-        core::slice::from_raw_parts(self.data, self.size)
+        core::slice::from_raw_parts(data, self.len())
     }
-    pub unsafe fn as_mut_slice(&self) -> &mut [u8] {
+    unsafe fn as_mut_slice(self) -> &'static mut [u8] {
         if self.is_empty() {
             return &mut []
         }
-        if self.data.is_null() {
-            panic!("as_mut_slice() -> Bad data: {self:?} @ 0x{:08X}", (self as *const _) as usize);
+        let data = (self.data.0 as usize) as *mut u8;
+        if data.is_null() {
+            panic!("as_slice() -> Bad data: {self:?}");
         }
-        core::slice::from_raw_parts_mut(self.data, self.size)
+        core::slice::from_raw_parts_mut(data, self.len())
     }
 }
 

@@ -1,8 +1,7 @@
 use c_mine::c_mine;
-use crate::math::{ColorARGB, ColorRGB, Vector2D, Vector3D};
-use crate::math::powf::Powf;
-use crate::math::powi::Powi;
-use crate::math::sqrt::Sqrt;
+use tag_structs::primitives::color::{ColorARGB, ColorRGB};
+use tag_structs::primitives::float::FloatFunctions;
+use tag_structs::primitives::vector::{Vector2D, Vector3D};
 
 /// 1 world unit = 10 feet = 3.048 meters
 #[inline(always)]
@@ -47,7 +46,7 @@ pub extern "C" fn is_valid_point3d(point: &Vector3D) -> bool {
 
 #[c_mine]
 pub extern "C" fn dot_product_3d(a: &Vector3D, b: &Vector3D) -> f32 {
-    a.dot(b)
+    a.dot(*b)
 }
 
 #[c_mine]

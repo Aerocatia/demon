@@ -1,6 +1,8 @@
 use core::ffi::c_char;
 use c_mine::c_mine;
-use crate::tag::{get_tag_data_checking_tag_group, get_tag_info, lookup_tag, Reflexive, TagGroupUnsafe, TagID, GLOBAL_SCENARIO};
+use tag_structs::primitives::data::Reflexive;
+use tag_structs::Scenario;
+use crate::tag::{get_tag_data_checking_tag_group, get_tag_info, lookup_tag, ReflexiveImpl, TagGroupUnsafe, TagID, UnknownType, GLOBAL_SCENARIO};
 use crate::util::CStrPtr;
 
 #[c_mine]
@@ -9,16 +11,16 @@ pub unsafe extern "C" fn tag_get(group: TagGroupUnsafe, id: TagID) -> *mut [u8; 
 }
 
 #[c_mine]
-pub unsafe extern "C" fn tag_block_get_address(reflexive: Option<&Reflexive<[u8; 0]>>) -> *mut [u8; 0] {
-    reflexive.expect("tag_block_get_address with null reflexive").objects
+pub unsafe extern "C" fn tag_block_get_address(reflexive: Option<&Reflexive<UnknownType>>) -> *mut [u8; 0] {
+    reflexive.expect("tag_block_get_address with null reflexive").address.0 as *mut _
 }
 
 #[c_mine]
 pub unsafe extern "C" fn tag_block_get_element_with_size(
-    reflexive: Option<&Reflexive<[u8; 0]>>,
+    reflexive: Option<&Reflexive<UnknownType>>,
     index: usize,
     element_size: usize
-) -> *mut [u8; 0] {
+) -> *mut UnknownType {
     let reflexive = reflexive.expect("tag_block_get_element_with_size with null reflexive");
     assert!(
         index < reflexive.len(),
@@ -31,16 +33,16 @@ pub unsafe extern "C" fn tag_block_get_element_with_size(
         .and_then(|v| isize::try_from(v).ok())
         .expect("tag_block_get_element_with_size with invalid offset/element size");
 
-    reflexive
-        .objects
-        .wrapping_byte_offset(offset)
+    let objects = reflexive.address.0 as *mut UnknownType;
+    objects.wrapping_byte_offset(offset)
 }
 
 #[c_mine]
-pub unsafe extern "C" fn global_scenario_get() -> *mut u8 {
-    let global_scenario = *GLOBAL_SCENARIO.get();
-    assert!(!global_scenario.is_null(), "global_scenario_get(): global_scenario is null!");
-    global_scenario
+pub unsafe extern "C" fn global_scenario_get() -> &'static mut Scenario {
+    *GLOBAL_SCENARIO
+        .get_mut()
+        .as_mut()
+        .expect("global_scenario_get(): global_scenario is null!")
 }
 
 #[c_mine]

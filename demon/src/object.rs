@@ -1,8 +1,8 @@
 use core::fmt::{Debug, Formatter};
-use num_enum::TryFromPrimitive;
 use c_mine::c_mine;
+use tag_structs::ObjectType;
+use tag_structs::primitives::vector::Vector3D;
 use crate::id::ID;
-use crate::math::Vector3D;
 use crate::memory::table::DataTable;
 use crate::tag::TagID;
 use crate::util::VariableProvider;
@@ -112,24 +112,6 @@ impl From<ObjectType> for ObjectTypes {
     fn from(value: ObjectType) -> Self {
         Self::from_single(value)
     }
-}
-
-// TODO: Use definitions
-#[derive(Copy, Clone, PartialEq, Debug, TryFromPrimitive)]
-#[repr(u16)]
-pub enum ObjectType {
-    Biped,
-    Vehicle,
-    Weapon,
-    Equipment,
-    Garbage,
-    Projectile,
-    Scenery,
-    DeviceMachine,
-    DeviceControl,
-    DeviceLightFixture,
-    Placeholder,
-    SoundScenery,
 }
 
 pub const GLOBAL_OBJECT_MARKER: VariableProvider<u32> = variable! {

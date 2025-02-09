@@ -1,7 +1,10 @@
 [workspace]
 members = [
     "demon",
-    "c_mine"
+    "c_mine",
+    "tag_structs",
+    "tag_structs_gen",
+    "primitives"
 ]
 resolver = "2"
 

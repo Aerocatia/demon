@@ -1,6 +1,6 @@
 use c_mine::{c_mine, pointer_from_hook};
+use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use crate::id::ID;
-use crate::math::{ColorARGB, ColorRGB};
 use crate::memory::table::DataTable;
 use crate::timing::{FixedTimer, TICK_RATE};
 use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
@@ -225,7 +225,7 @@ const CONSOLE_ENABLED: VariableProvider<bool> = variable! {
 const DEFAULT_CONSOLE_PROMPT_TEXT: &str = "halo( ";
 
 pub const DEFAULT_CONSOLE_COLOR: ColorARGB = ColorARGB {
-    alpha: 1.0,
+    a: 1.0,
     color: ColorRGB {
         r: 1.0,
         g: 0.3,

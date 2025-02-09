@@ -1,7 +1,7 @@
 use core::ptr::null;
 use c_mine::c_mine;
+use tag_structs::primitives::vector::{Euler2D, Vector2D};
 use crate::id::ID;
-use crate::math::{Euler2D, Vector2D};
 use crate::memory::game_state_malloc;
 use crate::memory::table::{game_state_data_new, DataTable};
 use crate::object::ObjectID;

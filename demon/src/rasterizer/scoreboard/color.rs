@@ -1,4 +1,4 @@
-use crate::math::ColorRGB;
+use tag_structs::primitives::color::ColorRGB;
 use crate::multiplayer::ServerInfo;
 use crate::player::{PlayerID, PLAYERS_TABLE};
 use crate::rasterizer::player_colors::PLAYER_ICON_COLORS;

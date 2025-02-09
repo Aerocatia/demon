@@ -1,0 +1,10 @@
+[package]
+name = "tag_structs_gen"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+ringhopper-definitions = { git = "https://github.com/FishAndRips/ringhopper.git" }

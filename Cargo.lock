@@ -43,6 +43,7 @@ dependencies = [
  "libm",
  "num_enum",
  "spin",
+ "tag_structs",
  "utf16_lit",
  "windows-sys 0.59.0",
 ]
@@ -138,6 +139,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "primitives"
+version = "0.1.0"
+dependencies = [
+ "libm",
+ "num_enum",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.92"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -153,6 +162,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e4dccaaaf89514f546c693ddc140f729f958c247918a13380cccc6078391acc"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "ringhopper-definitions"
+version = "0.2.0"
+source = "git+https://github.com/FishAndRips/ringhopper.git#38c57ab9151bf76cf4f47291c00352d9f4dac42d"
+dependencies = [
+ "serde_json",
 ]
 
 [[package]]
@@ -247,6 +264,22 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "tag_structs"
+version = "0.1.0"
+dependencies = [
+ "num_enum",
+ "primitives",
+ "tag_structs_gen",
+]
+
+[[package]]
+name = "tag_structs_gen"
+version = "0.1.0"
+dependencies = [
+ "ringhopper-definitions",
 ]
 
 [[package]]
