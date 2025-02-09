@@ -10,7 +10,7 @@ fn main() {
         return
     };
     if arch == "x86" && os == "windows" {
-        embed_resource::compile("strings/custom_edition/strings.rc", embed_resource::NONE)
+        embed_resource::compile("../strings/custom_edition/strings.rc", embed_resource::NONE)
             .manifest_optional()
             .expect("Failed to run windres; this is needed to embed the strings.dll contents!");
     }

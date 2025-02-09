@@ -1,0 +1,20 @@
+[package]
+name = "demon"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+name = "strings"
+path = "src/lib.rs"
+
+[dependencies]
+windows-sys = { version = "0.59", default-features = false, features = ["Wdk_Foundation", "Win32_System", "Win32_System_SystemServices", "Win32_UI", "Win32_UI_WindowsAndMessaging", "Win32_System_Threading", "Win32_System_Memory", "Win32_Storage", "Win32_Storage_FileSystem", "Win32_System_LibraryLoader", "Win32_UI_Shell", "Win32_Security", "Win32_System_IO", "Win32_System_Diagnostics", "Win32_System_Diagnostics_Debug", "Win32_System_Performance", "Win32_System_Kernel", "Win32_System_ProcessStatus"] }
+c_mine = { path = "../c_mine" }
+spin = { version = "0.9.8", features = ["mutex", "spin_mutex"] }
+utf16_lit = "2.0.2"
+num_enum = { version = "0.7.3", default-features = false }
+libm = "0.2.11"
+
+[build-dependencies]
+embed-resource = "3.0.1"
