@@ -175,7 +175,16 @@ unsafe fn draw_scoreboard_screen(local_player: PlayerID, opacity: f32) {
     SCOREBOARD_STYLE = style as u16;
     let scoreboard_text = ScoreboardScreenText::load();
     match style {
-        ScoreboardStyle::Verbose => draw_verbose_scoreboard(local_player, opacity, &scoreboard_text, large_font, small_font, &sorted, server_info)
+        ScoreboardStyle::Verbose => draw_verbose_scoreboard(
+            local_player,
+            opacity,
+            &scoreboard_text,
+            large_font,
+            small_font,
+            &fonts.hud_icon_color,
+            &sorted,
+            server_info
+        )
     }
 }
 

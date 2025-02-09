@@ -19,6 +19,7 @@ pub unsafe fn draw_verbose_scoreboard(
     scoreboard_text: &ScoreboardScreenText,
     large_ui: TagID,
     small_ui: TagID,
+    ffa_color: &ColorARGB,
     all_players: &[SortableScore],
     server_info: &ServerInfo
 ) {
@@ -125,7 +126,8 @@ pub unsafe fn draw_verbose_scoreboard(
             bounds,
             maximum_lives,
             players,
-            player_score_data
+            player_score_data,
+            ffa_color
         );
     }
 
@@ -143,11 +145,12 @@ unsafe fn draw_player_score(
     bounds: InterfaceCanvasBounds,
     maximum_lives: u32,
     players: &mut &mut DataTable<Player, 27760>,
-    player_score_data: &SortableScore
+    player_score_data: &SortableScore,
+    ffa_color: &ColorARGB
 ) {
     let player = players.get_element(player_score_data.player_id).expect("player went away???").get();
 
-    let mut color = get_scoreboard_color(player_score_data.player_id, server_info);
+    let mut color = get_scoreboard_color(player_score_data.player_id, server_info).unwrap_or(ffa_color.color);
 
     // highlight the local player
     if player_score_data.player_id == local_player {

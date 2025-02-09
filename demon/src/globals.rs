@@ -19,7 +19,8 @@ pub struct InterfaceFonts {
     pub terminal_font: TagID,
     pub full_screen_font: TagID,
     pub split_screen_font: TagID,
-    pub hud_text_color: ColorARGB
+    pub hud_text_color: ColorARGB,
+    pub hud_icon_color: ColorARGB
 }
 
 pub unsafe fn get_interface_fonts() -> InterfaceFonts {
@@ -31,6 +32,7 @@ pub unsafe fn get_interface_fonts() -> InterfaceFonts {
         terminal_font: interface.font_terminal.tag_id.into(),
         full_screen_font: hud_globals.messaging_parameters.fullscreen_font.tag_id.into(),
         split_screen_font: hud_globals.messaging_parameters.splitscreen_font.tag_id.into(),
-        hud_text_color: hud_globals.messaging_parameters.text_color
+        hud_text_color: hud_globals.messaging_parameters.text_color,
+        hud_icon_color: hud_globals.messaging_parameters.icon_color
     }
 }
