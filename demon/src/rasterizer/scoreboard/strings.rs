@@ -1,6 +1,7 @@
 use core::fmt::{Display, Formatter};
+use tag_structs::primitives::tag_group::TagGroup;
 use crate::string::get_unicode_string_list_string;
-use crate::tag::{lookup_tag, TagGroup};
+use crate::tag::lookup_tag;
 use crate::util::decode_utf16_inplace;
 
 #[derive(Copy, Clone, Default)]

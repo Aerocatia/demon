@@ -2,8 +2,9 @@ use core::ptr::null;
 use num_enum::TryFromPrimitive;
 use c_mine::{c_mine, pointer_from_hook};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
+use tag_structs::primitives::tag_group::TagGroup;
 use crate::rasterizer::InterfaceCanvasBounds;
-use crate::tag::{get_tag_info, TagGroup, TagID};
+use crate::tag::{get_tag_info, TagID};
 use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
 
 pub const RASTERIZER_DRAW_UNICODE_STRING: PointerProvider<unsafe extern "C" fn(

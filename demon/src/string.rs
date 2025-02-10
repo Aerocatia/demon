@@ -1,15 +1,13 @@
-use utf16_lit::utf16_null;
+use crate::tag::{get_tag_data, get_tag_info, ReflexiveImpl, TagData, TagID};
 use c_mine::c_mine;
 use tag_structs::UnicodeStringList;
-use crate::tag::{get_tag_data_checking_tag_group, TagData, ReflexiveImpl, TagID, get_tag_info, TagGroup};
+use utf16_lit::utf16_null;
 
 pub unsafe fn get_unicode_string_list_string(tag_id: TagID, index: u16) -> Option<&'static [u16]> {
     let index = index as usize;
 
-    let tag_data = get_tag_data_checking_tag_group(tag_id, TagGroup::UnicodeStringList.into())
-        .expect("unicode_string_list_get_string failed to get a tag") as *const UnicodeStringList;
-
-    let tag_data = &*tag_data;
+    let tag_data = get_tag_data::<UnicodeStringList>(tag_id)
+        .expect("unicode_string_list_get_string failed to get a tag");
     let string = tag_data.strings.get(index)?;
     let string_data = string.string;
     let data = string_data.as_slice();

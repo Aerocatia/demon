@@ -1,7 +1,7 @@
-use tag_structs::{Globals, GlobalsInterfaceBitmaps, HUDGlobals};
-use tag_structs::primitives::color::ColorARGB;
-use crate::tag::{get_tag_data_checking_tag_group, ReflexiveImpl, TagGroup, TagID};
+use crate::tag::{get_tag_data, ReflexiveImpl, TagID};
 use crate::util::VariableProvider;
+use tag_structs::primitives::color::ColorARGB;
+use tag_structs::{Globals, GlobalsInterfaceBitmaps, HUDGlobals};
 
 pub const GLOBAL_GAME_GLOBALS: VariableProvider<Option<&Globals>> = variable! {
     name: "global_game_globals",
@@ -25,8 +25,8 @@ pub struct InterfaceFonts {
 
 pub unsafe fn get_interface_fonts() -> InterfaceFonts {
     let interface = get_interface_bitmaps();
-    let hud_globals = &*(get_tag_data_checking_tag_group(interface.hud_globals.tag_id.into(), TagGroup::HUDGlobals.into())
-        .expect("failed to get hud globals") as *mut HUDGlobals);
+    let hud_globals = get_tag_data::<HUDGlobals>(interface.hud_globals.tag_id.into())
+        .expect("failed to get hud globals");
 
     InterfaceFonts {
         terminal_font: interface.font_terminal.tag_id.into(),

@@ -1,8 +1,9 @@
 use spin::Mutex;
 use c_mine::c_mine;
+use tag_structs::primitives::tag_group::TagGroup;
 use crate::id::ID;
 use crate::sound::sound_looping::{play_looping_sound, stop_looping_sound};
-use crate::tag::{lookup_tag, TagGroup};
+use crate::tag::lookup_tag;
 use crate::util::VariableProvider;
 
 static MAIN_MENU_MUSIC_ACTIVE: Mutex<bool> = Mutex::new(false);

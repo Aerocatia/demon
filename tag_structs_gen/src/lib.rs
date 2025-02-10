@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use std::fmt::write;
+use std::fmt::{write, Write};
 use ringhopper_definitions::{Bitfield, Enum, FieldCount, NamedObject, ObjectType, ParsedDefinitions, Struct, StructFieldType};
 
 #[proc_macro]
@@ -13,6 +13,16 @@ pub fn tag_definitions(_: TokenStream) -> TokenStream {
             NamedObject::Enum(e) => write_enum(e, &definitions, &mut data),
             NamedObject::Bitfield(b) => write_bitfield(b, &definitions, &mut data)
         }
+    }
+
+    for (_, group) in &definitions.groups {
+        let struct_name = &group.struct_name;
+        data.write_fmt(format_args!(r#"
+impl TagGroupStruct for {struct_name} {{
+    fn get_tag_group() -> primitives::tag_group::TagGroup {{
+        primitives::tag_group::TagGroup::{struct_name}
+    }}
+}}"#)).unwrap()
     }
 
     data.parse().expect("failed to parse tag definitions ;-;")
@@ -86,7 +96,6 @@ fn write_struct(struct_data: &Struct, definitions: &ParsedDefinitions, output: &
                 write(&mut members, format_args!("    pub {struct_field_name}: {object_type},\n")).expect(";-;");
             }
         }
-
     }
 
     write(output, format_args!(r#"

@@ -1,0 +1,47 @@
+{
+    "get_global_random_seed_address": {
+        "cache": "0x0040329C",
+        "tag": "0x0040238D",
+        "replacement": "crate::random::c::get_global_random_seed_address"
+    },
+    "lock_global_random_seed": {
+        "cache": "0x0040353A",
+        "tag": "0x0040265D",
+        "replacement": "crate::random::c::lock_global_random_seed"
+    },
+    "unlock_global_random_seed": {
+        "cache": "0x00408332",
+        "tag": "0x00407545",
+        "replacement": "crate::random::c::unlock_global_random_seed"
+    },
+    "random_range": {
+        "cache": "0x00407E7D",
+        "tag": "0x00407040",
+        "replacement": "crate::random::c::random_range"
+    },
+    "seed_random_range": {
+        "cache": "0x00404DA4",
+        "tag": "0x0040411F",
+        "replacement": "crate::random::c::seed_random_range"
+    },
+    "real_random_range": {
+        "cache": "0x00401A5F",
+        "tag": "0x0040A691",
+        "replacement": "crate::random::c::real_random_range"
+    },
+    "real_seed_random_range": {
+        "cache": "0x00404E8F",
+        "tag": "0x0040420A",
+        "replacement": "crate::random::c::real_seed_random_range"
+    },
+    "real_random": {
+        "cache": "0x00404485",
+        "tag": "0x0040370B",
+        "replacement": "crate::random::c::real_random"
+    },
+    "real_seed_random": {
+        "cache": "0x004040E8",
+        "tag": "0x0040330A",
+        "replacement": "crate::random::c::real_seed_random"
+    }
+}

@@ -7,6 +7,8 @@ use crate::util::{PointerProvider, VariableProvider};
 
 pub mod game_engine;
 pub mod server;
+pub mod c;
+pub mod item_collection;
 
 pub unsafe fn get_server_info() -> Option<&'static ServerInfo> {
     if get_game_connection_state.get()() == GameConnectionState::None {

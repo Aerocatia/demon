@@ -9,6 +9,7 @@ pub mod color;
 pub mod data;
 pub mod string;
 pub mod float;
+pub mod tag_group;
 
 #[derive(Copy, Clone, PartialEq)]
 #[repr(transparent)]

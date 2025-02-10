@@ -28,5 +28,17 @@
     "get_meme_gametype_data": {
         "cache": "0x004050DD",
         "tag": "0x00404480"
+    },
+    "choose_item_collection_item": {
+        "cache": "0x005B6500",
+        "tag": "0x005BC660",
+        "sudo": true,
+        "replacement": "crate::multiplayer::c::choose_item_collection_item"
+    },
+    "count_item_collection_weight": {
+        "cache": "0x005B4060",
+        "tag": "0x005BA1C0",
+        "sudo": true,
+        "replacement": "forbid"
     }
 }

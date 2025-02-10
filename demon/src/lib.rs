@@ -33,3 +33,4 @@ mod ui;
 mod rasterizer;
 mod globals;
 mod game_engine;
+mod random;
