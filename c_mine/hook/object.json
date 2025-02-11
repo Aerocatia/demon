@@ -25,5 +25,18 @@
     "object_set_position": {
         "cache": "0x00404F75",
         "tag": "0x004042FF"
+    },
+    "object_get_marker_by_name": {
+        "cache": "0x004066C7",
+        "tag": "0x004056A5"
+    },
+    "seed_random_vector_in_cone3d": {
+        "cache": "0x00408841",
+        "tag": "0x00407AB8"
+    },
+    "seed_random_direction3d": {
+        "cache": "0x00403670",
+        "tag": "0x004027B1",
+        "replacement": "crate::random::c::seed_random_direction3d"
     }
 }

@@ -40,7 +40,6 @@ version = "0.1.0"
 dependencies = [
  "c_mine",
  "embed-resource",
- "libm",
  "num_enum",
  "spin",
  "tag_structs",

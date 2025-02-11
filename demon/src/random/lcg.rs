@@ -12,12 +12,14 @@ use crate::game_engine::GAME_ENGINE_RUNNING;
 static mut GLOBAL_RANDOM_SEED: u32 = 0;
 static RANDOM_SEED_LOCK_COUNT: AtomicU32 = AtomicU32::new(0);
 
+static mut LOCAL_RANDOM_SEED: u32 = 0;
+
 pub fn seed_next(seed: &mut u32) -> u32 {
     *seed = *seed * 0x19660D + 0x3C6EF35F;
     *seed
 }
 
-/// Gets the global random seed.
+/// Gets the global random seed; used for things that should be deterministic.
 ///
 /// # Safety
 ///
@@ -30,6 +32,16 @@ pub unsafe fn get_global_random_seed() -> &'static mut u32 {
         panic!("Using get_global_random_seed() when locked is not allowed ({locks} locks)");
     }
     &mut GLOBAL_RANDOM_SEED
+}
+
+/// Gets the local random seed; used for things that don't need to be deterministic.
+///
+/// # Safety
+///
+/// This is not thread-safe!
+#[allow(static_mut_refs)]
+pub unsafe fn get_local_random_seed() -> &'static mut u32 {
+    &mut LOCAL_RANDOM_SEED
 }
 
 pub fn lock_global_random_seed() {
