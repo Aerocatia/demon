@@ -9,7 +9,7 @@ pub unsafe fn choose_item_collection_item(item_collection_tag_id: TagID) -> TagI
     let permutations = item_collection.permutations.as_slice();
 
     // Do a once-over, checking that the weights are valid
-    for permutation in permutations {
+    for (index, permutation) in permutations.iter().enumerate() {
         let weight = permutation.weight;
         if weight < 1.0 || !weight.is_finite() || weight > 65535.0 {
             let name = get_tag_info(item_collection_tag_id).expect("*screams*").get_tag_path();
