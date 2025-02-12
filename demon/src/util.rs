@@ -155,6 +155,11 @@ pub(crate) struct VariableProvider<T: Sized> {
     pub tag_address: *mut T
 }
 impl<T: Sized> VariableProvider<T> {
+    /// Get a reference to the value.
+    ///
+    /// # Safety
+    ///
+    /// No guarantees are made that this is being mutated concurrently.
     pub unsafe fn get(&self) -> &'static T {
         let exe_type = get_exe_type();
         let address = match exe_type {
@@ -166,6 +171,13 @@ impl<T: Sized> VariableProvider<T> {
         }
         &*address
     }
+
+    /// Get a mutable reference to the value.
+    ///
+    /// # Safety
+    ///
+    /// No guarantees are made that this is being mutated concurrently. Also, static mutable
+    /// references are unsafe.
     pub unsafe fn get_mut(&self) -> &'static mut T {
         let exe_type = get_exe_type();
         let address = match exe_type {
@@ -176,6 +188,25 @@ impl<T: Sized> VariableProvider<T> {
             panic!("trying to get a mutable null VariableProvider ({name}) for this exe type", name=self.name);
         }
         &mut *address
+    }
+
+    /// Get the value, copied bitwise.
+    ///
+    /// # Safety
+    ///
+    /// No guarantees are made that this is being mutated concurrently.
+    ///
+    /// It might also not be safe to copy `T` bitwise.
+    pub unsafe fn get_copied(&self) -> T {
+        let exe_type = get_exe_type();
+        let address = match exe_type {
+            ExeType::Cache => self.cache_address,
+            ExeType::Tag => self.tag_address
+        };
+        if address.is_null() {
+            panic!("trying to get a mutable null VariableProvider ({name}) for this exe type", name=self.name);
+        }
+        transmute_copy(&*address)
     }
 }
 

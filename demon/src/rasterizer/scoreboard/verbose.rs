@@ -109,7 +109,7 @@ pub unsafe fn draw_verbose_scoreboard(
         next_score_line(small_line_height)
     ).expect(";-;");
 
-    let players = PLAYERS_TABLE.get_mut().as_mut().expect("you can't draw the scoreboard without players!");
+    let players = PLAYERS_TABLE.get_copied().expect("you can't draw the scoreboard without players!");
     for player_score_data in all_players.iter() {
         if player_score_data.player_id.is_null() {
             continue;
@@ -144,7 +144,7 @@ unsafe fn draw_player_score(
     small_line_height: u16,
     bounds: InterfaceCanvasBounds,
     maximum_lives: u32,
-    players: &mut &mut DataTable<Player, 27760>,
+    players: &mut DataTable<Player, 27760>,
     player_score_data: &SortableScore,
     ffa_color: &ColorARGB
 ) {

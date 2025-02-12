@@ -39,9 +39,8 @@ pub unsafe extern "C" fn tag_block_get_element_with_size(
 
 #[c_mine]
 pub unsafe extern "C" fn global_scenario_get() -> &'static mut Scenario {
-    *GLOBAL_SCENARIO
-        .get_mut()
-        .as_mut()
+    GLOBAL_SCENARIO
+        .get_copied()
         .expect("global_scenario_get(): global_scenario is null!")
 }
 

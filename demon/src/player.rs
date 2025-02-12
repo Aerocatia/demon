@@ -98,7 +98,7 @@ const _: () = assert!(size_of::<PlayerControlTable>() == 0x10 + MAXIMUM_NUMBER_O
 ///
 /// Panics if `index` >= [`MAXIMUM_NUMBER_OF_LOCAL_PLAYERS`]
 pub unsafe fn get_player_control(player_index: u16) -> &'static mut PlayerControl {
-    let controls = PLAYER_CONTROLS.get_mut().as_mut().expect("get_player_control with null PLAYER_CONTROLS");
+    let controls = PLAYER_CONTROLS.get_copied().expect("get_player_control with null PLAYER_CONTROLS");
     let Some(c) = controls.player_controls.get_mut(player_index as usize) else {
         panic!("get_player_control tried to get player index {player_index} when only {MAXIMUM_NUMBER_OF_LOCAL_PLAYERS} local players are supported")
     };
@@ -275,7 +275,7 @@ pub unsafe extern "C" fn players_initialize() {
         0x98
     ) as *mut PlayerGlobals));
 
-    let globals = PLAYER_GLOBALS.get_mut().as_mut().unwrap();
+    let globals = PLAYER_GLOBALS.get_copied().unwrap();
     globals.player_indices.fill(PlayerID::NULL);
     globals._unknown_0x0c = 0;
     globals._unknown_0x00 = 0xFFFFFFFF;

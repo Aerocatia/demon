@@ -20,8 +20,7 @@ impl SortableScore {
         let mut scores: [SortableScore; MAXIMUM_NUMBER_OF_PLAYERS] = core::array::from_fn(|index| {
             let player = players[index];
             let Ok(player_data) = PLAYERS_TABLE
-                .get_mut()
-                .as_mut()
+                .get_copied()
                 .unwrap()
                 .get_element(player)
                 .map(|g| g.get()) else {

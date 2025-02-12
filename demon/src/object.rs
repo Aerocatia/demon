@@ -139,8 +139,7 @@ pub struct BaseObject {
 #[c_mine]
 pub unsafe extern "C" fn object_get_and_verify_type(object_id: ObjectID, object_types: ObjectTypes) -> *mut [u8; 0] {
     let object = OBJECT_TABLE
-        .get_mut()
-        .as_mut()
+        .get_copied()
         .expect("object_get_and_verify_type called with null object table")
         .get_element(object_id)
         .expect("object_get_and_verify_type could not get an object");

@@ -160,7 +160,7 @@ unsafe fn draw_scoreboard_screen(local_player: PlayerID, opacity: f32) {
 
     let mut player_ids = [PlayerID::NULL; MAXIMUM_NUMBER_OF_PLAYERS];
     let mut index = 0;
-    let player_table = PLAYERS_TABLE.get_mut().as_mut().expect("where is the player table???");
+    let player_table = PLAYERS_TABLE.get_copied().expect("where is the player table???");
     let mut player_iterator = player_table.iter();
     while index < player_ids.len() && player_iterator.next().is_some() {
         player_ids[index] = player_iterator.id();

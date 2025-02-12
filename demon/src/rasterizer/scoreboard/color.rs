@@ -16,8 +16,7 @@ pub const YELLOW_TEAM_COLOR: ColorRGB = ColorRGB { r: 0.6, g: 0.5, b: 0.3 };
 pub unsafe fn get_scoreboard_color(player: PlayerID, server_info: &ServerInfo) -> Option<ColorRGB> {
     if server_info.is_team_game() {
         let player = PLAYERS_TABLE
-            .get_mut()
-            .as_mut()
+            .get_copied()
             .unwrap()
             .get_element(player)
             .unwrap();
@@ -35,8 +34,7 @@ pub unsafe fn get_scoreboard_color(player: PlayerID, server_info: &ServerInfo) -
     }
     else {
         let player = PLAYERS_TABLE
-            .get_mut()
-            .as_mut()
+            .get_copied()
             .unwrap()
             .get_element(player)
             .unwrap();

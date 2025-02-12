@@ -171,12 +171,11 @@ pub unsafe extern "C" fn terminal_update() {
     POLL_CONSOLE_INPUT.get()();
 
     let t = TERMINAL_OUTPUT_TABLE
-        .get_mut()
-        .as_mut()
+        .get_copied()
         .expect("TERMINAL_OUTPUT_TABLE not initialized");
 
     if !console_is_active.get()() {
-        fade_console_text(*t);
+        fade_console_text(t);
     }
 }
 

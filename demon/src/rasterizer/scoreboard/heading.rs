@@ -124,7 +124,7 @@ unsafe fn fmt_scoreboard_heading_game_in_progress<'a>(
     else if server_info.is_team_game() {
         // TODO: multiple teams
         write_nth_place(
-            server_info.get_team_score(PLAYERS_TABLE.get_mut().as_mut().unwrap().get_element(score_data.player_id).unwrap().get().team),
+            server_info.get_team_score(PLAYERS_TABLE.get_copied().unwrap().get_element(score_data.player_id).unwrap().get().team),
             false,
             usize::MAX,
             lives,

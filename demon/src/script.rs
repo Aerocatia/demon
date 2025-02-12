@@ -252,8 +252,7 @@ pub unsafe extern "C" fn hs_global_get_value(index: u16) -> u32 {
         let actual_index = (index as usize) + external_globals.len();
 
         let Ok(global) = HS_GLOBALS_TABLE
-            .get_mut()
-            .as_mut()
+            .get_copied()
             .unwrap()
             .get_element(transmute(actual_index))
             .map(|g| g.get().value) else {

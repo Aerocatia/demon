@@ -328,7 +328,7 @@ impl TagIndex for TagTagInstance {
 pub unsafe fn lookup_tag(path: &str, group: TagGroupUnsafe) -> Option<(&dyn TagIndex, TagID)> {
     match get_exe_type() {
         ExeType::Tag => {
-            let Some(table) = TAGS_TAG_INSTANCES.get_mut() else {
+            let Some(table) = TAGS_TAG_INSTANCES.get_copied() else {
                 panic!("TAGS_TAG_INSTANCES is null!");
             };
 
@@ -375,7 +375,7 @@ pub unsafe fn get_tag_info(id: TagID) -> Option<&'static dyn TagIndex> {
             Some(result)
         },
         ExeType::Tag => {
-            let Some(table) = TAGS_TAG_INSTANCES.get_mut() else {
+            let Some(table) = TAGS_TAG_INSTANCES.get_copied() else {
                 panic!("TAGS_TAG_INSTANCES is null!");
             };
             let tag = table.get_element(id).ok()?;

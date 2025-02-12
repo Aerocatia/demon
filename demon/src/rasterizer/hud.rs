@@ -50,8 +50,7 @@ pub unsafe fn draw_hud() {
 unsafe fn draw_hud_for_local_player(local_player_index: u16) {
     let player_id = local_player_get_player_index.get()(local_player_index);
     let Ok(player) = PLAYERS_TABLE
-        .get_mut()
-        .as_mut()
+        .get_copied()
         .expect("draw_hud_for_player")
         .get_element(player_id) else {
         error!("Can't draw hud for player {player_id:?} because that ID is not valid!");
