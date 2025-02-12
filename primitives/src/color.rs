@@ -37,6 +37,6 @@ impl ColorRGB {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 #[repr(C)]
 pub struct Pixel32(u32);

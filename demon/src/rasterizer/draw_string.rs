@@ -1,10 +1,11 @@
+pub mod c;
 use core::ptr::null;
 use num_enum::TryFromPrimitive;
-use c_mine::{c_mine, pointer_from_hook};
-use tag_structs::primitives::color::{ColorARGB, ColorRGB};
-use tag_structs::primitives::tag_group::TagGroup;
+use c_mine::pointer_from_hook;
+use tag_structs::primitives::color::{ColorARGB, ColorRGB, Pixel32};
+use crate::rasterizer::draw_string::c::{draw_string_set_color, draw_string_set_font, draw_string_set_format, rasterizer_text_set_shadow_color, set_tab_stops};
 use crate::rasterizer::InterfaceCanvasBounds;
-use crate::tag::{get_tag_info, TagID};
+use crate::tag::TagID;
 use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
 
 pub const RASTERIZER_DRAW_UNICODE_STRING: PointerProvider<unsafe extern "C" fn(
@@ -86,6 +87,7 @@ pub struct DrawStringWriter {
     style: DrawStringStyle,
     justification: DrawStringJustification,
     flags: DrawStringFlags,
+    shadow_color: Option<ColorARGB>,
     tab_stop_count: usize,
     tab_stops: [u16; MAXIMUM_NUMBER_OF_TAB_STOPS],
     color: ColorARGB
@@ -98,6 +100,7 @@ impl DrawStringWriter {
             DrawStringStyle::Plain,
             DrawStringJustification::Left,
             DrawStringFlags::default(),
+            None,
             &[],
             color
         )
@@ -106,10 +109,11 @@ impl DrawStringWriter {
                     style: DrawStringStyle,
                     justification: DrawStringJustification,
                     flags: DrawStringFlags,
+                    shadow_color: Option<ColorARGB>,
                     tab_stops: &[u16],
                     color: ColorARGB) -> Self {
         let mut writer = Self {
-            font_tag, style, justification, flags, tab_stops: Default::default(), tab_stop_count: 0, color
+            font_tag, style, justification, flags, tab_stops: Default::default(), tab_stop_count: 0, color, shadow_color
         };
         writer.set_tab_stops(tab_stops);
         writer
@@ -125,6 +129,9 @@ impl DrawStringWriter {
     }
     pub fn set_color(&mut self, color: ColorARGB) {
         self.color = color;
+    }
+    pub fn set_shadow_color(&mut self, color: Option<ColorARGB>) {
+        self.shadow_color = color;
     }
     pub fn set_flags(&mut self, flags: DrawStringFlags) {
         self.flags = flags;
@@ -164,6 +171,9 @@ impl DrawStringWriter {
         doubled_up_buffer.fill_with(|| encoder.next().unwrap_or(0));
         *doubled_up_buffer.last_mut().expect("should be a last character") = 0;
 
+        if let Some(n) = self.shadow_color {
+            rasterizer_text_set_shadow_color.get()(n.to_pixel32());
+        }
         draw_string_set_font.get()(self.font_tag);
         draw_string_set_format.get()(self.style as u16, self.justification as u16, self.flags.0);
         draw_string_set_color.get()(Some(&self.color));
@@ -178,6 +188,9 @@ impl DrawStringWriter {
         // prevent subsequent calls from using a possibly broken color, tab stops, etc.
         draw_string_set_color.get()(Some(&DEFAULT_WHITE));
         set_tab_stops(&[]);
+        if self.shadow_color.is_some() {
+            rasterizer_text_set_shadow_color.get()(Pixel32::default())
+        }
 
         Ok(())
     }
@@ -196,78 +209,3 @@ const TAB_STOPS: VariableProvider<[u16; 0x10]> = variable! {
     cache_address: 0x00F457FA,
     tag_address: 0x00FFDD5A
 };
-
-/// Safety: Unsafe because we cannot determine if the color is being accessed concurrently.
-#[c_mine]
-pub unsafe extern "C" fn draw_string_set_color(color: Option<&ColorARGB>) {
-    let color = color.expect("draw_string_set_color with a null color");
-    assert!(color.is_valid(), "draw_string_set_color with an invalid color {color:?}");
-    *DRAW_STRING_COLOR.get_mut() = *color;
-}
-
-pub unsafe fn set_tab_stops(tab_stops: &[u16]) {
-    let count = tab_stops.len();
-    assert!(count <= MAXIMUM_NUMBER_OF_TAB_STOPS, "set_tab_stops with {count} tab stops which is > {MAXIMUM_NUMBER_OF_TAB_STOPS}");
-
-    *TAB_STOP_COUNT.get_mut() = tab_stops.len() as u16;
-    if !tab_stops.is_empty() {
-        TAB_STOPS.get_mut()[..tab_stops.len()].copy_from_slice(tab_stops);
-    }
-}
-
-/// Safety: Unsafe because we cannot determine if this is being accessed concurrently.
-///
-/// Also `new_tab_stops` might not be a valid pointer which is required if count > 0.
-///
-/// # Panics
-///
-/// Panics if `count > MAXIMUM_NUMBER_OF_TAB_STOPS`
-#[c_mine]
-pub unsafe extern "C" fn draw_string_set_tab_stops(new_tab_stops: *const u16, count: u16) {
-    if count == 0 {
-        *TAB_STOP_COUNT.get_mut() = 0;
-        return;
-    }
-
-    if count == 0 {
-        set_tab_stops(&[]);
-    }
-    else {
-        let new_tab_stops = core::slice::from_raw_parts(new_tab_stops, count as usize);
-        set_tab_stops(new_tab_stops);
-    }
-}
-
-/// Safety: Unsafe because we cannot determine if these values are being accessed concurrently.
-#[c_mine]
-pub unsafe extern "C" fn draw_string_set_format(style: u16, justification: u16, flags: u32) {
-    let style = DrawStringStyle::try_from(style).expect("draw_string_set_format with invalid style");
-    let justification = DrawStringJustification::try_from(justification).expect("draw_string_set_format with invalid justification");
-    if (flags & 0xFFFFFFF0) != 0 {
-        panic!("draw_string_set_format with invalid flags 0x{flags:08X}")
-    }
-    *DRAW_STRING_FLAGS.get_mut() = flags;
-    *DRAW_STRING_STYLE.get_mut() = style;
-    *DRAW_STRING_JUSTIFICATION.get_mut() = justification;
-}
-
-/// Safety: Unsafe because we cannot determine if these values are being accessed concurrently.
-#[c_mine]
-pub unsafe extern "C" fn draw_string_set_font(font: TagID) {
-    let Some(font_tag) = get_tag_info(font) else {
-        panic!("draw_string_set_font with invalid tag ID: {font:?}")
-    };
-    match font_tag.verify_tag_group(TagGroup::Font.into()) {
-        Ok(()) => (),
-        Err(e) => panic!("draw_string_set_font got tag {font:?} which is not a font tag {e:?}")
-    }
-    *DRAW_STRING_FONT.get_mut() = font;
-}
-
-/// Safety: Unsafe because we cannot determine if these values are being accessed concurrently.
-#[c_mine]
-pub unsafe extern "C" fn draw_string_setup(font_tag: TagID, style: u16, justification: u16, flags: u32, color_argb: Option<&ColorARGB>) {
-    draw_string_set_font.get()(font_tag);
-    draw_string_set_format.get()(style, justification, flags);
-    draw_string_set_color.get()(color_argb);
-}

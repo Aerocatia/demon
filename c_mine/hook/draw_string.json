@@ -2,26 +2,31 @@
     "draw_string_set_color": {
         "cache": "0x0040A19B",
         "tag": "0x004095F2",
-        "replacement": "crate::rasterizer::draw_string::draw_string_set_color"
+        "replacement": "crate::rasterizer::draw_string::c::draw_string_set_color"
     },
     "draw_string_set_format": {
         "cache": "0x004059D4",
         "tag": "0x00409DA4",
-        "replacement": "crate::rasterizer::draw_string::draw_string_set_format"
+        "replacement": "crate::rasterizer::draw_string::c::draw_string_set_format"
     },
     "draw_string_set_font": {
         "cache": "0x004066F9",
         "tag": "0x004056E1",
-        "replacement": "crate::rasterizer::draw_string::draw_string_set_font"
+        "replacement": "crate::rasterizer::draw_string::c::draw_string_set_font"
     },
     "draw_string_setup": {
         "cache": "0x00401B27",
         "tag": "0x0040A713",
-        "replacement": "crate::rasterizer::draw_string::draw_string_setup"
+        "replacement": "crate::rasterizer::draw_string::c::draw_string_setup"
     },
     "draw_string_set_tab_stops": {
         "cache": "0x004017D5",
         "tag": "0x00401451",
-        "replacement": "crate::rasterizer::draw_string::draw_string_set_tab_stops"
+        "replacement": "crate::rasterizer::draw_string::c::draw_string_set_tab_stops"
+    },
+    "rasterizer_text_set_shadow_color": {
+        "cache": "0x00402121",
+        "tag": "0x0040AA6A",
+        "replacement": "crate::rasterizer::draw_string::c::rasterizer_text_set_shadow_color"
     }
 }

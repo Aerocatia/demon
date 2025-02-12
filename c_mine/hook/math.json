@@ -109,5 +109,9 @@
         "cache": "0x004012C1",
         "tag": "0x0040A2E0",
         "replacement": "crate::math::c::normalize_3d"
+    },
+    "pixel32_to_real_argb_color": {
+        "cache": "0x004095B1",
+        "tag": "0x00408927"
     }
 }
