@@ -1,4 +1,9 @@
 fn main() {
+    cc::Build::new()
+        .file("c_src/error.c")
+        .compile("demon_c_functions");
+    println!("cargo:rustc-link-lib=demon_c_functions");
+
     // We are only interested in building this for i686-pc-windows-* targets. Don't try to run
     // windres for anything else.
     let Ok(arch) = std::env::var("CARGO_CFG_TARGET_ARCH") else {

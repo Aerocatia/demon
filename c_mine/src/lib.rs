@@ -135,7 +135,7 @@ fn get_all_hooks() -> HashMap<String, Hook> {
 pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
     let mut tag_code = String::with_capacity(65536);
     let mut cache_code = String::with_capacity(65536);
-    let mut forbidden_code = String::with_capacity(65536);
+    let mut codegen = String::with_capacity(65536);
 
     for (name, hook) in get_all_hooks() {
         let mut target = hook
@@ -144,22 +144,41 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
             .map(String::as_str)
             .unwrap_or("original");
 
-        if target == "forbid" {
+        if target.starts_with("_") {
+            let function = &target[1..];
             target = &name;
-            fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ panic!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
+            fmt::write(&mut codegen, format_args!("
+extern {{
+    fn {function}();
+}}
+
+const {name}: crate::util::CFunctionProvider<unsafe extern \"C\" fn()> = crate::util::CFunctionProvider {{
+    name: \"{name}\",
+    function_getter: || {function},
+    address_getter: |a| {{
+        a as *const _
+    }}
+}};
+
+")).expect(";-;");
         }
 
-        if target == "error" {
+        else if target == "forbid" {
             target = &name;
-            fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ error!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
+            fmt::write(&mut codegen, format_args!("#[c_mine] extern \"C\" fn {name}() {{ panic!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
         }
 
-        if target == "nop" {
+        else if target == "error" {
             target = &name;
-            fmt::write(&mut forbidden_code, format_args!("#[c_mine] extern \"C\" fn {name}() {{ }}")).expect(";-;");
+            fmt::write(&mut codegen, format_args!("#[c_mine] extern \"C\" fn {name}() {{ error!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
         }
 
-        if target == "original" {
+        else if target == "nop" {
+            target = &name;
+            fmt::write(&mut codegen, format_args!("#[c_mine] extern \"C\" fn {name}() {{ }}")).expect(";-;");
+        }
+
+        else if target == "original" {
             continue
         }
 
@@ -178,7 +197,7 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
         }
     }
 
-    format!("{forbidden_code} match get_exe_type() {{\nExeType::Cache => {{ {cache_code} }},\nExeType::Tag => {{ {tag_code} }} }}").parse().expect(";-;")
+    format!("{codegen} match get_exe_type() {{\nExeType::Cache => {{ {cache_code} }},\nExeType::Tag => {{ {tag_code} }} }}").parse().expect(";-;")
 }
 
 

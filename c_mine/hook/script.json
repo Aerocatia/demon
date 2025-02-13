@@ -45,5 +45,10 @@
         "tag": "0x005FD350",
         "cache": "0x005F6A10",
         "replacement": "original"
+    },
+    "hs_print": {
+        "cache": "0x00407F68",
+        "tag": "0x00407135",
+        "replacement": "crate::script::print::c::hs_print"
     }
 }

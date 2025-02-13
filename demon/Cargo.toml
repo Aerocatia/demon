@@ -18,3 +18,4 @@ tag_structs = { path = "../tag_structs" }
 
 [build-dependencies]
 embed-resource = "3.0.1"
+cc = "1.2.13"

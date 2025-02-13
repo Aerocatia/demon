@@ -1,9 +1,26 @@
-use c_mine::{c_mine, pointer_from_hook};
+pub mod c;
+
+use core::fmt::Display;
+use num_enum::TryFromPrimitive;
+use c_mine::pointer_from_hook;
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use crate::id::ID;
 use crate::memory::table::DataTable;
 use crate::timing::{FixedTimer, TICK_RATE};
-use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
+use crate::util::{CStrPtr, PointerProvider, StaticStringBytes, VariableProvider};
+
+const MAX_LOG_LEN: usize = 1024;
+
+pub static mut SHOW_DEBUG_MESSAGES: u8 = 1;
+
+pub fn show_debug_messages() -> bool {
+    // SAFETY: This is probably going to cause UB on systems that aren't x86 Windows, and thus it
+    //         should be changed to an atomic when globals are reworked to use atomics.
+    //
+    //         In this case, the risk is acceptable in the interim.
+    //
+    unsafe { SHOW_DEBUG_MESSAGES != 0 }
+}
 
 pub const ERROR_WAS_SET: VariableProvider<u8> = variable! {
     name: "ERROR_WAS_SET",
@@ -27,13 +44,14 @@ macro_rules! log {
     }};
 }
 
+#[derive(Copy, Clone, PartialEq, TryFromPrimitive)]
 #[repr(i16)]
 pub enum ErrorPriority {
     /// Closes the executable
     Death = 0,
 
     /// Logs to disk; sets failure flag to propagate errors (poor man's exception)
-    Error = 1,
+    Exception = 1,
 
     /// Prints to the console and logs to disk
     ///
@@ -44,21 +62,14 @@ pub enum ErrorPriority {
     FileOnly = 3,
 }
 
+const WRITE_TO_ERROR_FILE: PointerProvider<extern "C" fn(text: *const u8, some_bool: bool)> = pointer_from_hook!("write_to_error_file");
+
 pub fn error_put_args(priority: ErrorPriority, fmt: core::fmt::Arguments) {
-    let err = StaticStringBytes::<0xFFE>::from_fmt(fmt)
+    let err = StaticStringBytes::<MAX_LOG_LEN>::from_fmt(fmt)
         .expect("failed to write error");
-    error_put_message(priority, err.as_bytes_with_null());
-}
 
-pub fn error_put_message(priority: ErrorPriority, error_bytes: &[u8]) {
-    const ERROR: PointerProvider<unsafe extern "C" fn(priority: i16, fmt: *const u8, arg: *const u8)> = pointer_from_hook!("error");
-
-    assert!(error_bytes.last() == Some(&0u8), "should be null-terminated");
-
-    // SAFETY: PointerProvider is probably right.
-    unsafe {
-        ERROR.get()(priority as i16, b"%s\x00".as_ptr(), error_bytes.as_ptr());
-    }
+    // SAFETY: Hopefully safe???
+    unsafe { log_error_message(priority, err); }
 }
 
 /// Print the formatted string to the in-game console.
@@ -71,11 +82,11 @@ macro_rules! console {
 
 /// Print the formatted string to the in-game console with a given color.
 ///
-/// The first argument must be a [`ColorARGB`] reference.
+/// The first argument must be [`ColorARGB`] or [`&ColorARGB`].
 #[allow(unused_macros)]
 macro_rules! console_color {
     ($color:expr, $($args:tt)*) => {{
-        let color: &crate::math::ColorARGB = $color;
+        let color: &tag_structs::primitives::color::ColorARGB = tag_structs::primitives::color::ColorARGB::as_ref(&$color);
         crate::console::console_put_args(Some(color), format_args!($($args)*));
     }};
 }
@@ -154,30 +165,6 @@ const CONSOLE_IS_ACTIVE: VariableProvider<u8> = variable! {
     cache_address: 0x00C98AE0,
     tag_address: 0x00D500A0
 };
-
-#[c_mine]
-pub extern "C" fn console_is_active() -> bool {
-    // SAFETY: This is known to be valid
-    unsafe { *CONSOLE_IS_ACTIVE.get() != 0 }
-}
-
-#[c_mine]
-pub unsafe extern "C" fn terminal_update() {
-    if *TERMINAL_INITIALIZED.get() == 0 {
-        return
-    }
-
-    const POLL_CONSOLE_INPUT: PointerProvider<extern "C" fn()> = pointer_from_hook!("poll_console_input");
-    POLL_CONSOLE_INPUT.get()();
-
-    let t = TERMINAL_OUTPUT_TABLE
-        .get_copied()
-        .expect("TERMINAL_OUTPUT_TABLE not initialized");
-
-    if !console_is_active.get()() {
-        fade_console_text(t);
-    }
-}
 
 const CONSOLE_COLOR: VariableProvider<ColorARGB> = variable! {
     name: "CONSOLE_COLOR",
@@ -264,13 +251,53 @@ pub fn set_console_color_text(color: ColorARGB) {
     *unsafe { CONSOLE_COLOR.get_mut() } = color;
 }
 
-#[c_mine]
-pub unsafe extern "C" fn console_initialize() {
-    set_console_prompt_text(DEFAULT_CONSOLE_PROMPT_TEXT);
-    set_console_color_text(DEFAULT_CONSOLE_COLOR);
-    CONSOLE_TEXT.get_mut().fill(0);
-    *CONSOLE_HISTORY_SELECTED_INDEX.get_mut() = 0xFFFF;
-    *CONSOLE_HISTORY_LENGTH.get_mut() = 0;
-    *CONSOLE_HISTORY_SELECTED_INDEX.get_mut() = 0xFFFF;
-    *CONSOLE_ENABLED.get_mut() = true;
+unsafe extern "C" fn log_error_message(desired_priority: ErrorPriority, message: impl Display) {
+    let actual_priority = if show_debug_messages() {
+        desired_priority
+    }
+    else {
+        match desired_priority {
+            ErrorPriority::Console => ErrorPriority::FileOnly,
+            ErrorPriority::Exception => ErrorPriority::Exception,
+            ErrorPriority::Death => ErrorPriority::Death,
+            ErrorPriority::FileOnly => ErrorPriority::FileOnly
+        }
+    };
+
+    let message = StaticStringBytes::<MAX_LOG_LEN>::from_display(message);
+
+    if actual_priority == ErrorPriority::Console {
+        let color = &ColorARGB { a: 1.0, color: ColorRGB::WHITE };
+        console_put_args(Some(color), format_args!("{message}"));
+    }
+
+    let message_to_log = if actual_priority == ErrorPriority::Death {
+        StaticStringBytes::<{ MAX_LOG_LEN + 32 }>::from_fmt(format_args!("(death) {message}\r\n"))
+            .expect("failed to die; task failed successfully!")
+    }
+    else if actual_priority == ErrorPriority::Exception {
+        StaticStringBytes::<{ MAX_LOG_LEN + 32 }>::from_fmt(format_args!("(exception) {message}\r\n"))
+            .expect("failed to die; task failed successfully!")
+    }
+    else {
+        StaticStringBytes::<{ MAX_LOG_LEN + 32 }>::from_fmt(format_args!("{message}\r\n"))
+            .expect("an error occurred while loading the previous error")
+    };
+
+    WRITE_TO_ERROR_FILE.get()(message_to_log.as_bytes().as_ptr(), true);
+
+    if actual_priority == ErrorPriority::Death {
+        panic!("Fatal error (ErrorPriority::Death): {message}")
+    }
+
+    if actual_priority == ErrorPriority::Exception {
+        panic!("Fatal error (ErrorPriority::Exception): {message}")
+    }
 }
+
+#[no_mangle]
+unsafe extern "C" fn demon_error_catcher(priority: i16, message: CStrPtr) {
+    let desired_priority = ErrorPriority::try_from(priority).expect("invalid priority!");
+    log_error_message(desired_priority, message.display_lossy());
+}
+

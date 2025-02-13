@@ -4,5 +4,6 @@
     { "name": "demon_scoreboard_style", "type": "Short", "address": "crate::rasterizer::scoreboard::SCOREBOARD_STYLE" },
     { "name": "demon_scoreboard_use_terminal_font", "type": "Boolean", "address": "crate::rasterizer::scoreboard::USE_TERMINAL_FONT" },
     { "name": "demon_scoreboard_use_player_colors", "type": "Boolean", "address": "crate::rasterizer::scoreboard::USE_PLAYER_COLORS" },
-    { "name": "demon_show_fps", "type": "Boolean", "address": "crate::rasterizer::hud::SHOW_FPS" }
+    { "name": "demon_show_fps", "type": "Boolean", "address": "crate::rasterizer::hud::SHOW_FPS" },
+    { "name": "demon_show_debug_messages", "type": "Boolean", "address": "crate::console::SHOW_DEBUG_MESSAGES" }
 ]

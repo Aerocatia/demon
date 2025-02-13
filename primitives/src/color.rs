@@ -5,6 +5,11 @@ pub struct ColorARGB {
     pub a: f32,
     pub color: ColorRGB
 }
+impl AsRef<ColorARGB> for ColorARGB {
+    fn as_ref(&self) -> &ColorARGB {
+        self
+    }
+}
 impl ColorARGB {
     pub fn is_valid(&self) -> bool {
         (0.0..=1.0).contains(&self.a) && self.color.is_valid()
@@ -32,6 +37,7 @@ pub struct ColorRGB {
 }
 
 impl ColorRGB {
+    pub const WHITE: ColorRGB = ColorRGB { r: 1.0, g: 1.0, b: 1.0 };
     pub fn is_valid(&self) -> bool {
         (0.0..=1.0).contains(&self.r) && (0.0..=1.0).contains(&self.g) && (0.0..=1.0).contains(&self.b)
     }

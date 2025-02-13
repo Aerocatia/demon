@@ -1,3 +1,5 @@
+pub mod print;
+
 use core::ffi::CStr;
 use core::mem::transmute;
 use c_mine::{c_mine, pointer_from_hook};
