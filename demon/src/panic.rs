@@ -1,20 +1,19 @@
+pub mod c;
 use crate::init::{get_exe_type_if_available, ExeType};
 use crate::util::{get_exe_dir, write_to_file};
 use alloc::borrow::Cow;
 use alloc::string::String;
 use alloc::vec::Vec;
-use c_mine::c_mine;
 use core::ffi::CStr;
 use core::fmt;
 use core::mem::zeroed;
+use core::ops::Range;
 use core::panic::PanicInfo;
 use core::ptr::{null, null_mut};
-use core::ops::Range;
 use core::sync::atomic::{AtomicBool, Ordering};
 use windows_sys::s;
-use windows_sys::Win32::Foundation;
 use windows_sys::Win32::Foundation::{GetLastError, HANDLE, HMODULE, TRUE};
-use windows_sys::Win32::System::Diagnostics::Debug::{RtlCaptureStackBackTrace, SymFromAddr, SymGetLineFromAddr64, SymInitialize, SymSetOptions, EXCEPTION_POINTERS, IMAGEHLP_LINE64, SYMBOL_INFO, SYMOPT_ALLOW_ABSOLUTE_SYMBOLS, SYMOPT_LOAD_ANYTHING, SYMOPT_LOAD_LINES};
+use windows_sys::Win32::System::Diagnostics::Debug::{RtlCaptureStackBackTrace, SymFromAddr, SymGetLineFromAddr64, SymInitialize, SymSetOptions, IMAGEHLP_LINE64, SYMBOL_INFO, SYMOPT_ALLOW_ABSOLUTE_SYMBOLS, SYMOPT_LOAD_ANYTHING, SYMOPT_LOAD_LINES};
 use windows_sys::Win32::System::ProcessStatus::{EnumProcessModules, GetModuleBaseNameA, GetModuleInformation, MODULEINFO};
 use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess, TerminateProcess};
 use windows_sys::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK};
@@ -96,7 +95,7 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
 
     match write_to_file(&error_path, output_full.as_bytes()) {
         Ok(_) => {
-            output_brief.extend_from_slice(b"\n\nAn error report is output at:\n");
+            output_brief.extend_from_slice(b"\n\nAn error report was saved to:\n");
             output_brief.extend_from_slice(error_path.as_bytes());
         }
         Err(e) => {
@@ -253,62 +252,6 @@ pub fn crash_process() -> ! {
         // in case TerminateProcess fails for some reason
         ExitProcess(197);
     }
-}
-
-#[c_mine]
-pub unsafe extern "C" fn gathering_exception_data(pointers: &EXCEPTION_POINTERS) -> ! {
-    static PANICKED: AtomicBool = AtomicBool::new(false);
-
-    if PANICKED.swap(true, Ordering::Relaxed) {
-        // in case our panic somehow triggered another segfault
-        crash_process();
-    }
-
-    let exception_record = &*pointers.ExceptionRecord;
-    let context = &*pointers.ContextRecord;
-    let code = exception_record.ExceptionCode;
-
-    let error_kind = match code {
-        Foundation::EXCEPTION_ACCESS_VIOLATION => " (segfault; param1=access, param2=address)",
-        Foundation::EXCEPTION_BREAKPOINT => " (breakpoint; likely a failed assertion)",
-        _ => "",
-    };
-
-    let address = exception_record.ExceptionAddress as usize;
-    let flags = exception_record.ExceptionFlags;
-
-    let mut params = String::with_capacity(1024);
-    for i in &exception_record.ExceptionInformation[..(exception_record.NumberParameters as usize).min(exception_record.ExceptionInformation.len())] {
-        if params.is_empty() {
-            let _ = fmt::write(&mut params, format_args!("Exception params:\n"));
-        }
-        let _ = fmt::write(&mut params, format_args!("- 0x{i:08X}\n"));
-    }
-    if !params.is_empty() {
-        let _ = fmt::write(&mut params, format_args!("\n"));
-    }
-
-    let mut address_symbol_info = String::with_capacity(1024);
-
-    let process = GetCurrentProcess();
-    if initialize_sym_data(process) {
-        resolve_address_symbol_data(&enumerate_modules(process), address, &mut address_symbol_info, process);
-    }
-    else {
-        let _ = fmt::write(&mut address_symbol_info, format_args!("\n0x{address:08X} (can't get any more info)"));
-    }
-
-    let mut register_dump = String::with_capacity(4096);
-    let _ = fmt::write(&mut register_dump, format_args!("- EAX: 0x{:08X}\n", context.Eax));
-    let _ = fmt::write(&mut register_dump, format_args!("- EBX: 0x{:08X}\n", context.Ebx));
-    let _ = fmt::write(&mut register_dump, format_args!("- ECX: 0x{:08X}\n", context.Ecx));
-    let _ = fmt::write(&mut register_dump, format_args!("- EDX: 0x{:08X}\n", context.Edx));
-    let _ = fmt::write(&mut register_dump, format_args!("- EDI: 0x{:08X}\n", context.Edi));
-    let _ = fmt::write(&mut register_dump, format_args!("- EBP: 0x{:08X}\n", context.Ebp));
-    let _ = fmt::write(&mut register_dump, format_args!("- ESP: 0x{:08X}\n", context.Esp));
-    let _ = fmt::write(&mut register_dump, format_args!("- EFlags: 0x{:08X}", context.EFlags));
-
-    panic!("Exception!\n\nException code:\n- 0x{code:08X}{error_kind}\n\nException flags:\n- {flags}\n\n{params}Exception address:{address_symbol_info}\n\nException register dump:\n{register_dump}");
 }
 
 #[cfg(not(test))]

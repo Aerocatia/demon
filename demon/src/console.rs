@@ -32,7 +32,7 @@ pub const ERROR_WAS_SET: VariableProvider<u8> = variable! {
 #[allow(unused_macros)]
 macro_rules! error {
     ($($args:tt)*) => {{
-        crate::console::error_put_args(crate::console::ErrorPriority::Console, format_args!($($args)*));
+        crate::console::error_put_args(crate::console::ErrorPriority::Normal, format_args!($($args)*));
     }};
 }
 
@@ -56,7 +56,7 @@ pub enum ErrorPriority {
     /// Prints to the console and logs to disk
     ///
     /// This will stop printing to the console if 10+ messages are sent in a short amount of time.
-    Console = 2,
+    Normal = 2,
 
     /// Log only; do not print to console
     FileOnly = 3,
@@ -257,7 +257,7 @@ unsafe extern "C" fn log_error_message(desired_priority: ErrorPriority, message:
     }
     else {
         match desired_priority {
-            ErrorPriority::Console => ErrorPriority::FileOnly,
+            ErrorPriority::Normal => ErrorPriority::FileOnly,
             ErrorPriority::Exception => ErrorPriority::Exception,
             ErrorPriority::Death => ErrorPriority::Death,
             ErrorPriority::FileOnly => ErrorPriority::FileOnly
@@ -266,7 +266,7 @@ unsafe extern "C" fn log_error_message(desired_priority: ErrorPriority, message:
 
     let message = StaticStringBytes::<MAX_LOG_LEN>::from_display(message);
 
-    if actual_priority == ErrorPriority::Console {
+    if actual_priority == ErrorPriority::Normal {
         let color = &ColorARGB { a: 1.0, color: ColorRGB::WHITE };
         console_put_args(Some(color), format_args!("{message}"));
     }

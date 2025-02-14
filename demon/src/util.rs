@@ -416,7 +416,12 @@ impl CStrPtr {
 
     /// Returns an object that can be used to display this string.
     pub unsafe fn display_lossy<'a>(&'a self) -> LossyStringDisplayer<'a> {
-        LossyStringDisplayer(self.as_cstr().to_bytes())
+        if self.0.is_null() {
+            LossyStringDisplayer(b"<null>")
+        }
+        else {
+            LossyStringDisplayer(self.as_cstr().to_bytes())
+        }
     }
 }
 

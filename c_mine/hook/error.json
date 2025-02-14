@@ -2,7 +2,7 @@
     "gathering_exception_data": {
         "cache": "0x00406C53",
         "tag": "0x00405C7C",
-        "replacement": "crate::panic::gathering_exception_data"
+        "replacement": "crate::panic::c::gathering_exception_data"
     },
     "error": {
         "comment": "This function is variadic. Rust functions cannot do this, so we use a C function here.",
@@ -24,5 +24,10 @@
         "cache": "0x00402798",
         "tag": "0x0040AE2F",
         "replacement": "nop"
+    },
+    "display_assert": {
+        "cache": "0x00406C85",
+        "tag": "0x00405CB8",
+        "replacement": "crate::panic::c::display_assert"
     }
 }
