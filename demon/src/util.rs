@@ -423,6 +423,11 @@ impl CStrPtr {
             LossyStringDisplayer(self.as_cstr().to_bytes())
         }
     }
+
+    /// Returns true if this is a null pointer.
+    pub const fn is_null(&self) -> bool {
+        self.0.is_null()
+    }
 }
 
 /// Object that can be used to display a string lossy without performing any heap allocations.

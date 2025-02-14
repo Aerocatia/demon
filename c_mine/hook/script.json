@@ -2,43 +2,43 @@
     "main_crash": {
         "cache": "0x00403C29",
         "tag": "0x00402DF1",
-        "replacement": "crate::script::main_crash"
+        "replacement": "crate::script::crash::c::main_crash"
     },
     "hs_global_external_get": {
         "cache": "0x00404679",
         "tag": "0x00403922",
-        "replacement": "crate::script::hs_global_external_get"
+        "replacement": "crate::script::c::hs_global_external_get"
     },
     "hs_find_global_by_name": {
         "cache": "0x00409E26",
         "tag": "0x00409228",
-        "replacement": "crate::script::hs_find_global_by_name"
+        "replacement": "crate::script::c::hs_find_global_by_name"
     },
     "hs_enumerate_globals": {
         "cache": "0x005E8040",
         "tag": "0x005F1930",
-        "replacement": "crate::script::hs_enumerate_globals",
+        "replacement": "crate::script::c::hs_enumerate_globals",
         "sudo": true
     },
     "hs_global_get_name": {
         "cache": "0x004013AC",
         "tag": "0x004011DB",
-        "replacement": "crate::script::hs_global_get_name"
+        "replacement": "crate::script::c::hs_global_get_name"
     },
     "hs_global_get_type": {
         "cache": "0x0040401B",
         "tag": "0x00403233",
-        "replacement": "crate::script::hs_global_get_type"
+        "replacement": "crate::script::c::hs_global_get_type"
     },
     "hs_runtime_initialize": {
         "cache": "0x004048C7",
         "tag": "0x00403B93",
-        "replacement": "crate::script::hs_runtime_initialize"
+        "replacement": "crate::script::c::hs_runtime_initialize"
     },
     "hs_global_get_value": {
         "tag": "0x0060A3D0",
         "cache": "0x00603800",
-        "replacement": "crate::script::hs_global_get_value",
+        "replacement": "crate::script::c::hs_global_get_value",
         "sudo": true
     },
     "hs_enumerate_add_result": {
@@ -50,5 +50,11 @@
         "cache": "0x00407F68",
         "tag": "0x00407135",
         "replacement": "crate::script::print::c::hs_print"
+    },
+    "display_scripting_error": {
+        "cache": "0x005F4DA0",
+        "tag": "0x005FB4B0",
+        "replacement": "crate::script::c::display_scripting_error",
+        "sudo": true
     }
 }
