@@ -17,7 +17,6 @@ use crate::util::{CStrPtr, PointerProvider, StaticStringBytes, VariableProvider}
 
 const CONSOLE_FADE_START: f64 = 4.0;
 const CONSOLE_FADE_TIME: f64 = 0.5;
-const CONSOLE_MAX_DISPLAYED_LINES_UNOPENED_FADE_PENALTY_PER_INDEX: f64 = CONSOLE_FADE_TIME / 2.0;
 const CONSOLE_MAX_TIME_VISIBLE: f64 = CONSOLE_FADE_START + CONSOLE_FADE_TIME;
 const CONSOLE_CURSOR: char = '•';
 const CONSOLE_PREFIX: &'static str = "halo( ";
@@ -27,9 +26,7 @@ const CONSOLE_INPUT_MAX_SIZE: usize = 512;
 const CONSOLE_MAX_SCROLLBACK: usize = 1024;
 const CONSOLE_DEFAULT_COLOR: ColorARGB = ColorARGB { a: 1.0, color: ColorRGB { r: 0.7, g: 0.7, b: 0.7 } };
 
-// TODO: Make these consts once we figure out a good value for it
-pub static mut CONSOLE_MAX_DISPLAYED_LINES_UNOPENED: u16 = 10;
-pub static mut CONSOLE_INPUT_BACKGROUND_OPACITY: f32 = 0.5;
+pub static mut CONSOLE_BACKGROUND_OPACITY: f32 = 0.0;
 
 pub static CONSOLE_BUFFER: RwLock<Console> = RwLock::new(Console::new());
 
@@ -190,10 +187,10 @@ unsafe fn render_console() {
             ..bounds
         };
 
-        draw_box(ColorARGB { a: CONSOLE_INPUT_BACKGROUND_OPACITY.clamp(0.0, 1.0), color: ColorRGB::BLACK }, Rectangle {
-            top: text_bounds.top,
-            ..interface_bounds
-        });
+        let opacity = CONSOLE_BACKGROUND_OPACITY.clamp(0.0, 1.0);
+        if opacity > 0.0 {
+            draw_box(ColorARGB { a: opacity, color: ColorRGB::BLACK }, interface_bounds);
+        }
 
         let show_cursor = (console_buffer.cursor_timer.value().0 % 2) == 0;
         let mut shown = false;
@@ -314,17 +311,6 @@ unsafe fn render_console() {
 
             let time = entry.life_timer.seconds() + entry.timer_offset;
             entry.last_read_timer_value = time;
-
-            // If the line extends past CONSOLE_MAX_DISPLAYED_LINES_UNOPENED, begin fading
-            // immediately, with a higher fade the further out it is
-            if index > CONSOLE_MAX_DISPLAYED_LINES_UNOPENED as usize && time < CONSOLE_MAX_TIME_VISIBLE {
-                let min = CONSOLE_FADE_START + ((index - CONSOLE_MAX_DISPLAYED_LINES_UNOPENED as usize) as f64) * CONSOLE_MAX_DISPLAYED_LINES_UNOPENED_FADE_PENALTY_PER_INDEX;
-
-                if time < min {
-                    entry.life_timer.start();
-                    entry.timer_offset = min;
-                }
-            }
 
             // Apply fade to the alpha.
             let console_fade_offset = time - CONSOLE_FADE_START;
