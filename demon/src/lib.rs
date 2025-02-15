@@ -10,6 +10,8 @@ extern crate alloc;
 #[macro_use]
 mod util;
 #[macro_use]
+mod error_log;
+#[macro_use]
 mod console;
 mod input;
 
