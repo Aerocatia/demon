@@ -496,7 +496,7 @@ const CONSOLE_ENABLED: VariableProvider<bool> = variable! {
 const CONSOLE_CURSOR_POSITION: VariableProvider<u16> = variable! {
     name: "CONSOLE_CURSOR_POSITION",
     cache_address: 0x00C98C9E,
-    tag_address: 0x00DD5025E
+    tag_address: 0x000D5025E
 };
 
 pub static mut CONSOLE_COLOR: ColorARGB = ColorARGB {
