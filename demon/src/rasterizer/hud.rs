@@ -6,7 +6,7 @@ use crate::player::{get_local_player_index, local_player_get_player_index, Playe
 use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter};
 use crate::rasterizer::font::get_font_tag_height;
 use crate::rasterizer::motion_sensor::update_motion_sensor;
-use crate::rasterizer::{get_global_interface_canvas_bounds, InterfaceCanvasBounds, Perspective};
+use crate::rasterizer::{get_global_interface_canvas_bounds, Rectangle, Perspective};
 use crate::timing::InterpolatedTimer;
 use crate::util::{PointerProvider, VariableProvider};
 
@@ -118,7 +118,7 @@ pub unsafe fn show_fps() {
     let fps = FPS_SHOWN.load(Ordering::Relaxed);
     let (height, leading) = get_font_tag_height(terminal_font);
     let height = height + leading;
-    writer.draw(format_args!("{fps}"), InterfaceCanvasBounds {
+    writer.draw(format_args!("{fps}"), Rectangle {
         bottom: height,
         ..get_global_interface_canvas_bounds()
     }).expect(";-;");

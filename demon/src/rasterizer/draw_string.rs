@@ -3,13 +3,13 @@ use core::ptr::null;
 use num_enum::TryFromPrimitive;
 use c_mine::pointer_from_hook;
 use tag_structs::primitives::color::{ColorARGB, ColorRGB, Pixel32};
+use tag_structs::primitives::vector::Rectangle;
 use crate::rasterizer::draw_string::c::{draw_string_set_color, draw_string_set_font, draw_string_set_format, rasterizer_text_set_shadow_color, set_tab_stops};
-use crate::rasterizer::InterfaceCanvasBounds;
 use crate::tag::TagID;
 use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
 
 pub const RASTERIZER_DRAW_UNICODE_STRING: PointerProvider<unsafe extern "C" fn(
-    rectangle: *const [u32; 2],
+    rectangle: &Rectangle,
     _unknown_null_1: *const u16,
     _unknown_null_2: *const u32,
     _zero_me_baby: u32,
@@ -154,7 +154,7 @@ impl DrawStringWriter {
     ///
     /// This function is not thread-safe, and no guarantees are made that the state of the draw
     /// string parameters are not being done somewhere else concurrently.
-    pub unsafe fn draw(&self, fmt: core::fmt::Arguments, bounds: InterfaceCanvasBounds) -> core::fmt::Result {
+    pub unsafe fn draw(&self, fmt: core::fmt::Arguments, bounds: Rectangle) -> core::fmt::Result {
         // Rust uses UTF-8
         let buffer = StaticStringBytes::<512>::from_fmt(fmt)?;
 
@@ -179,11 +179,7 @@ impl DrawStringWriter {
         draw_string_set_color.get()(Some(&self.color));
         set_tab_stops(&self.tab_stops[..self.tab_stop_count]);
 
-        let top_left = (bounds.left as u32) << 16 | (bounds.top as u32);
-        let bottom_right = (bounds.right as u32) << 16 | (bounds.bottom as u32);
-
-        let rectangle = [top_left, bottom_right];
-        RASTERIZER_DRAW_UNICODE_STRING.get()(&rectangle, null(), null(), 0, doubled_up_buffer.as_ptr());
+        RASTERIZER_DRAW_UNICODE_STRING.get()(&bounds, null(), null(), 0, doubled_up_buffer.as_ptr());
 
         // prevent subsequent calls from using a possibly broken color, tab stops, etc.
         draw_string_set_color.get()(Some(&DEFAULT_WHITE));

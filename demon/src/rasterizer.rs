@@ -1,6 +1,7 @@
 use num_enum::TryFromPrimitive;
 use c_mine::pointer_from_hook;
 use tag_structs::primitives::color::{ColorARGB, Pixel32};
+use tag_structs::primitives::vector::Rectangle;
 use crate::util::PointerProvider;
 
 pub mod scoreboard;
@@ -14,34 +15,12 @@ pub mod hud;
 ///
 /// TODO: Currently this is just 640x480, but this is intended to be adapted to the user's current
 ///       aspect ratio, and sub-interfaces will use their own internal scaling.
-pub fn get_global_interface_canvas_bounds() -> InterfaceCanvasBounds {
-    InterfaceCanvasBounds {
+pub fn get_global_interface_canvas_bounds() -> Rectangle {
+    Rectangle {
         top: 0,
         left: 0,
         right: 640,
         bottom: 480
-    }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub struct InterfaceCanvasBounds {
-    pub top: u16,
-    pub left: u16,
-    pub right: u16,
-    pub bottom: u16
-}
-
-impl InterfaceCanvasBounds {
-    pub const fn width(&self) -> u16 {
-        self.assert_valid();
-        self.right - self.left
-    }
-    pub const fn height(&self) -> u16 {
-        self.assert_valid();
-        self.bottom - self.top
-    }
-    pub const fn assert_valid(&self) {
-        assert!(self.left <= self.right && self.bottom <= self.top)
     }
 }
 
@@ -70,15 +49,9 @@ impl Perspective {
 }
 
 
-const DRAW_BOX: PointerProvider<unsafe extern "C" fn(bounds: *const u16, color: Pixel32)> = pointer_from_hook!("draw_box");
+const DRAW_BOX: PointerProvider<unsafe extern "C" fn(bounds: &Rectangle, color: Pixel32)> = pointer_from_hook!("draw_box");
 
-pub unsafe fn draw_box(bounds: InterfaceCanvasBounds, color: ColorARGB) {
-    let b = [
-        bounds.top,
-        bounds.left,
-        bounds.bottom,
-        bounds.right
-    ];
-
-    DRAW_BOX.get()(b.as_ptr(), color.to_pixel32());
+#[inline(always)]
+pub unsafe fn draw_box(bounds: Rectangle, color: ColorARGB) {
+    DRAW_BOX.get()(&bounds, color.to_pixel32());
 }

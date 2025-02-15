@@ -2,7 +2,7 @@ use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use crate::memory::table::DataTable;
 use crate::multiplayer::{get_connected_ip_address, Gametype, ServerInfo};
 use crate::player::{Player, PlayerID, MAXIMUM_LIVES, PLAYERS_TABLE};
-use crate::rasterizer::{draw_box, InterfaceCanvasBounds};
+use crate::rasterizer::{draw_box, Rectangle};
 use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter, DEFAULT_WHITE};
 use crate::rasterizer::font::get_font_tag_height;
 use crate::rasterizer::scoreboard::color::{get_scoreboard_color, HEADER_COLOR, HEADING_COLOR, HIGHLIGHT_BOOST};
@@ -32,9 +32,9 @@ pub unsafe fn draw_verbose_scoreboard(
     let small_line_height = get_font_tag_height(small_ui).0;
     let large_line_height = get_font_tag_height(large_ui).0;
 
-    let top = 60u16;
-    let left = 10u16;
-    let right = 630u16;
+    let top = 60i16;
+    let left = 10i16;
+    let right = 630i16;
     // originally 390
     let bottom = (top + small_line_height * (16 + 2) + 2)
         // prevent the server name and IP from being overlapped
@@ -42,10 +42,10 @@ pub unsafe fn draw_verbose_scoreboard(
 
     // originally top - 1
     let mut score_offset = top;
-    let mut next_score_line = |line_height: u16| { score_offset += line_height; InterfaceCanvasBounds { top: score_offset - small_line_height, left: 8, right: 640 - 5, bottom: bottom.min(score_offset) }};
+    let mut next_score_line = |line_height: i16| { score_offset += line_height; Rectangle { top: score_offset - small_line_height, left: 8, right: 640 - 5, bottom: bottom.min(score_offset) }};
 
     draw_box(
-        InterfaceCanvasBounds {
+        Rectangle {
             top,
             left,
             right,
@@ -141,8 +141,8 @@ unsafe fn draw_player_score(
     &ScoreboardScreenText,
     server_info: &ServerInfo,
     score_writer: &mut DrawStringWriter,
-    small_line_height: u16,
-    bounds: InterfaceCanvasBounds,
+    small_line_height: i16,
+    bounds: Rectangle,
     maximum_lives: u32,
     players: &mut DataTable<Player, 27760>,
     player_score_data: &SortableScore,
@@ -201,7 +201,7 @@ unsafe fn draw_server_info(opacity: f32, scoreboard_text: &ScoreboardScreenText,
     );
     footer_writer.set_justification(DrawStringJustification::Right);
     let mut footer_offset = 480 - large_line_height * 2;
-    let mut next_footer_line = |line_height: u16| { footer_offset += line_height; InterfaceCanvasBounds { top: footer_offset - large_line_height, left: 8, right: 640 - 5, bottom: 480.min(footer_offset) }};
+    let mut next_footer_line = |line_height: i16| { footer_offset += line_height; Rectangle { top: footer_offset - large_line_height, left: 8, right: 640 - 5, bottom: 480.min(footer_offset) }};
 
     let server_name = StaticStringBytes::<66>::from_utf16(&server_info.server_name);
     let server_ip = format_connected_server_ip();
