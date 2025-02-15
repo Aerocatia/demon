@@ -136,6 +136,7 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
     let mut tag_code = String::with_capacity(65536);
     let mut cache_code = String::with_capacity(65536);
     let mut codegen = String::with_capacity(65536);
+    let mut c_targets_generated = HashSet::new();
 
     for (name, hook) in get_all_hooks() {
         let mut target = hook
@@ -147,11 +148,12 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
         if target.starts_with("_") {
             let function = &target[1..];
             target = &name;
-            fmt::write(&mut codegen, format_args!("
-extern {{
-    fn {function}();
-}}
 
+            if c_targets_generated.insert(function.to_owned()) {
+                fmt::write(&mut codegen, format_args!("extern {{ fn {function}(); }}")).expect(";-;");
+            }
+
+            fmt::write(&mut codegen, format_args!("
 const {name}: crate::util::CFunctionProvider<unsafe extern \"C\" fn()> = crate::util::CFunctionProvider {{
     name: \"{name}\",
     function_getter: || {function},

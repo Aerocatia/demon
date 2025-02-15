@@ -1,6 +1,7 @@
 pub mod print;
 pub mod c;
 pub mod crash;
+pub mod cls;
 
 use core::ffi::CStr;
 use c_mine::pointer_from_hook;

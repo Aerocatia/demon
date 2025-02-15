@@ -494,9 +494,5 @@
     {"name":"developer_mode","type":"Short","address":"0x00BB8D8A"},
     {"name":"mouse_acceleration","type":"Real","address":"0x00ABECE8"},
     {"name":"sv_tk_ban","type":"Short","address":"0x00AD66B8"},
-    {"name":"rasterizer_frame_drop_ms","type":"Short","address":"0x00AD14C0"},
-
-    {"name":"demon_console_red","type":"Real","address":"0x00D5012C"},
-    {"name":"demon_console_green","type":"Real","address":"0x00D50130"},
-    {"name":"demon_console_blue","type":"Real","address":"0x00D50134"}
+    {"name":"rasterizer_frame_drop_ms","type":"Short","address":"0x00AD14C0"}
 ]

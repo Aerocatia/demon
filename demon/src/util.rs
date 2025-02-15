@@ -268,10 +268,35 @@ impl<T: Sized> PointerProvider<T> {
 pub struct StaticStringBytes<const SIZE: usize>([u8; SIZE], usize);
 
 impl<const SIZE: usize> StaticStringBytes<SIZE> {
+    pub const fn new() -> Self {
+        Self([0u8; SIZE], 0)
+    }
+
     pub fn from_fmt(fmt: core::fmt::Arguments) -> Result<StaticStringBytes<SIZE>, core::fmt::Error> {
         let mut bytes = [0u8; SIZE];
         let length = fmt_to_byte_array(&mut bytes[..SIZE - 1], fmt)?.len();
         Ok(StaticStringBytes(bytes, length))
+    }
+
+    pub fn from_strs<'a>(strings: impl Iterator<Item = &'a str>) -> StaticStringBytes<SIZE> {
+        let mut bytes = [0u8; SIZE];
+        let mut length = 0;
+        let max_len = bytes.len() - 1;
+
+        for i in strings {
+            let str_bytes = i.as_bytes();
+            let end = (length + str_bytes.len()).min(max_len);
+
+            bytes[length..end].copy_from_slice(&str_bytes[0..end - length]);
+            length = end;
+            if end == max_len {
+                break;
+            }
+        }
+
+        bytes[SIZE - 1] = 0;
+
+        StaticStringBytes(bytes, length)
     }
 
     pub fn from_utf16(utf16: &[u16]) -> StaticStringBytes<SIZE> {
@@ -285,7 +310,7 @@ impl<const SIZE: usize> StaticStringBytes<SIZE> {
     }
 
     pub fn as_str(&self) -> &str {
-        // Safety: This is guaranteed to be valid UTF-8 because from_fmt guarantees this.
+        // Safety: This is guaranteed to be valid UTF-8 because from_fmt and from_strs guarantee this.
         unsafe { core::str::from_utf8_unchecked(self.as_bytes()) }
     }
 
@@ -296,11 +321,19 @@ impl<const SIZE: usize> StaticStringBytes<SIZE> {
     pub fn as_bytes_with_null(&self) -> &[u8] {
         &self.0[..self.1 + 1]
     }
+
+    pub const fn into_bytes(self) -> [u8; SIZE] {
+        self.0
+    }
+
+    pub const fn byte_len(&self) -> usize {
+        self.1
+    }
 }
 
 impl<const SIZE: usize> Default for StaticStringBytes<SIZE> {
     fn default() -> Self {
-        Self([0u8; SIZE], 0)
+        Self::new()
     }
 }
 

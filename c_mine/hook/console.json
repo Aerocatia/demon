@@ -14,6 +14,23 @@
         "tag": "0x00401BC7",
         "replacement": "crate::console::c::console_initialize"
     },
+    "terminal_printf": {
+        "comment": "This function is variadic. Rust functions cannot do this.",
+        "cache": "0x0040917E",
+        "tag": "0x0040A844",
+        "replacement": "_demon_terminal_printf_trampoline"
+    },
+    "terminal_printf_2": {
+        "comment": "The game has two copies of terminal_printf.",
+        "cache": "0x00401D48",
+        "tag": "0x004084AE",
+        "replacement": "_demon_terminal_printf_trampoline"
+    },
+    "terminal_draw": {
+        "cache": "0x00409FDE",
+        "tag": "0x00409412",
+        "replacement": "crate::console::c::terminal_draw"
+    },
     "poll_console_input": {
         "comment": "original function name is unknown",
         "cache": "0x00649720",

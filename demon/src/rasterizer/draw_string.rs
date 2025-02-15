@@ -155,6 +155,11 @@ impl DrawStringWriter {
     /// This function is not thread-safe, and no guarantees are made that the state of the draw
     /// string parameters are not being done somewhere else concurrently.
     pub unsafe fn draw(&self, fmt: core::fmt::Arguments, bounds: Rectangle) -> core::fmt::Result {
+        // Skip processing
+        if self.color.a == 0.0 {
+            return Ok(())
+        }
+
         // Rust uses UTF-8
         let buffer = StaticStringBytes::<512>::from_fmt(fmt)?;
 

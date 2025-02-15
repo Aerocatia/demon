@@ -52,6 +52,6 @@ impl Perspective {
 const DRAW_BOX: PointerProvider<unsafe extern "C" fn(bounds: &Rectangle, color: Pixel32)> = pointer_from_hook!("draw_box");
 
 #[inline(always)]
-pub unsafe fn draw_box(bounds: Rectangle, color: ColorARGB) {
+pub unsafe fn draw_box(color: ColorARGB, bounds: Rectangle) {
     DRAW_BOX.get()(&bounds, color.to_pixel32());
 }

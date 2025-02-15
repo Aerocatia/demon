@@ -45,12 +45,6 @@ pub unsafe fn draw_verbose_scoreboard(
     let mut next_score_line = |line_height: i16| { score_offset += line_height; Rectangle { top: score_offset - small_line_height, left: 8, right: 640 - 5, bottom: bottom.min(score_offset) }};
 
     draw_box(
-        Rectangle {
-            top,
-            left,
-            right,
-            bottom
-        },
         ColorARGB {
             a: opacity * 0.69,
             color: ColorRGB {
@@ -58,6 +52,12 @@ pub unsafe fn draw_verbose_scoreboard(
                 g: 0.125,
                 b: 0.125,
             }
+        },
+        Rectangle {
+            top,
+            left,
+            right,
+            bottom
         }
     );
 

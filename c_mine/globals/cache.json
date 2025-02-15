@@ -491,9 +491,5 @@
     {"name":"developer_mode","type":"Short","address":"0x00B017D2"},
     {"name":"mouse_acceleration","type":"Real","address":"0x00A27220"},
     {"name":"sv_tk_ban","type":"Short","address":"0x00A347A0"},
-    {"name":"rasterizer_frame_drop_ms","type":"Short","address":"0x00A31D50"},
-
-    {"name":"demon_console_red","type":"Real","address":"0x00C98B6C"},
-    {"name":"demon_console_green","type":"Real","address":"0x00C98B70"},
-    {"name":"demon_console_blue","type":"Real","address":"0x00C98B74"}
+    {"name":"rasterizer_frame_drop_ms","type":"Short","address":"0x00A31D50"}
 ]

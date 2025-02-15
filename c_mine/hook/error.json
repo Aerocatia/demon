@@ -14,11 +14,6 @@
         "tag": "0x00408EE0",
         "cache": "0x00409B1A"
     },
-    "terminal_printf": {
-        "comment": "This function is variadic. Rust functions cannot do this. (TODO: write a C function that does it)",
-        "cache": "0x0040917E",
-        "tag": "0x0040A844"
-    },
     "__RTC_UninitUse": {
         "comment": "Joining servers is broken because the game does not initialize a variable called `baseline` due to being well written. We can disable this assertion for now.",
         "cache": "0x00402798",

@@ -4,6 +4,11 @@
         "tag": "0x00402DF1",
         "replacement": "crate::script::crash::c::main_crash"
     },
+    "main_cls": {
+        "cache": "0x00403E31",
+        "tag": "0x00403012",
+        "replacement": "crate::script::cls::c::main_cls"
+    },
     "hs_global_external_get": {
         "cache": "0x00404679",
         "tag": "0x00403922",

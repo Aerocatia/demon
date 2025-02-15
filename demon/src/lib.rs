@@ -36,3 +36,4 @@ mod rasterizer;
 mod globals;
 mod game_engine;
 mod random;
+mod scrollback;

@@ -1,6 +1,7 @@
 fn main() {
     cc::Build::new()
         .file("c_src/error.c")
+        .file("c_src/terminal.c")
         .compile("demon_c_functions");
     println!("cargo:rustc-link-lib=demon_c_functions");
 
