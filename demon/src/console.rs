@@ -1,19 +1,18 @@
 pub mod c;
 
 use core::fmt::Display;
+use num_enum::FromPrimitive;
 use spin::RwLock;
-use c_mine::pointer_from_hook;
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use tag_structs::primitives::vector::Rectangle;
 use crate::globals::get_interface_fonts;
 use crate::id::ID;
-use crate::memory::table::DataTable;
 use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter};
 use crate::rasterizer::font::get_font_tag_height;
 use crate::rasterizer::{draw_box, get_global_interface_canvas_bounds};
 use crate::scrollback::ScrollbackButton;
-use crate::timing::{FixedTimer, InterpolatedTimer, TICK_RATE};
-use crate::util::{CStrPtr, PointerProvider, StaticStringBytes, VariableProvider};
+use crate::timing::InterpolatedTimer;
+use crate::util::{CStrPtr, StaticStringBytes, VariableProvider};
 
 const CONSOLE_FADE_START: f64 = 4.0;
 const CONSOLE_FADE_TIME: f64 = 0.5;
@@ -24,9 +23,38 @@ const CONSOLE_DISPLAY_PADDING: i16 = 4;
 const CONSOLE_ENTRY_MAX_SIZE: usize = 1024;
 const CONSOLE_INPUT_MAX_SIZE: usize = 512;
 const CONSOLE_MAX_SCROLLBACK: usize = 1024;
-const CONSOLE_DEFAULT_COLOR: ColorARGB = ColorARGB { a: 1.0, color: ColorRGB { r: 0.7, g: 0.7, b: 0.7 } };
+const CONSOLE_DEFAULT_TEXT_COLOR: ColorARGB = ColorARGB { a: 1.0, color: ColorRGB { r: 0.7, g: 0.7, b: 0.7 } };
+const CONSOLE_BACKGROUND_OPACITY: f32 = 0.7;
 
-pub static mut CONSOLE_BACKGROUND_OPACITY: f32 = 0.0;
+const CONSOLE_INPUT_TEXT: VariableProvider<[u8; 256]> = variable! {
+    name: "CONSOLE_INPUT_TEXT",
+    cache_address: 0x00C98B98,
+    tag_address: 0x00D50158
+};
+
+const CONSOLE_CURSOR_POSITION: VariableProvider<u16> = variable! {
+    name: "CONSOLE_CURSOR_POSITION",
+    cache_address: 0x00C98C9E,
+    tag_address: 0x000D5025E
+};
+
+pub static mut CONSOLE_COLOR: ColorARGB = ColorARGB {
+    a: 1.0,
+    color: ColorRGB {
+        r: 1.0,
+        g: 0.3,
+        b: 1.0
+    }
+};
+
+#[derive(Copy, Clone, PartialEq, FromPrimitive)]
+#[repr(u16)]
+enum ConsoleStyle {
+    #[num_enum(default)]
+    Default,
+    HighContrast
+}
+pub static mut CONSOLE_STYLE: u16 = ConsoleStyle::Default as u16;
 
 pub static CONSOLE_BUFFER: RwLock<Console> = RwLock::new(Console::new());
 
@@ -163,6 +191,7 @@ unsafe fn render_console() {
         return
     }
     let console_active = CONSOLE_IS_ACTIVE.get_copied() != 0;
+    let console_type: ConsoleStyle = CONSOLE_STYLE.into();
 
     let mut writer = DrawStringWriter::new_simple(
         font,
@@ -187,9 +216,8 @@ unsafe fn render_console() {
             ..bounds
         };
 
-        let opacity = CONSOLE_BACKGROUND_OPACITY.clamp(0.0, 1.0);
-        if opacity > 0.0 {
-            draw_box(ColorARGB { a: opacity, color: ColorRGB::BLACK }, interface_bounds);
+        if console_type == ConsoleStyle::HighContrast {
+            draw_box(ColorARGB { a: CONSOLE_BACKGROUND_OPACITY, color: ColorRGB::BLACK }, interface_bounds);
         }
 
         let show_cursor = (console_buffer.cursor_timer.value().0 % 2) == 0;
@@ -290,13 +318,26 @@ unsafe fn render_console() {
         let mut color = entry.default_color;
 
         if console_active {
-            entry.timer_offset = CONSOLE_MAX_TIME_VISIBLE;
-            entry.last_read_timer_value = CONSOLE_MAX_TIME_VISIBLE;
+            match console_type {
+                ConsoleStyle::Default => {
+                    // Text fades out on close
+                    entry.last_read_timer_value = entry.last_read_timer_value.min(CONSOLE_FADE_START);
+                    entry.timer_offset = entry.last_read_timer_value;
+                    entry.life_timer.start();
+                }
+                ConsoleStyle::HighContrast => {
+                    // Text instantly goes away on close
+                    entry.timer_offset = CONSOLE_MAX_TIME_VISIBLE;
+                    entry.last_read_timer_value = CONSOLE_MAX_TIME_VISIBLE;
+                }
+            }
         }
-        else if entry.last_read_timer_value >= CONSOLE_MAX_TIME_VISIBLE {
-            break;
-        }
-        else {
+
+        if !console_active {
+            if entry.last_read_timer_value >= CONSOLE_MAX_TIME_VISIBLE {
+                break;
+            }
+
             // Start the timer on the first frame the text is shown so that the player doesn't miss
             // it (if there's no spew of text following this)
             if !entry.timer_started {
@@ -304,11 +345,13 @@ unsafe fn render_console() {
                 entry.timer_started = true;
             }
 
-            let time = entry.life_timer.seconds() + entry.timer_offset;
-            entry.last_read_timer_value = time;
+            if !console_active {
+                let time = entry.life_timer.seconds() + entry.timer_offset;
+                entry.last_read_timer_value = time;
+            }
 
             // Apply fade to the alpha.
-            let console_fade_offset = time - CONSOLE_FADE_START;
+            let console_fade_offset = entry.last_read_timer_value - CONSOLE_FADE_START;
             if console_fade_offset > 0.0 {
                 color.a = color.a * (1.0 - console_fade_offset / CONSOLE_FADE_TIME).clamp(0.0, 1.0) as f32;
             }
@@ -329,7 +372,7 @@ unsafe extern "C" fn demon_terminal_put(color: Option<&ColorARGB>, text: CStrPtr
     printf(CStrPtr::from_bytes(b"[CONSOLE] %s\n\x00"), text);
     CONSOLE_BUFFER
         .write()
-        .put(color.unwrap_or(&CONSOLE_DEFAULT_COLOR), text.display_lossy());
+        .put(color.unwrap_or(&CONSOLE_DEFAULT_TEXT_COLOR), text.display_lossy());
 }
 
 
@@ -364,20 +407,7 @@ macro_rules! console_color {
 }
 
 pub fn console_put_args(color: Option<&ColorARGB>, fmt: core::fmt::Arguments) {
-    let data = StaticStringBytes::<0xFE>::from_fmt(fmt)
-        .expect("failed to write console message");
-    console_put_message(color, data.as_bytes_with_null());
-}
-
-fn console_put_message(color: Option<&ColorARGB>, message_bytes: &[u8]) {
-    const TERMINAL_PRINTF: PointerProvider<unsafe extern "C" fn(color: Option<&ColorARGB>, fmt: *const u8, arg: *const u8)> = pointer_from_hook!("terminal_printf");
-
-    assert!(message_bytes.last() == Some(&0u8), "should be null-terminated");
-
-    // SAFETY: PointerProvider is probably right.
-    unsafe {
-        TERMINAL_PRINTF.get()(color, b"%s\x00".as_ptr(), message_bytes.as_ptr());
-    }
+    CONSOLE_BUFFER.write().put(color.unwrap_or(&CONSOLE_DEFAULT_TEXT_COLOR), fmt);
 }
 
 const TERMINAL_SALT: u16 = 0x6574;
@@ -395,96 +425,8 @@ struct TerminalOutput {
     pub timer: u32
 }
 
-type TerminalOutputTable = DataTable<TerminalOutput, TERMINAL_SALT>;
-
-const TERMINAL_INITIALIZED: VariableProvider<u8> = variable! {
-    name: "TERMINAL_INITIALIZED",
-    cache_address: 0x00C8AEE0,
-    tag_address: 0x00D42490
-};
-
-const TERMINAL_OUTPUT_TABLE: VariableProvider<Option<&mut TerminalOutputTable>> = variable! {
-    name: "TERMINAL_OUTPUT_TABLE",
-    cache_address: 0x00C8AEE4,
-    tag_address: 0x00D42494
-};
-
-const LIMIT_TICKS: u32 = 150;
-const CONSOLE_FADE_FRAME_RATE: f64 = TICK_RATE;
-
-/// Fades all terminal output
-///
-/// Only works once every 1/[`CONSOLE_FADE_FRAME_RATE`]th of a second. This is a temporary solution
-/// until the console is replaced so at least the console is faded at the correct rate for now
-/// instead of being unusable at high frame rates.
-///
-/// Unsafe because we cannot guarantee the table won't be concurrently written to at this moment...
-unsafe fn fade_console_text(table: &'static mut TerminalOutputTable) {
-    static RATE: FixedTimer = FixedTimer::new(
-        1.0 / CONSOLE_FADE_FRAME_RATE,
-        30
-    );
-
-    RATE.run(|| {
-        for i in table.iter() {
-            i.get_mut().timer = (i.get().timer + 1).min(LIMIT_TICKS);
-        }
-    });
-}
-
 const CONSOLE_IS_ACTIVE: VariableProvider<u8> = variable! {
     name: "CONSOLE_IS_ACTIVE",
     cache_address: 0x00C98AE0,
     tag_address: 0x00D500A0
-};
-
-const CONSOLE_PROMPT_TEXT: VariableProvider<[u8; 32]> = variable! {
-    name: "CONSOLE_PROMPT_TEXT",
-    cache_address: 0x00C98B78,
-    tag_address: 0x00D50138
-};
-
-const CONSOLE_INPUT_TEXT: VariableProvider<[u8; 256]> = variable! {
-    name: "CONSOLE_INPUT_TEXT",
-    cache_address: 0x00C98B98,
-    tag_address: 0x00D50158
-};
-
-const CONSOLE_HISTORY_LENGTH: VariableProvider<u16> = variable! {
-    name: "CONSOLE_HISTORY_LENGTH",
-    cache_address: 0x00C9949C,
-    tag_address: 0x00D5015C
-};
-
-const CONSOLE_HISTORY_NEXT_INDEX: VariableProvider<u16> = variable! {
-    name: "CONSOLE_HISTORY_NEXT_INDEX",
-    cache_address: 0x00C9949E,
-    tag_address: 0x00D5015E
-};
-
-const CONSOLE_HISTORY_SELECTED_INDEX: VariableProvider<u16> = variable! {
-    name: "CONSOLE_HISTORY_SELECTED_INDEX",
-    cache_address: 0x00C994A0,
-    tag_address: 0x00D50160
-};
-
-const CONSOLE_ENABLED: VariableProvider<bool> = variable! {
-    name: "CONSOLE_ENABLED",
-    cache_address: 0x00C98AE1,
-    tag_address: 0x00D500A1
-};
-
-const CONSOLE_CURSOR_POSITION: VariableProvider<u16> = variable! {
-    name: "CONSOLE_CURSOR_POSITION",
-    cache_address: 0x00C98C9E,
-    tag_address: 0x000D5025E
-};
-
-pub static mut CONSOLE_COLOR: ColorARGB = ColorARGB {
-    a: 1.0,
-    color: ColorRGB {
-        r: 1.0,
-        g: 0.3,
-        b: 1.0
-    }
 };

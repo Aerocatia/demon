@@ -9,5 +9,5 @@
     { "name": "demon_console_red", "type": "Real", "address": "crate::console::CONSOLE_COLOR.color.r"},
     { "name": "demon_console_green", "type": "Real", "address": "crate::console::CONSOLE_COLOR.color.g"},
     { "name": "demon_console_blue", "type": "Real", "address": "crate::console::CONSOLE_COLOR.color.b"},
-    { "name": "demon_console_background_opacity", "type": "Real", "address": "crate::console::CONSOLE_BACKGROUND_OPACITY"}
+    { "name": "demon_console_style", "type": "Short", "address": "crate::console::CONSOLE_STYLE"}
 ]
