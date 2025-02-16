@@ -2,6 +2,7 @@ pub mod c;
 use crate::init::{get_exe_type_if_available, ExeType};
 use crate::util::{get_exe_dir, write_to_file};
 use alloc::borrow::Cow;
+use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
 use core::ffi::CStr;
@@ -15,6 +16,7 @@ use windows_sys::s;
 use windows_sys::Win32::Foundation::{GetLastError, HANDLE, HMODULE, TRUE};
 use windows_sys::Win32::System::Diagnostics::Debug::{RtlCaptureStackBackTrace, SymFromAddr, SymGetLineFromAddr64, SymInitialize, SymSetOptions, IMAGEHLP_LINE64, SYMBOL_INFO, SYMOPT_ALLOW_ABSOLUTE_SYMBOLS, SYMOPT_LOAD_ANYTHING, SYMOPT_LOAD_LINES};
 use windows_sys::Win32::System::ProcessStatus::{EnumProcessModules, GetModuleBaseNameA, GetModuleInformation, MODULEINFO};
+use windows_sys::Win32::System::SystemInformation::GetSystemTime;
 use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess, TerminateProcess};
 use windows_sys::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK};
 
@@ -36,6 +38,9 @@ unsafe fn on_panic(panic_info: &PanicInfo) -> ! {
 }
 
 pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> {
+    let mut system_time = zeroed();
+    GetSystemTime(&mut system_time);
+
     let (mut output_full, mut output_brief) = {
         let mut brief = String::with_capacity(2048);
         fmt::write(&mut brief, format_args!("A fatal error occurred!\n\nMessage: {}", panic_info.message())).ok()?;
@@ -52,8 +57,18 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
 
         fmt::write(&mut brief, format_args!("\n\nEXE type:\n- {exe_type}")).ok()?;
 
-        let mut full = String::with_capacity(4096);
+        let mut full = String::with_capacity(32768);
         full += &brief;
+
+        fmt::write(&mut full, format_args!(
+            "\n\nTime:\n- {year:04}-{month:02}-{day:02} {hour:02}:{minute:02}:{second:02}",
+            year = system_time.wYear,
+            month = system_time.wMonth,
+            day = system_time.wDay,
+            hour = system_time.wHour,
+            minute = system_time.wMinute % 60,
+            second = system_time.wSecond
+        )).ok()?;
 
         (full, brief.into_bytes())
     };
@@ -91,7 +106,16 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
         fmt::write(&mut output_full, format_args!("...no module data\n")).ok();
     }
 
-    let error_path = get_exe_dir() + "\\demon-panic.txt";
+    let error_path = format!(
+        "{exe_dir}\\demon-panic-{year:04}-{month:02}-{day:02}T{hour:02}-{minute:02}-{second:02}.txt",
+        exe_dir = get_exe_dir(),
+        year = system_time.wYear,
+        month = system_time.wMonth,
+        day = system_time.wDay,
+        hour = system_time.wHour,
+        minute = system_time.wMinute % 60,
+        second = system_time.wSecond
+    );
 
     match write_to_file(&error_path, output_full.as_bytes()) {
         Ok(_) => {
@@ -99,7 +123,7 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
             output_brief.extend_from_slice(error_path.as_bytes());
         }
         Err(e) => {
-            output_brief.extend_from_slice(b"\n\nCould not write the error report:\n");
+            output_brief.extend_from_slice(format!("\n\nCould not write an error report to {error_path}:\n").as_bytes());
             output_brief.extend_from_slice(e.as_bytes());
         }
     }

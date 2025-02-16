@@ -445,7 +445,7 @@
     {"name":"allow_out_of_sync","type":"Boolean","address":"0x00A335DC"},
     {"name":"global_connection_dont_timeout","type":"Boolean","address":"0x00DD2E50"},
     {"name":"slow_server_startup_safety_zone_in_seconds","type":"Long","address":"0x00A33618"},
-    {"name":"find_all_messed_up_stuff","type":"Boolean","address":"0x00B027D6"},
+    {"name":"find_all_fucked_up_shit","type":"Boolean","address":"0x00B027D6"},
     {"name":"error_suppress_all","type":"Boolean","address":"0x00B017D1"},
     {"name":"run_game_scripts","type":"Boolean","address":"0x00C7DE26"},
     {"name":"leaf_to_leaf_latency","type":"Boolean","address":"0x00DD189B"},

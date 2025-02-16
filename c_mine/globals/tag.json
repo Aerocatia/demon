@@ -449,7 +449,7 @@
     {"name":"allow_out_of_sync","type":"Boolean","address":"0x00AD54F0"},
     {"name":"global_connection_dont_timeout","type":"Boolean","address":"0x00E8A40C"},
     {"name":"slow_server_startup_safety_zone_in_seconds","type":"Long","address":"0x00AD5518"},
-    {"name":"find_all_messed_up_stuff","type":"Boolean","address":"0x00BB8C78"},
+    {"name":"find_all_fucked_up_shit","type":"Boolean","address":"0x00BB8C78"},
     {"name":"error_suppress_all","type":"Boolean","address":"0x00BB8D89"},
     {"name":"run_game_scripts","type":"Boolean","address":"0x00D353DE"},
     {"name":"leaf_to_leaf_latency","type":"Boolean","address":"0x00E88E5B"},
