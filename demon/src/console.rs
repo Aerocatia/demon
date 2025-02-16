@@ -290,15 +290,10 @@ unsafe fn render_console() {
         let mut color = entry.default_color;
 
         if console_active {
-            // Suspend the timer.
-            //
-            // TODO: Don't do this in this loop; instead do it when CONSOLE_ACTIVE is switched.
-            if entry.last_read_timer_value < CONSOLE_MAX_TIME_VISIBLE {
-                entry.life_timer.start();
-                entry.timer_offset = entry.last_read_timer_value;
-            }
+            entry.timer_offset = CONSOLE_MAX_TIME_VISIBLE;
+            entry.last_read_timer_value = CONSOLE_MAX_TIME_VISIBLE;
         }
-        else if entry.last_read_timer_value > CONSOLE_MAX_TIME_VISIBLE {
+        else if entry.last_read_timer_value >= CONSOLE_MAX_TIME_VISIBLE {
             break;
         }
         else {
