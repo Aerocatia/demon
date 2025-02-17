@@ -3,12 +3,42 @@ use crate::float::FloatFunctions;
 
 pub const MIN_MAGNITUDE: f32 = 0.0001;
 
-#[derive(Copy, Clone, Debug, PartialEq, Default)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct Matrix3x3 {
     pub a: Vector3D,
     pub b: Vector3D,
     pub c: Vector3D
+}
+
+impl Matrix3x3 {
+    pub const fn multiply(&self, by: &Self) -> Self {
+        Matrix3x3 {
+            a: Vector3D {
+                x: by.a.x * self.a.x + by.a.y * self.b.x + by.a.z * self.c.x,
+                y: by.a.x * self.a.y + by.a.y * self.b.y + by.a.z * self.c.y,
+                z: by.a.x * self.a.z + by.a.y * self.b.z + by.a.z * self.c.z
+            },
+            b: Vector3D {
+                x: by.b.x * self.a.x + by.b.y * self.b.x + by.b.z * self.c.x,
+                y: by.b.x * self.a.y + by.b.y * self.b.y + by.b.z * self.c.y,
+                z: by.b.x * self.a.z + by.b.y * self.b.z + by.b.z * self.c.z
+            },
+            c: Vector3D {
+                x: by.c.x * self.a.x + by.c.y * self.b.x + by.c.z * self.c.x,
+                y: by.c.x * self.a.y + by.c.y * self.b.y + by.c.z * self.c.y,
+                z: by.c.x * self.a.z + by.c.y * self.b.z + by.c.z * self.c.z
+            }
+        }
+    }
+}
+
+impl Mul<Matrix3x3> for Matrix3x3 {
+    type Output = Self;
+
+    fn mul(self, rhs: Matrix3x3) -> Self::Output {
+        self.multiply(&rhs)
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -33,7 +63,7 @@ impl Vector2D {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Default)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct Vector3D {
     pub x: f32,
@@ -134,7 +164,7 @@ pub struct CompressedVector2D(pub u32);
 #[repr(transparent)]
 pub struct CompressedVector3D(pub u32);
 
-#[derive(Copy, Clone, Debug, PartialEq, Default)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct Matrix4x3 {
     pub scale: f32,
@@ -151,23 +181,7 @@ impl Matrix4x3 {
                 y: by.position.x * self.rotation_matrix.a.y + by.position.y * self.rotation_matrix.b.y + by.position.z * self.rotation_matrix.c.y * self.scale + self.position.y,
                 z: by.position.x * self.rotation_matrix.a.z + by.position.y * self.rotation_matrix.b.z + by.position.z * self.rotation_matrix.c.z * self.scale + self.position.z
             },
-            rotation_matrix: Matrix3x3 {
-                a: Vector3D {
-                    x: by.rotation_matrix.a.x * self.rotation_matrix.a.x + by.rotation_matrix.a.y * self.rotation_matrix.b.x + by.rotation_matrix.a.z * self.rotation_matrix.c.x,
-                    y: by.rotation_matrix.a.x * self.rotation_matrix.a.y + by.rotation_matrix.a.y * self.rotation_matrix.b.y + by.rotation_matrix.a.z * self.rotation_matrix.c.y,
-                    z: by.rotation_matrix.a.x * self.rotation_matrix.a.z + by.rotation_matrix.a.y * self.rotation_matrix.b.z + by.rotation_matrix.a.z * self.rotation_matrix.c.z
-                },
-                b: Vector3D {
-                    x: by.rotation_matrix.b.x * self.rotation_matrix.a.x + by.rotation_matrix.b.y * self.rotation_matrix.b.x + by.rotation_matrix.b.z * self.rotation_matrix.c.x,
-                    y: by.rotation_matrix.b.x * self.rotation_matrix.a.y + by.rotation_matrix.b.y * self.rotation_matrix.b.y + by.rotation_matrix.b.z * self.rotation_matrix.c.y,
-                    z: by.rotation_matrix.b.x * self.rotation_matrix.a.z + by.rotation_matrix.b.y * self.rotation_matrix.b.z + by.rotation_matrix.b.z * self.rotation_matrix.c.z
-                },
-                c: Vector3D {
-                    x: by.rotation_matrix.c.x * self.rotation_matrix.a.x + by.rotation_matrix.c.y * self.rotation_matrix.b.x + by.rotation_matrix.c.z * self.rotation_matrix.c.x,
-                    y: by.rotation_matrix.c.x * self.rotation_matrix.a.y + by.rotation_matrix.c.y * self.rotation_matrix.b.y + by.rotation_matrix.c.z * self.rotation_matrix.c.y,
-                    z: by.rotation_matrix.c.x * self.rotation_matrix.a.z + by.rotation_matrix.c.y * self.rotation_matrix.b.z + by.rotation_matrix.c.z * self.rotation_matrix.c.z
-                }
-            }
+            rotation_matrix: self.rotation_matrix.multiply(&by.rotation_matrix)
         }
     }
 }

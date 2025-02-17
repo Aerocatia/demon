@@ -123,5 +123,10 @@
         "cache": "0x00408D05",
         "tag": "0x00407FD1",
         "replacement": "forbid"
+    },
+    "matrix3x3_multiply": {
+        "cache": "0x00403D0F",
+        "tag": "0x00402EE6",
+        "replacement": "crate::math::c::matrix3x3_multiply"
     }
 }
