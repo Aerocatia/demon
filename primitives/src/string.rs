@@ -1,6 +1,7 @@
 use core::ffi::CStr;
 use core::fmt::{Display, Formatter};
 
+#[repr(transparent)]
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Ord, Eq)]
 pub struct String32([u8; 32]);
 impl String32 {
@@ -15,6 +16,15 @@ impl String32 {
             panic!("not null terminated")
         };
         s
+    }
+    pub fn from_str(str: &str) -> Option<Self> {
+        let mut into = [0u8; 32];
+        let bytes = str.as_bytes();
+        if bytes.len() >= into.len() {
+            return None
+        }
+        into[..bytes.len()].copy_from_slice(bytes);
+        Some(Self(into))
     }
 }
 impl Display for String32 {

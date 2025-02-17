@@ -149,7 +149,7 @@ unsafe impl TagData for tag_structs::primitives::data::Data {
         }
         let data = (self.data.0 as usize) as *const u8;
         if data.is_null() {
-            panic!("as_slice() -> Bad data: {self:?}");
+            panic!("as_slice() -> Bad data (null): {self:?}");
         }
         core::slice::from_raw_parts(data, self.len())
     }
@@ -159,7 +159,7 @@ unsafe impl TagData for tag_structs::primitives::data::Data {
         }
         let data = (self.data.0 as usize) as *mut u8;
         if data.is_null() {
-            panic!("as_slice() -> Bad data: {self:?}");
+            panic!("as_slice() -> Bad data (null): {self:?}");
         }
         core::slice::from_raw_parts_mut(data, self.len())
     }

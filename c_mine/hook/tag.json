@@ -32,5 +32,10 @@
     "tag_name_strip_path": {
         "cache": "0x0040935E",
         "replacement": "crate::tag::c::tag_name_strip_path"
+    },
+    "get_data_address": {
+        "cache": "0x00408503",
+        "tag": "0x004091D3",
+        "replacement": "crate::tag::c::get_data_address"
     }
 }

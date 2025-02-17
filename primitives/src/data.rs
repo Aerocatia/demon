@@ -50,4 +50,28 @@ pub struct ScenarioScriptNodeValue(pub u32);
 #[repr(transparent)]
 pub struct TagGroupFourCC(pub u32);
 
-pub type Index = u16;
+#[derive(Copy, Clone, Debug, PartialEq)]
+#[repr(transparent)]
+pub struct Index(pub u16);
+impl Index {
+    pub const fn new(index: usize) -> Result<Self, &'static str> {
+        if index == u16::MAX as usize {
+            return Err("can't construct an index of 0xFFFF")
+        }
+        if index > u16::MAX as usize {
+            return Err("index exceeds 0xFFFF")
+        }
+        Ok(Self(index as u16))
+    }
+
+    pub const fn new_none() -> Self {
+        Self(u16::MAX)
+    }
+
+    pub const fn get(self) -> Option<usize> {
+        match self.0 {
+            u16::MAX => None,
+            n => Some(n as usize)
+        }
+    }
+}

@@ -1,8 +1,8 @@
 use core::ffi::c_char;
 use c_mine::c_mine;
-use tag_structs::primitives::data::Reflexive;
+use tag_structs::primitives::data::{Data, Reflexive};
 use tag_structs::Scenario;
-use crate::tag::{get_tag_data_checking_tag_group, get_tag_info, lookup_tag, ReflexiveImpl, TagGroupUnsafe, TagID, UnknownType, GLOBAL_SCENARIO};
+use crate::tag::{get_tag_data_checking_tag_group, get_tag_info, lookup_tag, ReflexiveImpl, TagData, TagGroupUnsafe, TagID, UnknownType, GLOBAL_SCENARIO};
 use crate::util::CStrPtr;
 
 #[c_mine]
@@ -68,4 +68,9 @@ pub unsafe extern "C" fn tag_get_name(tag_id: TagID) -> CStrPtr {
         .get_tag_path()
         .as_ptr() as *const c_char;
     CStrPtr(path)
+}
+
+#[c_mine]
+pub unsafe extern "C" fn get_data_address(data: &mut Data) -> *mut u8 {
+    data.as_mut_slice().as_mut_ptr()
 }
