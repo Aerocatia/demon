@@ -113,5 +113,15 @@
     "pixel32_to_real_argb_color": {
         "cache": "0x004095B1",
         "tag": "0x00408927"
+    },
+    "matrix4x3_multiply": {
+        "cache": "0x00406645",
+        "tag": "0x00405619",
+        "replacement": "crate::math::c::matrix4x3_multiply"
+    },
+    "matrix4x3_multiply_inner": {
+        "cache": "0x00408D05",
+        "tag": "0x00407FD1",
+        "replacement": "forbid"
     }
 }

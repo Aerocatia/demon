@@ -1,7 +1,7 @@
 use c_mine::c_mine;
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use tag_structs::primitives::float::FloatFunctions;
-use tag_structs::primitives::vector::{Vector2D, Vector3D};
+use tag_structs::primitives::vector::{Matrix4x3, Vector2D, Vector3D};
 
 /// 1 world unit = 10 feet = 3.048 meters
 #[inline(always)]
@@ -101,4 +101,9 @@ pub extern "C" fn normalize_3d(vector: &mut Vector3D) -> f32 {
         // ...don't actually normalize the vector, and then hope that the game doesn't explode!
         0.0
     }
+}
+
+#[c_mine]
+pub extern "C" fn matrix4x3_multiply(a: &Matrix4x3, b: &Matrix4x3, to: &mut Matrix4x3) {
+    *to = a.multiply(b)
 }
