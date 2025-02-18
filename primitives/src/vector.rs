@@ -121,20 +121,20 @@ pub struct Vector3D {
 }
 
 impl Vector3D {
-    pub fn is_valid(self) -> bool {
+    pub const fn is_valid(self) -> bool {
         !self.x.is_nan() && !self.y.is_nan() && !self.z.is_nan()
     }
-    pub fn dot(self, other: Vector3D) -> f32 {
+    pub const fn dot(self, other: Vector3D) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
-    pub fn scale(self, by: f32) -> Self {
+    pub const fn scale(self, by: f32) -> Self {
         Self {
             x: self.x * by,
             y: self.y * by,
             z: self.z * by
         }
     }
-    pub fn magnitude_squared(self) -> f32 {
+    pub const fn magnitude_squared(self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
     pub fn magnitude(self) -> f32 {
@@ -148,6 +148,13 @@ impl Vector3D {
         else {
             // Bad for floating point precision, but needed to be accurate to the original...
             Some(self.scale(1.0 / magnitude))
+        }
+    }
+    pub const fn negated(self) -> Self {
+        Self {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z
         }
     }
 }

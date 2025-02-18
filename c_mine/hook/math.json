@@ -138,5 +138,10 @@
         "cache": "0x00401ECE",
         "tag": "0x0040A92F",
         "replacement": "crate::math::c::matrix4x3_from_point_from_quaternion"
+    },
+    "negate_vector3d": {
+        "cache": "0x00404309",
+        "tag": "0x00403562",
+        "replacement": "crate::math::c::negate_vector3d"
     }
 }

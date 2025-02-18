@@ -125,3 +125,9 @@ pub extern "C" fn matrix4x3_from_point_from_quaternion(matrix4x3: &mut Matrix4x3
         ..quaternion.as_matrix().into()
     }
 }
+
+#[c_mine]
+pub extern "C" fn negate_vector3d(from: &Vector3D, to: &mut Vector3D) -> *mut Vector3D {
+    *to = from.negated();
+    to
+}
