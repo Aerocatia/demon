@@ -128,5 +128,15 @@
         "cache": "0x00403D0F",
         "tag": "0x00402EE6",
         "replacement": "crate::math::c::matrix3x3_multiply"
+    },
+    "matrix4x3_rotation_from_quaternion": {
+        "cache": "0x004055B0",
+        "tag": "0x0040499E",
+        "replacement": "crate::math::c::matrix4x3_rotation_from_quaternion"
+    },
+    "matrix4x3_from_point_from_quaternion": {
+        "cache": "0x00401ECE",
+        "tag": "0x0040A92F",
+        "replacement": "crate::math::c::matrix4x3_from_point_from_quaternion"
     }
 }

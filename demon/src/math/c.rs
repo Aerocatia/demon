@@ -1,7 +1,7 @@
 use c_mine::c_mine;
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use tag_structs::primitives::float::FloatFunctions;
-use tag_structs::primitives::vector::{Matrix3x3, Matrix4x3, Vector2D, Vector3D};
+use tag_structs::primitives::vector::{Matrix3x3, Matrix4x3, Quaternion, Vector2D, Vector3D};
 
 /// 1 world unit = 10 feet = 3.048 meters
 #[inline(always)]
@@ -111,4 +111,17 @@ pub extern "C" fn matrix3x3_multiply(a: &Matrix3x3, b: &Matrix3x3, to: &mut Matr
 #[c_mine]
 pub extern "C" fn matrix4x3_multiply(a: &Matrix4x3, b: &Matrix4x3, to: &mut Matrix4x3) {
     *to = a.multiply(b)
+}
+
+#[c_mine]
+pub extern "C" fn matrix4x3_rotation_from_quaternion(matrix4x3: &mut Matrix4x3, quaternion: &Quaternion) {
+    *matrix4x3 = quaternion.as_matrix().into();
+}
+
+#[c_mine]
+pub extern "C" fn matrix4x3_from_point_from_quaternion(matrix4x3: &mut Matrix4x3, point: &Vector3D, quaternion: &Quaternion) {
+    *matrix4x3 = Matrix4x3 {
+        position: *point,
+        ..quaternion.as_matrix().into()
+    }
 }

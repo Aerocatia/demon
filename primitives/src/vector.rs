@@ -12,6 +12,12 @@ pub struct Matrix3x3 {
 }
 
 impl Matrix3x3 {
+    pub const IDENTITY: Matrix3x3 = Matrix3x3 {
+        a: Vector3D { x: 1.0, y: 0.0, z: 0.0 },
+        b: Vector3D { x: 0.0, y: 1.0, z: 0.0 },
+        c: Vector3D { x: 0.0, y: 0.0, z: 1.0 },
+    };
+
     pub const fn multiply(&self, by: &Self) -> Self {
         Matrix3x3 {
             a: Vector3D {
@@ -44,10 +50,53 @@ impl Mul<Matrix3x3> for Matrix3x3 {
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct Quaternion {
-    pub w: f32,
     pub x: f32,
     pub y: f32,
-    pub z: f32
+    pub z: f32,
+    pub w: f32,
+}
+
+impl Quaternion {
+    pub const fn as_matrix(self) -> Matrix3x3 {
+        let square_length = self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w;
+        if square_length.is_nan() || square_length == 0.0 {
+            return Matrix3x3::IDENTITY;
+        }
+
+        let doubled_inverse_square_length = 2.0 / square_length;
+
+        let inv_x = self.x * doubled_inverse_square_length;
+        let inv_y = self.y * doubled_inverse_square_length;
+        let inv_z = self.z * doubled_inverse_square_length;
+
+        let wx = self.w * inv_x;
+        let wy = self.w * inv_y;
+        let wz = self.w * inv_z;
+        let xx = self.x * inv_x;
+        let xy = self.x * inv_y;
+        let xz = self.x * inv_z;
+        let yy = self.y * inv_y;
+        let yz = self.y * inv_z;
+        let zz = self.z * inv_z;
+
+        Matrix3x3 {
+            a: Vector3D {
+                x: 1.0 - (yy + zz),
+                y: xy - wz,
+                z: xz + wy
+            },
+            b: Vector3D {
+                x: xy + wz,
+                y: 1.0 - (xx + zz),
+                z: yz - wx
+            },
+            c: Vector3D {
+                x: xz - wy,
+                y: yz + wx,
+                z: 1.0 - (xx + yy)
+            }
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -173,6 +222,13 @@ pub struct Matrix4x3 {
 }
 
 impl Matrix4x3 {
+    pub const fn from_matrix3x3(matrix3x3: Matrix3x3) -> Self {
+        Self {
+            scale: 1.0,
+            rotation_matrix: matrix3x3,
+            position: Vector3D { x: 0.0, y: 0.0, z: 0.0 }
+        }
+    }
     pub const fn multiply(&self, by: &Self) -> Self {
         Self {
             scale: self.scale * by.scale,
@@ -191,6 +247,12 @@ impl Mul<Matrix4x3> for Matrix4x3 {
 
     fn mul(self, rhs: Matrix4x3) -> Self::Output {
         self.multiply(&rhs)
+    }
+}
+
+impl From<Matrix3x3> for Matrix4x3 {
+    fn from(value: Matrix3x3) -> Self {
+        Self::from_matrix3x3(value)
     }
 }
 
