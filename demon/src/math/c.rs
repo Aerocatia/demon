@@ -120,10 +120,7 @@ pub extern "C" fn matrix4x3_rotation_from_quaternion(matrix4x3: &mut Matrix4x3, 
 
 #[c_mine]
 pub extern "C" fn matrix4x3_from_point_from_quaternion(matrix4x3: &mut Matrix4x3, point: &Vector3D, quaternion: &Quaternion) {
-    *matrix4x3 = Matrix4x3 {
-        position: *point,
-        ..quaternion.as_matrix().into()
-    }
+    *matrix4x3 = Matrix4x3::from_point_and_quaternion(point, quaternion);
 }
 
 #[c_mine]

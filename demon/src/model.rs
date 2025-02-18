@@ -1,40 +1,40 @@
-use tag_structs::{GBXModel, Model, ModelMarker};
-use tag_structs::primitives::data::Index;
+use tag_structs::{GBXModel, Model, ModelMarker, ModelNode};
 use tag_structs::primitives::tag_group::TagGroup;
 use crate::tag::{get_tag_info, GetTagDataError, ReflexiveImpl, TagID};
 
 pub mod c;
 
 unsafe impl ModelFunctions for Model {
-    unsafe fn markers(&self) -> &[ModelMarker] {
+    unsafe fn get_markers(&self) -> &[ModelMarker] {
         self.runtime_markers.as_slice()
     }
-    unsafe fn get_marker(&self, name: &str) -> Index {
-        binary_search_model_marker(self.markers(), name)
+    unsafe fn get_marker_index(&self, name: &str) -> Option<usize> {
+        binary_search_model_marker(self.get_markers(), name)
     }
-    unsafe fn get_marker_data(&self, name: &str) -> Option<&ModelMarker> {
-        let marker = binary_search_model_marker(self.markers(), name).get()?;
-        Some(&self.runtime_markers.as_slice()[marker])
+    unsafe fn get_nodes(&self) -> &[ModelNode] {
+        self.nodes.as_slice()
     }
 }
 
 unsafe impl ModelFunctions for GBXModel {
-    unsafe fn markers(&self) -> &[ModelMarker] {
+    unsafe fn get_markers(&self) -> &[ModelMarker] {
         self.runtime_markers.as_slice()
     }
-    unsafe fn get_marker(&self, name: &str) -> Index {
-        binary_search_model_marker(self.markers(), name)
+    unsafe fn get_marker_index(&self, name: &str) -> Option<usize> {
+        binary_search_model_marker(self.get_markers(), name)
     }
-    unsafe fn get_marker_data(&self, name: &str) -> Option<&ModelMarker> {
-        let marker = binary_search_model_marker(self.markers(), name).get()?;
-        Some(&self.runtime_markers.as_slice()[marker])
+    unsafe fn get_nodes(&self) -> &[ModelNode] {
+        self.nodes.as_slice()
     }
 }
 
 pub unsafe trait ModelFunctions {
-    unsafe fn markers(&self) -> &[ModelMarker];
-    unsafe fn get_marker(&self, name: &str) -> Index;
-    unsafe fn get_marker_data(&self, name: &str) -> Option<&ModelMarker>;
+    unsafe fn get_markers(&self) -> &[ModelMarker];
+    unsafe fn get_marker_index(&self, name: &str) -> Option<usize>;
+    unsafe fn get_marker(&self, name: &str) -> Option<&ModelMarker> {
+        Some(&self.get_markers()[self.get_marker_index(name)?])
+    }
+    unsafe fn get_nodes(&self) -> &[ModelNode];
 }
 
 pub unsafe fn get_model_tag_data(model_tag: TagID) -> Result<&'static dyn ModelFunctions, GetTagDataError> {
@@ -57,10 +57,9 @@ pub unsafe fn get_model_tag_data(model_tag: TagID) -> Result<&'static dyn ModelF
     )
 }
 
-fn binary_search_model_marker(markers: &[ModelMarker], name: &str) -> Index {
+fn binary_search_model_marker(markers: &[ModelMarker], name: &str) -> Option<usize> {
     let name_bytes = name.as_bytes();
     markers
         .binary_search_by(|marker| marker.name.string_bytes().cmp(name_bytes))
-        .map(|i| Index::new(i).expect("can't make a model marker index when binary searching"))
-        .unwrap_or(Index::new_none())
+        .ok()
 }

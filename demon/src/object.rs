@@ -1,7 +1,7 @@
 use core::fmt::{Debug, Formatter};
 use c_mine::c_mine;
-use tag_structs::ObjectType;
-use tag_structs::primitives::vector::Vector3D;
+use tag_structs::{ModelMarkerInstance, ObjectType};
+use tag_structs::primitives::vector::{Matrix4x3, Vector3D};
 use crate::id::ID;
 use crate::memory::table::DataTable;
 use crate::tag::TagID;
@@ -33,14 +33,41 @@ pub struct BaseDynamicObjectFlags(pub u32);
 #[repr(transparent)]
 pub struct BaseDynamicObjectHealthFlags(pub u16);
 
+#[derive(Copy, Clone, Debug, Default)]
 #[repr(C)]
-pub struct ModelNode {
-    pub scale: f32,
-    pub rotation_matrix: [Vector3D; 3],
-    pub position: Vector3D
+pub struct ObjectMarker {
+    /// Refers to the model node the marker is attached to.
+    pub node_index: u16,
+
+    /// Padding probably.
+    pub _unknown_0x2: [u8; 2],
+
+    /// Derived from a model tag's marker instance (translation and rotation).
+    ///
+    /// Appears to only be used in the `model_get_marker_by_name` function, where it's written to
+    /// and then never read once the function returns...
+    pub marker_instance_matrix_tmp: Matrix4x3,
+
+    /// Object node matrix * model tag marker
+    pub matrix: Matrix4x3
 }
 
-const _: () = assert!(size_of::<ModelNode>() == 0x34);
+impl ObjectMarker {
+    pub fn new(node_index: u16, node: &Matrix4x3, marker_instance: &ModelMarkerInstance, flip: bool) -> Self {
+        let ModelMarkerInstance { translation, rotation, .. } = *marker_instance;
+        let marker_instance_matrix_tmp = Matrix4x3::from_point_and_quaternion(
+            &translation,
+            &rotation
+        );
+        let mut matrix = *node * marker_instance_matrix_tmp;
+        if flip {
+            matrix.rotation_matrix.b = -matrix.rotation_matrix.b;
+        }
+        ObjectMarker {
+            node_index, marker_instance_matrix_tmp, matrix, _unknown_0x2: [0u8; 2]
+        }
+    }
+}
 
 #[derive(Copy, Clone, PartialEq)]
 #[repr(transparent)]

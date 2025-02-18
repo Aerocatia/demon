@@ -1,9 +1,9 @@
-use core::ops::Mul;
+use core::ops::{Mul, Neg};
 use crate::float::FloatFunctions;
 
 pub const MIN_MAGNITUDE: f32 = 0.0001;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 #[repr(C)]
 pub struct Matrix3x3 {
     pub a: Vector3D,
@@ -112,7 +112,7 @@ impl Vector2D {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 #[repr(C)]
 pub struct Vector3D {
     pub x: f32,
@@ -156,6 +156,14 @@ impl Vector3D {
             y: -self.y,
             z: -self.z
         }
+    }
+}
+
+impl Neg for Vector3D {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        self.negated()
     }
 }
 
@@ -220,7 +228,7 @@ pub struct CompressedVector2D(pub u32);
 #[repr(transparent)]
 pub struct CompressedVector3D(pub u32);
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 #[repr(C)]
 pub struct Matrix4x3 {
     pub scale: f32,
@@ -245,6 +253,12 @@ impl Matrix4x3 {
                 z: by.position.x * self.rotation_matrix.a.z + by.position.y * self.rotation_matrix.b.z + by.position.z * self.rotation_matrix.c.z * self.scale + self.position.z
             },
             rotation_matrix: self.rotation_matrix.multiply(&by.rotation_matrix)
+        }
+    }
+    pub const fn from_point_and_quaternion(point: &Vector3D, quaternion: &Quaternion) -> Self {
+        Self {
+            position: *point,
+            ..Self::from_matrix3x3(quaternion.as_matrix())
         }
     }
 }
