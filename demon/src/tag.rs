@@ -51,23 +51,6 @@ pub const CACHE_FILE_TAG_HEADER: VariableProvider<Option<&mut CacheFileTagHeader
     cache_address: 0x00AF8B70
 };
 
-#[derive(Copy, Clone, PartialEq)]
-#[repr(transparent)]
-pub struct String32 {
-    pub data: [u8; 32]
-}
-impl String32 {
-    pub fn as_str(&self) -> &str {
-        let Ok(s) = CStr::from_bytes_until_nul(self.data.as_slice()) else {
-            panic!("String32 not null terminated! Data: {:?}", self.data);
-        };
-        let Ok(s) = s.to_str() else {
-            panic!("String32 not UTF-8! Data: {:?}", self.data)
-        };
-        s
-    }
-}
-
 #[derive(Copy, Clone, Debug)]
 pub struct UnknownType;
 impl NamedTagStruct for UnknownType {

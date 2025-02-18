@@ -1,6 +1,5 @@
 use tag_structs::{GBXModel, Model, ModelMarker};
 use tag_structs::primitives::data::Index;
-use tag_structs::primitives::string::String32;
 use tag_structs::primitives::tag_group::TagGroup;
 use crate::tag::{get_tag_info, GetTagDataError, ReflexiveImpl, TagID};
 
@@ -13,6 +12,10 @@ unsafe impl ModelFunctions for Model {
     unsafe fn get_marker(&self, name: &str) -> Index {
         binary_search_model_marker(self.markers(), name)
     }
+    unsafe fn get_marker_data(&self, name: &str) -> Option<&ModelMarker> {
+        let marker = binary_search_model_marker(self.markers(), name).get()?;
+        Some(&self.runtime_markers.as_slice()[marker])
+    }
 }
 
 unsafe impl ModelFunctions for GBXModel {
@@ -22,11 +25,16 @@ unsafe impl ModelFunctions for GBXModel {
     unsafe fn get_marker(&self, name: &str) -> Index {
         binary_search_model_marker(self.markers(), name)
     }
+    unsafe fn get_marker_data(&self, name: &str) -> Option<&ModelMarker> {
+        let marker = binary_search_model_marker(self.markers(), name).get()?;
+        Some(&self.runtime_markers.as_slice()[marker])
+    }
 }
 
 pub unsafe trait ModelFunctions {
     unsafe fn markers(&self) -> &[ModelMarker];
     unsafe fn get_marker(&self, name: &str) -> Index;
+    unsafe fn get_marker_data(&self, name: &str) -> Option<&ModelMarker>;
 }
 
 pub unsafe fn get_model_tag_data(model_tag: TagID) -> Result<&'static dyn ModelFunctions, GetTagDataError> {
@@ -50,12 +58,9 @@ pub unsafe fn get_model_tag_data(model_tag: TagID) -> Result<&'static dyn ModelF
 }
 
 fn binary_search_model_marker(markers: &[ModelMarker], name: &str) -> Index {
-    let Some(name) = String32::from_str(name) else {
-        return Index::new_none();
-    };
-
+    let name_bytes = name.as_bytes();
     markers
-        .binary_search_by(|marker| marker.name.cmp(&name))
+        .binary_search_by(|marker| marker.name.string_bytes().cmp(name_bytes))
         .map(|i| Index::new(i).expect("can't make a model marker index when binary searching"))
         .unwrap_or(Index::new_none())
 }
