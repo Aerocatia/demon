@@ -2,12 +2,6 @@ use c_mine::pointer_from_hook;
 use crate::timing::{get_game_time_fractional, FixedTimer, TICK_RATE};
 use crate::util::{PointerProvider, VariableProvider};
 
-pub const MOTION_SENSOR_SWEEPER_THING: VariableProvider<f32> = variable! {
-    name: "MOTION_SENSOR_SWEEPER_THING",
-    cache_address: 0x00A287A8,
-    tag_address: 0x00AC1E28
-};
-
 pub const MOTION_SENSOR_SWEEPER_SIZE: VariableProvider<f32> = variable! {
     name: "MOTION_SENSOR_SWEEPER_SIZE",
     cache_address: 0x00C83914,
@@ -20,8 +14,8 @@ unsafe fn motion_sensor_sweeper_tick() {
 
     let (time, offset) = get_game_time_fractional();
 
-    // FIX: The original math does ((float)time / 30.0) % 2.1, but this is susceptible to floating
-    // point rounding errors.
+    // The original math does ((float)time / 30.0) % 2.1, but this is susceptible to increasing
+    // floating point rounding errors as time progresses.
     //
     // The code below is changed to do integer modulo of 2.1*30 (63) before doing floating point
     // math.
@@ -33,7 +27,7 @@ unsafe fn motion_sensor_sweeper_tick() {
         *MOTION_SENSOR_SWEEPER_SIZE.get_mut() = 0.4
     }
     else {
-        *MOTION_SENSOR_SWEEPER_SIZE.get_mut() = 1.0 / ((modulus + 0.0625) * *MOTION_SENSOR_SWEEPER_THING.get())
+        *MOTION_SENSOR_SWEEPER_SIZE.get_mut() = 1.0 / ((modulus + 0.0625) * 1.1)
     }
 }
 
