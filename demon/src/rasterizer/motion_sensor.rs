@@ -28,7 +28,7 @@ unsafe fn motion_sensor_sweeper_tick() {
     //
     // We also use InterpolatedTimer so that the blip will update at any frame rate, not just 30.
     let sweeper_state = (time % MOTION_SENSOR_SWEEP_CYCLE_TICKS) as f32 + offset;
-    let modulus = sweeper_state / (TICK_RATE as f32);
+    let modulus = sweeper_state / TICK_RATE;
     if modulus >= 2.0375 {
         *MOTION_SENSOR_SWEEPER_SIZE.get_mut() = 0.4
     }
@@ -39,7 +39,7 @@ unsafe fn motion_sensor_sweeper_tick() {
 
 unsafe fn motion_sensor_blip_tick() {
     const MOTION_SENSOR_BLIP_TICK: PointerProvider<unsafe extern "C" fn()> = pointer_from_hook!("motion_sensor_blip_tick");
-    static BLIP_TIMER: FixedTimer = FixedTimer::new(1.0 / TICK_RATE, 4);
+    static BLIP_TIMER: FixedTimer = FixedTimer::new(1.0 / (TICK_RATE as f64), 4);
     BLIP_TIMER.run(|| MOTION_SENSOR_BLIP_TICK.get()());
 }
 

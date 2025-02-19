@@ -37,5 +37,10 @@
         "cache": "0x00408503",
         "tag": "0x004091D3",
         "replacement": "crate::tag::c::get_data_address"
+    },
+    "preprocess_biped": {
+        "tag": "0x0091E590",
+        "sudo": true,
+        "replacement": "crate::tag::c::preprocess_biped"
     }
 }

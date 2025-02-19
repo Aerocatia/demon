@@ -9,7 +9,7 @@ use crate::util::VariableProvider;
 /// # Regret
 ///
 /// Changing this value leads to regret.
-pub const TICK_RATE: f64 = 30.0;
+pub const TICK_RATE: f32 = 30.0;
 
 #[derive(Default, Copy, Clone, Debug, PartialEq)]
 #[repr(transparent)]
@@ -273,7 +273,7 @@ pub const GAME_TIME_GLOBALS: VariableProvider<Option<&GameTimeGlobals>> = variab
 pub unsafe fn get_game_time_fractional() -> (u32, f32) {
     let globals = GAME_TIME_GLOBALS.get().expect("get_game_time_fractional with null game_time_globals");
     assert_eq!(globals.initialized, 1, "get_game_time_fractional with uninitialized game_time_globals");
-    (globals.game_time, (globals.time_since_last_tick * (TICK_RATE as f32) * globals.game_speed).clamp(0.0, 1.0))
+    (globals.game_time, (globals.time_since_last_tick * TICK_RATE * globals.game_speed).clamp(0.0, 1.0))
 }
 
 #[c_mine]

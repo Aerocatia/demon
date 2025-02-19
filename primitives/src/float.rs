@@ -3,6 +3,8 @@ pub trait FloatFunctions: Copy + Copy {
     fn powi(self, exponent: i32) -> Self;
     fn powf(self, exponent: Self) -> Self;
     fn fabs(self) -> Self;
+    fn sin(self) -> Self;
+    fn cos(self) -> Self;
 }
 
 impl FloatFunctions for f32 {
@@ -18,4 +20,6 @@ impl FloatFunctions for f32 {
     fn fabs(self) -> Self {
         libm::fabsf(self)
     }
+    fn sin(self) -> Self { libm::sinf(self) }
+    fn cos(self) -> Self { libm::cosf(self) }
 }

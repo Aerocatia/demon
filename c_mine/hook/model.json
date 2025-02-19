@@ -2,11 +2,15 @@
     "model_find_marker": {
         "cache": "0x0040A489",
         "tag": "0x00409908",
-        "replacement": "crate::model::c::model_find_marker"
+        "replacement": "forbid"
     },
     "model_get_marker_by_name": {
         "cache": "0x0040788D",
         "tag": "0x004069DD",
         "replacement": "crate::model::c::model_get_marker_by_name"
+    },
+    "model_find_node": {
+        "tag": "0x00404601",
+        "replacement": "forbid"
     }
 }

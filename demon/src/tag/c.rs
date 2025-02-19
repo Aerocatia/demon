@@ -1,8 +1,11 @@
 use core::ffi::c_char;
 use c_mine::c_mine;
-use tag_structs::primitives::data::{Data, Reflexive};
-use tag_structs::Scenario;
-use crate::tag::{get_tag_data_checking_tag_group, get_tag_info, lookup_tag, ReflexiveImpl, TagData, TagGroupUnsafe, TagID, UnknownType, GLOBAL_SCENARIO};
+use tag_structs::primitives::data::{Data, Index, Reflexive};
+use tag_structs::{Biped, BipedFlagsFields, ModelAnimations, ModelAnimationsAnimationGraphNodeFlagsFields, Scenario};
+use tag_structs::primitives::float::FloatFunctions;
+use crate::model::get_model_tag_data;
+use crate::tag::{get_tag_data, get_tag_data_checking_tag_group, get_tag_info, lookup_tag, ReflexiveImpl, TagData, TagGroupUnsafe, TagID, UnknownType, GLOBAL_SCENARIO};
+use crate::timing::TICK_RATE;
 use crate::util::CStrPtr;
 
 #[c_mine]
@@ -73,4 +76,75 @@ pub unsafe extern "C" fn tag_get_name(tag_id: TagID) -> CStrPtr {
 #[c_mine]
 pub unsafe extern "C" fn get_data_address(data: &mut Data) -> *mut u8 {
     data.as_mut_slice().as_mut_ptr()
+}
+
+#[c_mine]
+pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
+    let unknown = unknown != 0;
+    let mut success = false;
+
+    let biped = get_tag_data::<Biped>(tag_id).expect("can't find the biped we just passed in?");
+
+    let crouch_camera_ticks = biped.crouch_transition_time * TICK_RATE;
+    biped.crouch_camera_velocity = if crouch_camera_ticks > 0.0 { 1.0 / crouch_camera_ticks } else { 1.0 };
+    biped.cosine_stationary_turning_threshold = biped.stationary_turning_threshold.0.cos();
+    biped.cosine_maximum_slope_angle = biped.maximum_slope_angle.0.cos();
+    biped.negative_sine_downhill_falloff_angle = -biped.downhill_falloff_angle.0.sin();
+    biped.negative_sine_downhill_cutoff_angle = -biped.downhill_cutoff_angle.0.sin();
+    biped.sine_uphill_falloff_angle = biped.uphill_falloff_angle.0.sin();
+    biped.sine_uphill_cutoff_angle = biped.uphill_cutoff_angle.0.sin();
+
+    let Ok(model) = get_model_tag_data(biped.unit.object.model.tag_id.into()) else {
+        panic!("Biped {} does not have a model reference.", get_tag_info(tag_id).unwrap().get_tag_path());
+    };
+
+    let Ok(animation) = get_tag_data::<ModelAnimations>(biped.unit.object.animation_graph.tag_id.into()) else {
+        panic!("Biped {} does not have an animation tag reference.", get_tag_info(tag_id).unwrap().get_tag_path());
+    };
+
+    let find_node = |node: &str| -> Index {
+        model.get_node_index(node)
+            .and_then(|i| Index::new(i).ok())
+            .unwrap_or(Index::new_none())
+    };
+
+    biped.pelvis_model_node_index = find_node("bip01 pelvis");
+    biped.head_model_node_index = find_node("bip01 head");
+
+    if model.get_marker("body").is_none() {
+        panic!("Biped {} does not have a \"body\" marker.", get_tag_info(tag_id).unwrap().get_tag_path());
+    }
+
+    if model.get_marker("head").is_none() {
+        panic!("Biped {} does not have a \"head\" marker.", get_tag_info(tag_id).unwrap().get_tag_path());
+    }
+
+    let mut flags = biped.flags;
+    if !unknown && flags.is_set(BipedFlagsFields::UsesLimpBodyPhysics) {
+        for node in model.get_nodes().iter().skip(1) {
+            let magnitude = node.default_translation.magnitude();
+            let node_distance_from_parent = node.node_distance_from_parent;
+            let difference = (node.node_distance_from_parent - magnitude).fabs();
+            if difference >= 0.0001 {
+                flags.unset(BipedFlagsFields::UsesLimpBodyPhysics);
+                error!("Biped {}'s model nodes cannot use limp body physics. Limp body physics have been disabled.", get_tag_info(tag_id).unwrap().get_tag_path());
+                break;
+            }
+        }
+        for node in animation.nodes.as_slice().iter().skip(1) {
+            if node.node_joint_flags.is_set(ModelAnimationsAnimationGraphNodeFlagsFields::NoMovement) {
+                continue
+            }
+            let magnitude = node.base_vector.magnitude();
+            if magnitude.fabs() < 0.0001 {
+                flags.unset(BipedFlagsFields::UsesLimpBodyPhysics);
+                error!("Biped {}'s animation nodes cannot use limp body physics. Limp body physics have been disabled.", get_tag_info(tag_id).unwrap().get_tag_path());
+                break;
+            }
+        }
+        success = success && flags.is_set(BipedFlagsFields::UsesLimpBodyPhysics);
+        biped.flags = flags;
+    }
+
+    success
 }

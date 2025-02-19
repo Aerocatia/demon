@@ -9,9 +9,6 @@ unsafe impl ModelFunctions for Model {
     unsafe fn get_markers(&self) -> &[ModelMarker] {
         self.runtime_markers.as_slice()
     }
-    unsafe fn get_marker_index(&self, name: &str) -> Option<usize> {
-        binary_search_model_marker(self.get_markers(), name)
-    }
     unsafe fn get_nodes(&self) -> &[ModelNode] {
         self.nodes.as_slice()
     }
@@ -21,9 +18,6 @@ unsafe impl ModelFunctions for GBXModel {
     unsafe fn get_markers(&self) -> &[ModelMarker] {
         self.runtime_markers.as_slice()
     }
-    unsafe fn get_marker_index(&self, name: &str) -> Option<usize> {
-        binary_search_model_marker(self.get_markers(), name)
-    }
     unsafe fn get_nodes(&self) -> &[ModelNode] {
         self.nodes.as_slice()
     }
@@ -31,11 +25,20 @@ unsafe impl ModelFunctions for GBXModel {
 
 pub unsafe trait ModelFunctions {
     unsafe fn get_markers(&self) -> &[ModelMarker];
-    unsafe fn get_marker_index(&self, name: &str) -> Option<usize>;
+    unsafe fn get_nodes(&self) -> &[ModelNode];
+
     unsafe fn get_marker(&self, name: &str) -> Option<&ModelMarker> {
         Some(&self.get_markers()[self.get_marker_index(name)?])
     }
-    unsafe fn get_nodes(&self) -> &[ModelNode];
+    unsafe fn get_marker_index(&self, name: &str) -> Option<usize> {
+        binary_search_model_marker(self.get_markers(), name)
+    }
+    unsafe fn get_node(&self, name: &str) -> Option<&ModelNode> {
+        Some(&self.get_nodes()[self.get_node_index(name)?])
+    }
+    unsafe fn get_node_index(&self, name: &str) -> Option<usize> {
+        self.get_nodes().iter().position(|n| n.name.string_bytes() == name.as_bytes())
+    }
 }
 
 pub unsafe fn get_model_tag_data(model_tag: TagID) -> Result<&'static dyn ModelFunctions, GetTagDataError> {

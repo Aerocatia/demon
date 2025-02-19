@@ -2,24 +2,8 @@ use crate::model::get_model_tag_data;
 use crate::tag::{ReflexiveImpl, TagID};
 use crate::util::CStrPtr;
 use c_mine::c_mine;
-use tag_structs::primitives::data::Index;
 use tag_structs::primitives::vector::Matrix4x3;
 use crate::object::ObjectMarker;
-
-#[c_mine]
-pub unsafe extern "C" fn model_find_marker(model_tag: TagID, name: CStrPtr) -> usize {
-    if name.is_null() || model_tag.is_null() {
-        return usize::MAX;
-    }
-
-    get_model_tag_data(model_tag)
-        .ok()
-        .and_then(|m| m.get_marker_index(name.as_str()))
-        .and_then(|m| Index::new(m).ok())
-        .unwrap_or(Index::new_none())
-        .get()
-        .unwrap_or(0xFFFFFFFF)
-}
 
 /// # Safety
 ///
