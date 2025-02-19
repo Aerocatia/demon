@@ -2,6 +2,7 @@ use alloc::borrow::Cow;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::char::decode_utf16;
+use core::cmp::Ordering;
 use core::ffi::{c_char, CStr};
 use core::fmt::{Debug, Display, Formatter, Write};
 use core::marker::PhantomData;
@@ -475,5 +476,35 @@ impl<'a> Display for LossyStringDisplayer<'a> {
             }
         }
         Ok(())
+    }
+}
+
+/// Compare two byte arrays using a case-insensitive ASCII comparison.
+pub fn compare_ascii_case_insensitive(a: &[u8], b: &[u8]) -> Ordering {
+    let mut lowercase_a = a.iter().map(|a| a.to_ascii_lowercase());
+    let mut lowercase_b = b.iter().map(|b| b.to_ascii_lowercase());
+
+    loop {
+        let a = lowercase_a.next();
+        let b = lowercase_b.next();
+
+        let Some(a) = a else {
+            if b.is_none() {
+                return Ordering::Equal;
+            }
+            else {
+                return Ordering::Less;
+            }
+        };
+
+        let Some(b) = b else {
+            return Ordering::Greater;
+        };
+
+        let c = a.cmp(&b);
+        if c == Ordering::Equal {
+            continue
+        }
+        return c
     }
 }

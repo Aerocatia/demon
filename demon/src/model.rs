@@ -1,6 +1,7 @@
 use tag_structs::{GBXModel, Model, ModelMarker, ModelNode};
 use tag_structs::primitives::tag_group::TagGroup;
 use crate::tag::{get_tag_info, GetTagDataError, ReflexiveImpl, TagID};
+use crate::util::compare_ascii_case_insensitive;
 
 pub mod c;
 
@@ -59,7 +60,11 @@ pub unsafe fn get_model_tag_data(model_tag: TagID) -> Result<&'static dyn ModelF
 
 fn binary_search_model_marker(markers: &[ModelMarker], name: &str) -> Option<usize> {
     let name_bytes = name.as_bytes();
+
+    // TODO: we are doing tons of case insensitive string comparisons every tick/frame; we should
+    //       cache these in a table on scenario load (e.g. a table that maps unit seat camera marker
+    //       to marker indices) for better performance
     markers
-        .binary_search_by(|marker| marker.name.string_bytes().cmp(name_bytes))
+        .binary_search_by(|marker| compare_ascii_case_insensitive(marker.name.string_bytes(), name_bytes))
         .ok()
 }
