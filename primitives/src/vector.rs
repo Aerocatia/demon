@@ -248,9 +248,9 @@ impl Matrix4x3 {
         Self {
             scale: self.scale * by.scale,
             position: Vector3D {
-                x: by.position.x * self.rotation_matrix.a.x + by.position.y * self.rotation_matrix.b.x + by.position.z * self.rotation_matrix.c.x * self.scale + self.position.x,
-                y: by.position.x * self.rotation_matrix.a.y + by.position.y * self.rotation_matrix.b.y + by.position.z * self.rotation_matrix.c.y * self.scale + self.position.y,
-                z: by.position.x * self.rotation_matrix.a.z + by.position.y * self.rotation_matrix.b.z + by.position.z * self.rotation_matrix.c.z * self.scale + self.position.z
+                x: (by.position.x * self.rotation_matrix.a.x + by.position.y * self.rotation_matrix.b.x + by.position.z * self.rotation_matrix.c.x) * self.scale + self.position.x,
+                y: (by.position.x * self.rotation_matrix.a.y + by.position.y * self.rotation_matrix.b.y + by.position.z * self.rotation_matrix.c.y) * self.scale + self.position.y,
+                z: (by.position.x * self.rotation_matrix.a.z + by.position.y * self.rotation_matrix.b.z + by.position.z * self.rotation_matrix.c.z) * self.scale + self.position.z
             },
             rotation_matrix: self.rotation_matrix.multiply(&by.rotation_matrix)
         }
