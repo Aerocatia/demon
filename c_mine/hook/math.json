@@ -143,5 +143,10 @@
         "cache": "0x00404309",
         "tag": "0x00403562",
         "replacement": "crate::math::c::negate_vector3d"
+    },
+    "plane3d_distance_to_point": {
+        "cache": "0x00407E23",
+        "tag": "0x00406FE1",
+        "replacement": "crate::math::c::plane3d_distance_to_point"
     }
 }

@@ -1,0 +1,7 @@
+{
+    "bsp3d_test_point": {
+        "cache": "0x00404C41",
+        "tag": "0x00403F8F",
+        "replacement": "crate::collision::c::bsp3d_test_point"
+    }
+}

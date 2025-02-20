@@ -54,10 +54,9 @@ pub struct ObjectMarker {
 
 impl ObjectMarker {
     pub fn new(node_index: u16, node: &Matrix4x3, marker_instance: &ModelMarkerInstance, flip: bool) -> Self {
-        let ModelMarkerInstance { translation, rotation, .. } = *marker_instance;
         let marker_instance_matrix_tmp = Matrix4x3::from_point_and_quaternion(
-            &translation,
-            &rotation
+            marker_instance.translation,
+            marker_instance.rotation
         );
         let mut matrix = *node * marker_instance_matrix_tmp;
         if flip {

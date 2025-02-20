@@ -208,8 +208,14 @@ pub struct Plane2D {
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct Plane3D {
+    pub vector: Vector3D,
     pub offset: f32,
-    pub vector: Vector3D
+}
+impl Plane3D {
+    pub const fn distance_to_point(self, point: Vector3D) -> f32 {
+        let dot = point.dot(self.vector);
+        dot - self.offset
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -255,9 +261,9 @@ impl Matrix4x3 {
             rotation_matrix: self.rotation_matrix.multiply(&by.rotation_matrix)
         }
     }
-    pub const fn from_point_and_quaternion(point: &Vector3D, quaternion: &Quaternion) -> Self {
+    pub const fn from_point_and_quaternion(point: Vector3D, quaternion: Quaternion) -> Self {
         Self {
-            position: *point,
+            position: point,
             ..Self::from_matrix3x3(quaternion.as_matrix())
         }
     }
