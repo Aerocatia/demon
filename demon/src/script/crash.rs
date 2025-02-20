@@ -4,7 +4,7 @@ pub mod c {
 
     #[c_mine]
     pub unsafe extern "C" fn main_crash(param: CStrPtr) {
-        let message = param.as_str();
+        let message = param.expect_str();
         panic!("crash command called with message:\n\n{message}");
     }
 }

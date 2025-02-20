@@ -49,12 +49,12 @@ pub unsafe extern "C" fn global_scenario_get() -> &'static mut Scenario {
 
 #[c_mine]
 pub unsafe extern "C" fn tag_loaded(group: TagGroupUnsafe, path: CStrPtr) -> TagID {
-    lookup_tag(path.as_str(), group).map(|t| t.1).unwrap_or(TagID::NULL)
+    lookup_tag(path.expect_str(), group).map(|t| t.1).unwrap_or(TagID::NULL)
 }
 
 #[c_mine]
 pub unsafe extern "C" fn tag_name_strip_path(path: CStrPtr) -> CStrPtr {
-    path.as_str()
+    path.expect_str()
         .as_bytes()
         .iter()
         .rev()

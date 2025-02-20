@@ -235,7 +235,7 @@ impl TagIndex for CacheTagInstance {
     }
 
     unsafe fn get_tag_path(&self) -> &str {
-        self.tag_path.as_str()
+        self.tag_path.expect_str()
     }
 
     fn get_tag_data(&self) -> *mut [u8; 0] {

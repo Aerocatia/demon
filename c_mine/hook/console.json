@@ -36,5 +36,15 @@
         "cache": "0x00649720",
         "tag": "0x00650F80",
         "replacement": "original"
+    },
+    "run_console_command": {
+        "cache": "0x006AD100",
+        "tag": "0x006B5C80",
+        "sudo": true,
+        "replacement": "crate::console::c::run_console_command"
+    },
+    "hs_compile_and_evaluate": {
+        "cache": "0x00407A68",
+        "tag": "0x00406BC7"
     }
 }

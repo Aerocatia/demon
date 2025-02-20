@@ -434,10 +434,15 @@ impl CStrPtr {
             panic!("from_bytes with non-null terminated NonNullCStrPtr")
         }
     }
-    pub unsafe fn as_str(&self) -> &str {
+    pub unsafe fn expect_str(&self) -> &str {
         self.as_cstr()
             .to_str()
             .expect("got a non-UTF-8 string")
+    }
+    pub unsafe fn to_str_lossless(&self) -> Option<&str> {
+        self.as_cstr()
+            .to_str()
+            .ok()
     }
     pub unsafe fn to_str_lossy(&self) -> Cow<str> {
         self.as_cstr()

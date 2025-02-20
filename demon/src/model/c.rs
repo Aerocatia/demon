@@ -27,7 +27,7 @@ pub unsafe extern "C" fn model_get_marker_by_name(
         return 0
     };
 
-    let Some(model_marker) = model.get_marker(name.as_str()) else {
+    let Some(model_marker) = model.get_marker(name.expect_str()) else {
         return 0
     };
 

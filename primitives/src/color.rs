@@ -48,6 +48,15 @@ impl ColorRGB {
     pub fn is_valid(&self) -> bool {
         (0.0..=1.0).contains(&self.r) && (0.0..=1.0).contains(&self.g) && (0.0..=1.0).contains(&self.b)
     }
+    pub const fn as_colorargb(self) -> ColorARGB {
+        ColorARGB { a: 1.0, color: self }
+    }
+}
+
+impl From<ColorRGB> for ColorARGB {
+    fn from(value: ColorRGB) -> Self {
+        value.as_colorargb()
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]

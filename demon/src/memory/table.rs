@@ -354,7 +354,7 @@ pub extern "C" fn data_allocation_size(count: u16, element_size: u16) -> usize {
 
 #[c_mine]
 pub unsafe extern "C" fn data_initialize(data_table: &mut DataTable<[u8; 0], 0>, name: CStrPtr, count: u16, element_size: u16) {
-    let name = name.as_str();
+    let name = name.expect_str();
     let ptr: *mut DataTable<[u8; 0], 0> = data_table as *mut _;
     *data_table = DataTable::init(
         name,

@@ -89,7 +89,7 @@ pub extern "C" fn hs_global_external_get(index: u16) -> &'static HSExternalGloba
 
 #[c_mine]
 pub unsafe extern "C" fn hs_find_global_by_name(name: CStrPtr) -> u32 {
-    let name = name.as_str();
+    let name = name.expect_str();
 
     const MAX_GLOBALS: usize = 0x8000;
 
