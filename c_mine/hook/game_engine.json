@@ -6,5 +6,9 @@
     "cinematic_in_progress": {
         "tag": "0x00408F71",
         "cache": "0x00409B9C"
+    },
+    "main_loop": {
+        "tag": "0x00407261",
+        "cache": "0x00408080"
     }
 }

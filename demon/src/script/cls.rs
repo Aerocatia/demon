@@ -4,6 +4,6 @@ pub mod c {
 
     #[c_mine]
     pub extern "C" fn main_cls() {
-        CONSOLE_BUFFER.write().clear();
+        CONSOLE_BUFFER.write().clear_messages();
     }
 }

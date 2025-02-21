@@ -9,6 +9,7 @@ use core::marker::PhantomData;
 use core::mem::transmute_copy;
 use core::ptr::{null, null_mut};
 use windows_sys::Win32::Foundation::{CloseHandle, FALSE, GENERIC_WRITE, MAX_PATH};
+use windows_sys::Win32::Globalization::{MultiByteToWideChar, CP_ACP, MB_PRECOMPOSED};
 use windows_sys::Win32::Storage::FileSystem::{WriteFile, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL};
 use windows_sys::Win32::System::LibraryLoader::GetModuleFileNameA;
 use windows_sys::Win32::UI::Shell::PathRemoveFileSpecA;
@@ -512,4 +513,29 @@ pub fn compare_ascii_case_insensitive(a: &[u8], b: &[u8]) -> Ordering {
         }
         return c
     }
+}
+
+/// Convert an 8-bit character from Windows to UTF-8.
+pub fn decode_win32_character(character: u8) -> char {
+    let chars = [character, 0];
+    let mut wide = [0u16; 8];
+
+    // SAFETY: We ensure the buffers are large enough.
+    let result = unsafe {
+        MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, chars.as_ptr(), 2, wide.as_mut_ptr(), wide.len() as i32)
+    };
+
+    assert!(result > 0, "Failed to parse character 0x{character:02X}; win32 decided that you are not allowed to have text");
+
+    let mut decoder = char::decode_utf16(wide.into_iter().take(result as usize - 1));
+
+    let Some(Ok(c)) = decoder.next() else {
+        panic!("Failed to parse character 0x{character:02X}; win32 failed to decode it somehow...")
+    };
+
+    if decoder.next().is_some() {
+        panic!("Failed to parse character 0x{character:02X}; win32 spawned multiple characters out of just one for no reason whatsoever...")
+    }
+
+    c
 }

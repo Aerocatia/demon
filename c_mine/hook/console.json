@@ -46,5 +46,9 @@
     "hs_compile_and_evaluate": {
         "cache": "0x00407A68",
         "tag": "0x00406BC7"
+    },
+    "console_update": {
+        "cache": "0x004018C0",
+        "tag": "0x004014D3"
     }
 }

@@ -1,18 +1,23 @@
 pub mod c;
 
+use alloc::string::String;
+use alloc::sync::Arc;
+use alloc::vec::Vec;
 use core::fmt::Display;
 use num_enum::FromPrimitive;
 use spin::RwLock;
+use windows_sys::Win32::UI::Input::KeyboardAndMouse;
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetKeyState, VIRTUAL_KEY};
+use windows_sys::Win32::UI::WindowsAndMessaging::{WM_CHAR, WM_KEYDOWN};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use tag_structs::primitives::vector::Rectangle;
+use crate::console::c::run_console_command;
 use crate::globals::get_interface_fonts;
-use crate::id::ID;
 use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter};
 use crate::rasterizer::font::get_font_tag_height;
 use crate::rasterizer::{draw_box, get_global_interface_canvas_bounds};
-use crate::scrollback::ScrollbackButton;
 use crate::timing::InterpolatedTimer;
-use crate::util::{CStrPtr, StaticStringBytes, VariableProvider};
+use crate::util::{decode_win32_character, CStrPtr, StaticStringBytes, VariableProvider};
 
 const CONSOLE_FADE_START: f64 = 4.0;
 const CONSOLE_FADE_TIME: f64 = 0.5;
@@ -60,11 +65,20 @@ pub static CONSOLE_BUFFER: RwLock<Console> = RwLock::new(Console::new());
 
 pub struct Console {
     lines: [ConsoleEntry; CONSOLE_MAX_SCROLLBACK],
-    number_of_lines: usize,
-    cursor_timer: InterpolatedTimer,
-    next: usize,
-    scrollback: ScrollbackButton,
+
+    history: Vec<Arc<String>>,
+    history_offset: usize,
+
+    input_text: String,
+    input_cursor_position: usize,
+    input_cursor_timer: InterpolatedTimer,
+
+    scrollback_queue: isize,
     scrollback_offset: usize,
+    active: bool,
+
+    number_of_lines: usize,
+    next: usize,
     new_messages_while_scrolling_back: usize
 }
 
@@ -73,14 +87,19 @@ impl Console {
         Self {
             number_of_lines: 0,
             next: 0,
-            cursor_timer: InterpolatedTimer::new(0.5),
-            lines: [const { ConsoleEntry::new() }; CONSOLE_MAX_SCROLLBACK],
-            scrollback: ScrollbackButton::new(),
+            input_text: String::new(),
+            input_cursor_timer: InterpolatedTimer::new(0.5),
+            input_cursor_position: 0,
+            history_offset: 0,
+            history: Vec::new(),
+            scrollback_queue: 0,
             scrollback_offset: 0,
+            active: false,
+            lines: [const { ConsoleEntry::new() }; CONSOLE_MAX_SCROLLBACK],
             new_messages_while_scrolling_back: 0
         }
     }
-    pub fn put(&mut self, color: impl AsRef<ColorARGB>, what: impl Display) {
+    pub fn put_message(&mut self, color: impl AsRef<ColorARGB>, what: impl Display) {
         let color = color.as_ref();
         assert!(color.is_valid(), "Console::put with invalid color!");
 
@@ -101,14 +120,141 @@ impl Console {
             self.new_messages_while_scrolling_back += 1;
         }
     }
-    pub fn clear(&mut self) {
+    fn insert_input_char(&mut self, character: char) {
+        let mut bytes = [0u8; 4];
+        let string = character.encode_utf8(&mut bytes);
+        self.input_text.insert_str(self.input_cursor_position, string);
+        self.move_input_cursor(self.input_cursor_position + string.len());
+    }
+    fn pop_input_char(&mut self, forward: bool) -> Option<char> {
+        self.input_cursor_timer.start();
+        if forward {
+            if self.input_cursor_position < self.input_text.len() {
+                Some(self.input_text.remove(self.input_cursor_position))
+            }
+            else {
+                None
+            }
+        }
+        else {
+            if self.input_cursor_position == 0 {
+                None
+            }
+            else {
+                self.char_shift_input_cursor(-1);
+                Some(self.input_text.remove(self.input_cursor_position))
+            }
+        }
+    }
+    fn move_input_cursor(&mut self, new_position: usize) {
+        if !self.input_text.is_char_boundary(new_position) {
+            panic!("trying to move the input cursor to a non-char buffer");
+        }
+        self.input_cursor_position = new_position.clamp(0, self.input_text.len());
+        self.input_cursor_timer.start();
+    }
+    fn char_shift_input_cursor(&mut self, chars: isize) {
+        if chars == 0 {
+            return
+        }
+
+        let forward = |position: &mut usize, len: usize| {
+            *position = (*position + 1).clamp(0, len);
+        };
+
+        let backward = |position: &mut usize, len: usize| {
+            *position = position.saturating_sub(1).clamp(0, len);
+        };
+
+        let advance: fn(&mut usize, usize) = if chars < 0 { backward } else { forward };
+        let chars = chars.abs() as usize;
+
+        for _ in 0..chars {
+            advance(&mut self.input_cursor_position, self.input_text.len());
+            while !self.input_text.is_char_boundary(self.input_cursor_position) {
+                advance(&mut self.input_cursor_position, self.input_text.len());
+            }
+        }
+
+        self.input_cursor_timer.start();
+    }
+    fn word_shift_input_cursor(&mut self, words: isize) {
+        if words == 0 { return };
+
+        self.input_cursor_position = self.input_cursor_position.clamp(0, self.input_text.len());
+        let input_cursor_address = self.input_text.as_bytes()[self.input_cursor_position..].as_ptr();
+
+        let direction = if words > 0 { 1 } else { 0 };
+        let words = words.abs() as usize;
+
+        let word_iter = self.input_text.split_whitespace();
+
+        self.input_cursor_position = if direction > 0 {
+            let mut word_iter = word_iter.peekable();
+            while let Some(w) = word_iter.peek() {
+                if w.as_bytes().as_ptr() >= input_cursor_address {
+                    break
+                }
+                word_iter.next();
+            }
+            for _ in 1..words {
+                word_iter.next();
+            }
+            match word_iter.next() {
+                Some(q) => {
+                    // this is definitely within range, and there's no way we can allocate a String more than isize per its requirements
+                    let end = q.as_bytes().as_ptr_range().end;
+                    unsafe { end.byte_offset_from(self.input_text.as_ptr()) as usize }
+                },
+                None => self.input_text.len()
+            }
+        }
+        else {
+            let mut word_iter = word_iter.rev().peekable();
+            while let Some(w) = word_iter.peek() {
+                if w.as_bytes().as_ptr() < input_cursor_address {
+                    break
+                }
+                word_iter.next();
+            }
+            for _ in 1..words {
+                word_iter.next();
+            }
+            match word_iter.next() {
+                Some(q) => {
+                    // this is definitely within range, and there's no way we can allocate a String more than isize per its requirements
+                    unsafe { q.as_ptr().byte_offset_from(self.input_text.as_ptr()) as usize }
+                },
+                None => 0
+            }
+        };
+
+        self.input_cursor_timer.start();
+    }
+    pub const fn clear_messages(&mut self) {
         self.next = 0;
         self.number_of_lines = 0;
         self.scrollback_offset = 0;
         self.new_messages_while_scrolling_back = 0;
     }
-    pub fn poll_scrollback(&mut self, lines_per_page: usize) {
-        let scroll_count = self.scrollback.poll();
+    pub fn finalize_input(&mut self) -> Arc<String> {
+        self.input_text.push(0 as char);
+        self.input_text.pop();
+        self.input_cursor_timer.start();
+        let input = Arc::new(core::mem::take(&mut self.input_text));
+        self.history.push(input.clone());
+        self.history_offset = self.history.len();
+        self.clear_input();
+        input
+    }
+    pub fn clear_input(&mut self) {
+        self.input_cursor_position = 0;
+        self.input_text.clear();
+        self.input_cursor_timer.start();
+    }
+    fn poll_scrollback(&mut self, lines_per_page: usize) {
+        let scroll_count = self.scrollback_queue;
+        self.scrollback_queue = 0;
         let mut value = self.scrollback_offset;
 
         if scroll_count != 0 {
@@ -190,7 +336,6 @@ unsafe fn render_console() {
         // line height is bullshit; no console
         return
     }
-    let console_active = CONSOLE_IS_ACTIVE.get_copied() != 0;
     let console_type: ConsoleStyle = CONSOLE_STYLE.into();
 
     let mut writer = DrawStringWriter::new_simple(
@@ -206,6 +351,8 @@ unsafe fn render_console() {
     bounds.bottom -= CONSOLE_DISPLAY_PADDING + line_height;
 
     let mut console_buffer = CONSOLE_BUFFER.write();
+    let console_active = console_buffer.active;
+    *CONSOLE_IS_ACTIVE_HALO.get_mut() = console_active as u8;
 
     if console_active {
         let console_input_text_ptr = CStrPtr::from_bytes(CONSOLE_INPUT_TEXT.get());
@@ -220,34 +367,21 @@ unsafe fn render_console() {
             draw_box(ColorARGB { a: CONSOLE_BACKGROUND_OPACITY, color: ColorRGB::BLACK }, interface_bounds);
         }
 
-        let show_cursor = (console_buffer.cursor_timer.value().0 % 2) == 0;
-        let mut shown = false;
-
-        let valid = console_input_text_bytes.is_empty() || console_input_text_bytes.iter().all(|b| b.is_ascii());
+        let show_cursor = (console_buffer.input_cursor_timer.value().0 % 2) == 0;
         if show_cursor {
-            if let Ok(s) = console_input_text_ptr.as_cstr().to_str() {
-                let cursor_position = *CONSOLE_CURSOR_POSITION.get() as usize;
-                let character_count = s.char_indices().count();
-                if cursor_position >= character_count {
-                    writer.draw(format_args!("{CONSOLE_PREFIX}{s}{CONSOLE_CURSOR}"), text_bounds).expect(";-;");
-                    shown = true;
-                }
-                else {
-                    let end = s.char_indices()
-                        .skip(cursor_position)
-                        .next()
-                        .expect("cursor_position is within character_count; this should work");
-
-                    let (before, after) = s.split_at(end.0);
-                    let actual_after = &after[end.1.len_utf8()..];
-                    writer.draw(format_args!("{CONSOLE_PREFIX}{before}{CONSOLE_CURSOR}{actual_after}"), text_bounds).expect(";-;");
-                    shown = true;
-                }
+            let (start, end) = console_buffer.input_text.split_at(console_buffer.input_cursor_position);
+            let mut chars_after_cursor = end.char_indices();
+            let _ = chars_after_cursor.next(); // skip the first one since the cursor replaces it
+            let actual_end = if let Some((c, _)) = chars_after_cursor.next() {
+                &end[c..]
             }
+            else {
+                ""
+            };
+            writer.draw(format_args!("{CONSOLE_PREFIX}{start}{CONSOLE_CURSOR}{actual_end}"), text_bounds).expect(";-;");
         }
-
-        if !shown {
-            writer.draw(format_args!("{CONSOLE_PREFIX}{}", console_input_text_ptr.display_lossy()), text_bounds).expect(";-;");
+        else {
+            writer.draw(format_args!("{CONSOLE_PREFIX}{}", console_buffer.input_text), text_bounds).expect(";-;");
         }
 
         let unread_messages = console_buffer.new_messages_while_scrolling_back;
@@ -372,7 +506,7 @@ unsafe extern "C" fn demon_terminal_put(color: Option<&ColorARGB>, text: CStrPtr
     printf(CStrPtr::from_bytes(b"[CONSOLE] %s\n\x00"), text);
     CONSOLE_BUFFER
         .write()
-        .put(color.unwrap_or(&CONSOLE_DEFAULT_TEXT_COLOR), text.display_lossy());
+        .put_message(color.unwrap_or(&CONSOLE_DEFAULT_TEXT_COLOR), text.display_lossy());
 }
 
 
@@ -407,26 +541,111 @@ macro_rules! console_color {
 }
 
 pub fn console_put_args(color: Option<&ColorARGB>, fmt: core::fmt::Arguments) {
-    CONSOLE_BUFFER.write().put(color.unwrap_or(&CONSOLE_DEFAULT_TEXT_COLOR), fmt);
+    CONSOLE_BUFFER.write().put_message(color.unwrap_or(&CONSOLE_DEFAULT_TEXT_COLOR), fmt);
 }
 
-const TERMINAL_SALT: u16 = 0x6574;
-
-#[repr(C)]
-struct TerminalOutput {
-    pub identifier: u16,
-    pub unknown: u16,
-    pub some_id: ID<TERMINAL_SALT>,
-    pub unknown1: u32,
-    pub unknown2: u8,
-    pub text: [u8; 0xFF],
-    pub unknown3: u32,
-    pub color: ColorARGB,
-    pub timer: u32
-}
-
-const CONSOLE_IS_ACTIVE: VariableProvider<u8> = variable! {
+pub(crate) const CONSOLE_IS_ACTIVE_HALO: VariableProvider<u8> = variable! {
     name: "CONSOLE_IS_ACTIVE",
     cache_address: 0x00C98AE0,
     tag_address: 0x00D500A0
 };
+
+pub fn console_is_active() -> bool {
+    CONSOLE_BUFFER.read().active
+}
+
+pub(crate) unsafe fn handle_win32_window_message(message: u32, parameter: u32) -> bool {
+    let mut console = CONSOLE_BUFFER.write();
+
+    if message == WM_CHAR && parameter == (b'`' as u32) {
+        console.active = !console.active;
+        return true
+    }
+
+    if !console.active {
+        return false
+    }
+
+    let ctrl_held_down = unsafe {
+        GetKeyState(KeyboardAndMouse::VK_LCONTROL as i32) | GetKeyState(KeyboardAndMouse::VK_RCONTROL as i32)
+    } & 0x80 != 0;
+
+    if message == WM_CHAR && !ctrl_held_down {
+        let character = decode_win32_character(parameter as u8);
+        if !character.is_control() {
+            console.insert_input_char(character);
+        }
+    }
+    else if message == WM_KEYDOWN {
+        match parameter as VIRTUAL_KEY {
+            // ctrl-c clears the console
+            KeyboardAndMouse::VK_C if ctrl_held_down => {
+                console.clear_input();
+                console.history_offset = console.history.len();
+            }
+            // left/right advances 1 character (holding ctrl advances by word instead)
+            KeyboardAndMouse::VK_LEFT => {
+                if ctrl_held_down {
+                    console.word_shift_input_cursor(-1);
+                }
+                else {
+                    console.char_shift_input_cursor(-1);
+                }
+            },
+            KeyboardAndMouse::VK_RIGHT => {
+                if ctrl_held_down {
+                    console.word_shift_input_cursor(1);
+                }
+                else {
+                    console.char_shift_input_cursor(1);
+                }
+            },
+            // up/down iterates history
+            KeyboardAndMouse::VK_UP => {
+                console.history_offset = console.history_offset.saturating_sub(1);
+                if let Some(n) = console.history.get(console.history_offset) {
+                    console.input_text = String::clone(n);
+                    console.input_cursor_position = console.input_text.len();
+                }
+            },
+            KeyboardAndMouse::VK_DOWN => {
+                console.history_offset = (console.history_offset + 1).clamp(0, console.history.len());
+                if let Some(n) = console.history.get(console.history_offset) {
+                    console.input_text = String::clone(n);
+                    console.input_cursor_position = console.input_text.len();
+                }
+                else {
+                    console.clear_input();
+                }
+            },
+            // pgup/down iterates scrollback
+            KeyboardAndMouse::VK_PRIOR => {
+                console.scrollback_queue = console.scrollback_queue.saturating_add(1);
+            },
+            KeyboardAndMouse::VK_NEXT => {
+                console.scrollback_queue = console.scrollback_queue.saturating_sub(1);
+            },
+            // return enters a command
+            KeyboardAndMouse::VK_RETURN => {
+                let input_text = console.finalize_input();
+                drop(console);
+                run_console_command.get()(CStrPtr(input_text.as_ptr() as *const _));
+            },
+            // backspace/del remove characters
+            KeyboardAndMouse::VK_BACK => {
+                console.pop_input_char(false);
+            },
+            KeyboardAndMouse::VK_DELETE => {
+                console.pop_input_char(true);
+            },
+            // tab completion
+            KeyboardAndMouse::VK_TAB => {
+                console.put_message(ColorARGB::from(ColorRGB::WHITE), "TODO: Tab completion!");
+            }
+            _ => ()
+        }
+    }
+
+    true
+}
+

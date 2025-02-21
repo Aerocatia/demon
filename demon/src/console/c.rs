@@ -1,6 +1,6 @@
 use c_mine::{c_mine, pointer_from_hook};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
-use crate::console::{CONSOLE_IS_ACTIVE, CONSOLE_BUFFER, CONSOLE_INPUT_TEXT, CONSOLE_CURSOR_POSITION, console_put_args};
+use crate::console::{CONSOLE_IS_ACTIVE_HALO, CONSOLE_BUFFER, CONSOLE_INPUT_TEXT, CONSOLE_CURSOR_POSITION, console_put_args};
 use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 
 const CONSOLE_PROMPT_TEXT: VariableProvider<[u8; 32]> = variable! {
@@ -36,13 +36,26 @@ const CONSOLE_ENABLED: VariableProvider<bool> = variable! {
 #[c_mine]
 pub extern "C" fn console_is_active() -> bool {
     // SAFETY: This is known to be valid
-    unsafe { *CONSOLE_IS_ACTIVE.get() != 0 }
+    unsafe { *CONSOLE_IS_ACTIVE_HALO.get() != 0 }
 }
 
 #[c_mine]
 pub unsafe extern "C" fn terminal_draw() {
     super::render_console();
 }
+
+const KEYBOARD_CONTROL_BUTTONS: VariableProvider<u32> = variable! {
+    name: "KEYBOARD_CONTROL_BUTTONS",
+    cache_address: 0x00C80358
+};
+const MOUSE_CONTROL_BUTTONS: VariableProvider<u32> = variable! {
+    name: "MOUSE_CONTROL_BUTTONS",
+    cache_address: 0x00C81748
+};
+const UNK: VariableProvider<u16> = variable! {
+    name: "UNK",
+    cache_address: 0x00C98AE8
+};
 
 #[c_mine]
 pub unsafe extern "C" fn terminal_update() {
@@ -54,7 +67,7 @@ pub unsafe extern "C" fn terminal_update() {
     let new_position = CONSOLE_CURSOR_POSITION.get_copied();
 
     if old_position != new_position {
-        CONSOLE_BUFFER.read().cursor_timer.start();
+        CONSOLE_BUFFER.read().input_cursor_timer.start();
     }
 }
 
