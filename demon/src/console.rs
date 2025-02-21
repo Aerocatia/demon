@@ -238,6 +238,7 @@ impl Console {
         self.new_messages_while_scrolling_back = 0;
     }
     pub fn finalize_input(&mut self) -> Arc<String> {
+        // ensure the buffer is null-terminated
         self.input_text.push(0 as char);
         self.input_text.pop();
         self.input_cursor_timer.start();
@@ -559,6 +560,8 @@ pub(crate) unsafe fn handle_win32_window_message(message: u32, parameter: u32) -
 
     if message == WM_CHAR && parameter == (b'`' as u32) {
         console.active = !console.active;
+        console.input_cursor_timer.start();
+        console.clear_input();
         return true
     }
 
