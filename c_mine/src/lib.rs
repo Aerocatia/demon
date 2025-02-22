@@ -68,9 +68,7 @@ struct Hook {
     pub tag: Option<String>,
     pub cache: Option<String>,
     pub replacement: Option<String>,
-    pub sudo: Option<bool>,
-
-    pub tags: Option<String>
+    pub sudo: Option<bool>
 }
 
 #[proc_macro]
@@ -109,7 +107,7 @@ fn get_all_hooks() -> HashMap<String, Hook> {
             if hooks.contains_key(&name) {
                 panic!("Duplicate hook {name}")
             }
-            if let Some(t) = hook.tags.as_ref() {
+            if let Some(t) = hook.tag.as_ref() {
                 if tag_addresses.contains(t) {
                     panic!("Duplicate tag build address {t} ({name})")
                 }
@@ -120,9 +118,6 @@ fn get_all_hooks() -> HashMap<String, Hook> {
                     panic!("Duplicate cache build address {t} ({name})")
                 }
                 cache_addresses.insert(t.to_owned());
-            }
-            if hook.tags.is_some() {
-                panic!("{name} used tags! BUTTERFREE fainted!");
             }
             hooks.insert(name, hook);
         }
@@ -309,6 +304,7 @@ struct HSFunctionEntry {
     arguments: Vec<String>
 }
 
+#[derive(Clone)]
 struct HSFunction {
     name: String,
     r#return_type: String,
@@ -321,18 +317,20 @@ struct HSFunction {
     compile_evaluate_demon: Option<(String, String)>
 }
 
-fn get_all_scripting_functions() -> HashMap<String, HSFunction> {
+fn get_all_scripting_functions() -> Vec<HSFunction> {
     let cache_json_data: Vec<HSFunctionEntry> = serde_json::from_slice(include_bytes!("../functions/cache.json")).expect("could not parse cache json scripting commands");
     let tag_json_data: Vec<HSFunctionEntry> = serde_json::from_slice(include_bytes!("../functions/tag.json")).expect("could not parse tag json scripting commands");
     let demon_json_data: Vec<HSFunctionEntry> = serde_json::from_slice(include_bytes!("../functions/demon.json")).expect("could not parse demon json scripting commands");
 
-    let mut all_commands: HashSet<String> = HashSet::new();
+    let mut all_commands: Vec<String> = Vec::new();
 
     let mut group = |data: Vec<HSFunctionEntry>| {
         let mut functions: HashMap<String, HSFunctionEntry> = HashMap::new();
 
         for i in data {
-            all_commands.insert(i.name.clone());
+            if !all_commands.contains(&i.name) {
+                all_commands.push(i.name.clone());
+            }
             functions.insert(i.name.clone(), i);
         }
 
@@ -343,7 +341,7 @@ fn get_all_scripting_functions() -> HashMap<String, HSFunction> {
     let mut tag_functions = group(tag_json_data);
     let mut demon_functions = group(demon_json_data);
 
-    let mut result = HashMap::new();
+    let mut result = Vec::new();
 
     for i in all_commands {
         let first = cache_functions
@@ -352,8 +350,7 @@ fn get_all_scripting_functions() -> HashMap<String, HSFunction> {
             .or_else(|| demon_functions.get(&i))
             .expect("should somehow have an entry here");
 
-        result.insert(
-            i.clone(),
+        result.push(
             HSFunction {
                 name: first.name.clone(),
                 return_type: first.return_type.clone(),
@@ -368,17 +365,38 @@ fn get_all_scripting_functions() -> HashMap<String, HSFunction> {
         );
     }
 
+    #[derive(Deserialize)]
+    struct Alias {
+        target: String,
+        aliases: Vec<String>
+    }
+
+    let aliases: Vec<Alias> = serde_json::from_slice(include_bytes!("../functions/alias.json")).expect("could not parse script aliases json");
+    for i in aliases {
+        let Some(original) = result.iter().find(|c| c.name == i.target) else {
+            panic!("Alias {} refers to a function that doesn't exist.", i.target);
+        };
+        let original = original.clone();
+        for name in i.aliases {
+            result.push(HSFunction {
+                name,
+                ..original.clone()
+            });
+        }
+    }
+
     result
 }
 
 #[proc_macro]
 pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
     let all_functions = get_all_scripting_functions();
+    let all_hooks = get_all_hooks();
 
-    fn make_data(entries: &HashMap<String, HSFunction>, address_type: &str) -> String {
+    fn make_data(entries: &Vec<HSFunction>, address_type: &str, hooks: &HashMap<String, Hook>) -> String {
         let mut data = String::with_capacity(4096);
-        for i in entries.values() {
-            let name = i.name.replace("\\", "\\\\");
+        for i in entries {
+            let name = cleanup_string(&i.name);
             let return_type = cleanup_string(&i.return_type);
             let description = cleanup_string(i.description.as_ref().map(|c| c.as_str()).unwrap_or(""));
             let usage = cleanup_string(i.usage.as_ref().map(|c| c.as_str()).unwrap_or(""));
@@ -390,6 +408,23 @@ pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
                 _ => unreachable!()
             }.as_ref() else {
                 continue
+            };
+
+            let compile = if address_type == "demon" {
+                compile
+            } else if let Some(c) = hooks.get(compile) {
+                let address = match address_type {
+                    "tag" => &c.tag,
+                    "cache" => &c.cache,
+                    _ => unreachable!()
+                }.as_ref();
+                match address {
+                    Some(s) => s,
+                    None => panic!("Found hook {compile}, but no address for {address_type}")
+                }
+            }
+            else {
+                compile
             };
 
             let mut arg_setter_code = String::new();
@@ -419,9 +454,9 @@ pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
         data
     }
 
-    let mut cache_list = make_data(&all_functions, "cache");
-    let mut tag_list = make_data(&all_functions, "tag");
-    let demon_list = make_data(&all_functions, "demon");
+    let mut cache_list = make_data(&all_functions, "cache", &all_hooks);
+    let mut tag_list = make_data(&all_functions, "tag", &all_hooks);
+    let demon_list = make_data(&all_functions, "demon", &all_hooks);
 
     cache_list += &demon_list;
     tag_list += &demon_list;

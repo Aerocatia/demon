@@ -75,6 +75,14 @@ pub fn get_external_globals() -> &'static [ExternalGlobal] {
     }
 }
 
+pub fn get_functions() -> &'static [HSScriptFunctionDefinition] {
+    let exe_type = get_exe_type();
+    match exe_type {
+        ExeType::Cache => SCRIPT_FUNCTIONS.0,
+        ExeType::Tag => SCRIPT_FUNCTIONS.1
+    }
+}
+
 pub unsafe fn get_scenario_globals() -> &'static [ScenarioGlobal] {
     if GLOBAL_SCENARIO_INDEX.get().is_null() {
         return &[];

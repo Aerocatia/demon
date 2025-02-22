@@ -5,7 +5,7 @@ use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use tag_structs::ScenarioScriptValueType;
 use crate::init::get_exe_type;
 use crate::memory::table::{data_make_valid, game_state_data_new};
-use crate::script::{get_external_globals, get_global_by_index, get_scenario_globals, HSExternalGlobalDefinition, DATUM_NEW_AT_INDEX, HS_ENUMERATE_ADD_RESULT, HS_EXTERNAL_GLOBALS_COUNT, HS_GLOBALS_TABLE, HS_THREAD_TABLE};
+use crate::script::{get_external_globals, get_functions, get_global_by_index, get_scenario_globals, HSExternalGlobalDefinition, HSScriptFunctionDefinition, DATUM_NEW_AT_INDEX, HS_ENUMERATE_ADD_RESULT, HS_EXTERNAL_GLOBALS_COUNT, HS_GLOBALS_TABLE, HS_THREAD_TABLE};
 use crate::util::{CStrPtr, StaticStringBytes};
 
 #[c_mine]
@@ -123,6 +123,13 @@ pub unsafe extern "C" fn hs_enumerate_globals() {
 }
 
 #[c_mine]
+pub unsafe extern "C" fn hs_enumerate_functions() {
+    for i in get_functions() {
+        HS_ENUMERATE_ADD_RESULT.get()(i.name.0 as *const _);
+    }
+}
+
+#[c_mine]
 pub unsafe extern "C" fn hs_global_get_name(index: u16) -> *const u8 {
     get_global_by_index(index).name_bytes().as_ptr()
 }
@@ -172,4 +179,26 @@ pub unsafe extern "C" fn display_scripting_error(file: CStrPtr, reason: CStrPtr,
 
     console_color!(ColorARGB { a: 1.0, color: ColorRGB { r: 1.0, g: 0.0, b: 0.0 } }, "HSC syntax error @ {location}:");
     console_color!(ColorARGB { a: 1.0, color: ColorRGB { r: 1.0, g: 0.0, b: 0.0 } }, "- {error_message}");
+}
+
+#[c_mine]
+pub unsafe extern "C" fn hs_find_function_by_name(name: CStrPtr) -> usize {
+    let Some(name) = name.to_str_lossless() else { return usize::MAX };
+
+    let Some(f) = get_functions()
+        .iter()
+        .position(|p| p.name.expect_str().eq_ignore_ascii_case(name)) else {
+
+        return usize::MAX;
+    };
+
+    f
+}
+
+#[c_mine]
+pub unsafe extern "C" fn hs_get_function(index: u16) -> &'static HSScriptFunctionDefinition {
+    match get_functions().get(index as usize) {
+        Some(n) => n,
+        None => panic!("hs_get_function with index {index}")
+    }
 }

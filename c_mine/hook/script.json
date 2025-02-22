@@ -61,5 +61,25 @@
         "tag": "0x005FB4B0",
         "replacement": "crate::script::c::display_scripting_error",
         "sudo": true
+    },
+    "hs_find_function_by_name": {
+        "cache": "0x0040A26D",
+        "tag": "0x004096D3",
+        "replacement": "crate::script::c::hs_find_function_by_name"
+    },
+    "hs_get_function": {
+        "cache": "0x0040261C",
+        "tag": "0x005FBF10",
+        "replacement": "crate::script::c::hs_get_function"
+    },
+    "hs_enumerate_functions": {
+        "cache": "0x005E7B90",
+        "tag": "0x005F1520",
+        "replacement": "crate::script::c::hs_enumerate_functions",
+        "sudo": true
+    },
+    "hs_macro_function_parse": {
+        "cache": "0x004038CD",
+        "tag": "0x00402A59"
     }
 }
