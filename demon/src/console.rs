@@ -44,14 +44,14 @@ const CONSOLE_CURSOR_POSITION: VariableProvider<u16> = variable! {
     tag_address: 0x000D5025E
 };
 
-pub static mut CONSOLE_COLOR: ColorARGB = ColorARGB {
+static CONSOLE_COLOR: RwLock<ColorARGB> = RwLock::new(ColorARGB {
     a: 1.0,
     color: ColorRGB {
         r: 1.0,
         g: 0.3,
         b: 1.0
     }
-};
+});
 
 #[derive(Copy, Clone, PartialEq, FromPrimitive)]
 #[repr(u16)]
@@ -343,9 +343,10 @@ unsafe fn render_console() {
     }
     let console_type: ConsoleStyle = CONSOLE_STYLE.into();
 
+    let console_color = CONSOLE_COLOR.read();
     let mut writer = DrawStringWriter::new_simple(
         font,
-        CONSOLE_COLOR
+        *console_color
     );
 
     let interface_bounds = get_global_interface_canvas_bounds();
@@ -396,8 +397,8 @@ unsafe fn render_console() {
             // halve the alpha to prevent writing over the input with something that might not be readable
             if !console_input_text_bytes.is_empty() {
                 writer.set_color(ColorARGB {
-                    a: CONSOLE_COLOR.a * 0.5,
-                    color: CONSOLE_COLOR.color
+                    a: console_color.a * 0.5,
+                    color: console_color.color
                 })
             }
 
@@ -526,25 +527,6 @@ pub fn show_debug_messages() -> bool {
     unsafe { SHOW_DEBUG_MESSAGES != 0 }
 }
 
-/// Print the formatted string to the in-game console.
-#[allow(unused_macros)]
-macro_rules! console {
-    ($($args:tt)*) => {{
-        crate::console::console_put_args(None, format_args!($($args)*));
-    }};
-}
-
-/// Print the formatted string to the in-game console with a given color.
-///
-/// The first argument must be [`ColorARGB`] or [`&ColorARGB`].
-#[allow(unused_macros)]
-macro_rules! console_color {
-    ($color:expr, $($args:tt)*) => {{
-        let color: &tag_structs::primitives::color::ColorARGB = tag_structs::primitives::color::ColorARGB::as_ref(&$color);
-        crate::console::console_put_args(Some(color), format_args!($($args)*));
-    }};
-}
-
 pub fn console_put_args(color: Option<&ColorARGB>, fmt: core::fmt::Arguments) {
     CONSOLE_BUFFER.write().put_message(color.unwrap_or(&CONSOLE_DEFAULT_TEXT_COLOR), fmt);
 }
@@ -656,3 +638,6 @@ pub(crate) unsafe fn handle_win32_window_message(message: u32, parameter: u32) -
     true
 }
 
+fn set_console_color(color: ColorRGB) {
+    *CONSOLE_COLOR.write() = color.into()
+}

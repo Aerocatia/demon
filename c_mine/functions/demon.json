@@ -1,1 +1,11 @@
-[]
+[
+    {
+        "name": "demon_console_set_color",
+        "return_type": "Void",
+        "compile": "crate::script::c::hs_macro_function_parse_c",
+        "evaluate": "crate::console::c::demon_console_set_color_eval",
+        "description": "Set the console color. Colors are between 0.0 and 1.0 (inclusive) and will be clamped.",
+        "usage": "<red> <green> <blue>",
+        "arguments": ["Real", "Real", "Real"]
+    }
+]

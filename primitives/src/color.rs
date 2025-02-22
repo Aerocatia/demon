@@ -45,11 +45,16 @@ pub struct ColorRGB {
 impl ColorRGB {
     pub const WHITE: ColorRGB = ColorRGB { r: 1.0, g: 1.0, b: 1.0 };
     pub const BLACK: ColorRGB = ColorRGB { r: 0.0, g: 0.0, b: 0.0 };
-    pub fn is_valid(&self) -> bool {
-        (0.0..=1.0).contains(&self.r) && (0.0..=1.0).contains(&self.g) && (0.0..=1.0).contains(&self.b)
+    pub const fn is_valid(&self) -> bool {
+        self.r >= 0.0 && self.r <= 1.0
+            && self.g >= 0.0 && self.g <= 1.0
+            && self.b >= 0.0 && self.b <= 1.0
     }
     pub const fn as_colorargb(self) -> ColorARGB {
         ColorARGB { a: 1.0, color: self }
+    }
+    pub fn clamped(self) -> ColorRGB {
+        ColorRGB { r: self.r.clamp(0.0, 1.0), g: self.g.clamp(0.0, 1.0), b: self.b.clamp(0.0, 1.0) }
     }
 }
 

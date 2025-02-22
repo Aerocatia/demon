@@ -1,8 +1,8 @@
 use core::fmt::Display;
 use num_enum::TryFromPrimitive;
 use c_mine::pointer_from_hook;
-use tag_structs::primitives::color::{ColorARGB, ColorRGB};
-use crate::console::{console_put_args, show_debug_messages};
+use tag_structs::primitives::color::ColorRGB;
+use crate::console::show_debug_messages;
 use crate::util::{CStrPtr, PointerProvider, StaticStringBytes, VariableProvider};
 
 const MAX_LOG_LEN: usize = 1024;
@@ -12,22 +12,6 @@ pub const ERROR_WAS_SET: VariableProvider<u8> = variable! {
     cache_address: 0x00B016C8,
     tag_address: 0x00BB8C80
 };
-
-/// Print an error to the console with the given formatting and log it.
-#[allow(unused_macros)]
-macro_rules! error {
-    ($($args:tt)*) => {{
-        crate::error_log::error_put_args(crate::error_log::ErrorPriority::Normal, format_args!($($args)*));
-    }};
-}
-
-/// Log a message without printing it to the console.
-#[allow(unused_macros)]
-macro_rules! log {
-    ($($args:tt)*) => {{
-        crate::error_log::error_put_args(crate::error_log::ErrorPriority::FileOnly, format_args!($($args)*));
-    }};
-}
 
 #[derive(Copy, Clone, PartialEq, TryFromPrimitive)]
 #[repr(i16)]
@@ -53,7 +37,7 @@ pub fn error_put_args(priority: ErrorPriority, fmt: core::fmt::Arguments) {
     let err = StaticStringBytes::<MAX_LOG_LEN>::from_fmt(fmt)
         .expect("failed to write error");
 
-    // SAFETY: Hopefully safe???
+    // SAFETY: Shouldn't explode.
     unsafe { log_error_message(priority, err); }
 }
 
@@ -73,8 +57,8 @@ unsafe extern "C" fn log_error_message(desired_priority: ErrorPriority, message:
     let message = StaticStringBytes::<MAX_LOG_LEN>::from_display(message);
 
     if actual_priority == ErrorPriority::Normal {
-        let color = &ColorARGB { a: 1.0, color: ColorRGB::WHITE };
-        console_put_args(Some(color), format_args!("{message}"));
+        let w = ColorRGB::WHITE.as_colorargb();
+        console_color!(w, "{message}");
     }
 
     let message_to_log = if actual_priority == ErrorPriority::Death {

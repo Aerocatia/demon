@@ -1,6 +1,8 @@
+use core::mem::transmute;
 use c_mine::{c_mine, pointer_from_hook};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
-use crate::console::{CONSOLE_IS_ACTIVE_HALO, CONSOLE_BUFFER, CONSOLE_INPUT_TEXT, CONSOLE_CURSOR_POSITION, console_put_args};
+use crate::console::{CONSOLE_IS_ACTIVE_HALO, CONSOLE_BUFFER, CONSOLE_INPUT_TEXT, CONSOLE_CURSOR_POSITION, console_put_args, set_console_color};
+use crate::script::{HS_MACRO_FUNCTION_EVALUATE, HS_RETURN};
 use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 
 const CONSOLE_PROMPT_TEXT: VariableProvider<[u8; 32]> = variable! {
@@ -135,4 +137,16 @@ pub unsafe extern "C" fn run_console_command(command: CStrPtr) {
     *HS_DISABLE_FORCE_LOWERCASE.get_mut() = 1;
     HS_COMPILE_AND_EVALUATE.get()(command);
     *HS_DISABLE_FORCE_LOWERCASE.get_mut() = 0;
+}
+
+pub unsafe extern "C" fn demon_console_set_color_eval(a: u16, b: u32, c: u8) {
+    let v: Option<&ColorRGB> = transmute(HS_MACRO_FUNCTION_EVALUATE.get()(a,b,c));
+    if let Some(&color) = v {
+        let clamped = color.clamped();
+        if clamped != color {
+            warn!("Input color ({} {} {}) had to be clamped to {} {} {}", color.r, color.g, color.b, clamped.r, clamped.g, clamped.b);
+        }
+        set_console_color(clamped);
+        HS_RETURN.get()(b, 0);
+    }
 }

@@ -1,12 +1,12 @@
 use alloc::string::String;
 use core::intrinsics::transmute;
-use c_mine::c_mine;
+use c_mine::{c_mine, pointer_from_hook};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use tag_structs::ScenarioScriptValueType;
 use crate::init::get_exe_type;
 use crate::memory::table::{data_make_valid, game_state_data_new};
 use crate::script::{get_external_globals, get_functions, get_global_by_index, get_scenario_globals, HSExternalGlobalDefinition, HSScriptFunctionDefinition, DATUM_NEW_AT_INDEX, HS_ENUMERATE_ADD_RESULT, HS_EXTERNAL_GLOBALS_COUNT, HS_GLOBALS_TABLE, HS_THREAD_TABLE};
-use crate::util::{CStrPtr, StaticStringBytes};
+use crate::util::{CStrPtr, PointerProvider, StaticStringBytes};
 
 #[c_mine]
 pub unsafe extern "C" fn hs_runtime_initialize() {
@@ -175,7 +175,7 @@ pub unsafe extern "C" fn display_scripting_error(file: CStrPtr, reason: CStrPtr,
         )
     }.expect(";-;");
 
-    log!("HSC syntax error @ {location} - {error_message}");
+    debug_log!("HSC syntax error @ {location} - {error_message}");
 
     console_color!(ColorARGB { a: 1.0, color: ColorRGB { r: 1.0, g: 0.0, b: 0.0 } }, "HSC syntax error @ {location}:");
     console_color!(ColorARGB { a: 1.0, color: ColorRGB { r: 1.0, g: 0.0, b: 0.0 } }, "- {error_message}");
@@ -201,4 +201,10 @@ pub unsafe extern "C" fn hs_get_function(index: u16) -> &'static HSScriptFunctio
         Some(n) => n,
         None => panic!("hs_get_function with index {index}")
     }
+}
+
+const HS_MACRO_FUNCTION_PARSE: PointerProvider<unsafe extern "C" fn(u32, u32) -> u32> = pointer_from_hook!("hs_macro_function_parse");
+
+pub unsafe extern "C" fn hs_macro_function_parse_c(a: u32, b: u32) -> u32 {
+    HS_MACRO_FUNCTION_PARSE.get()(a,b)
 }

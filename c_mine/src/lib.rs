@@ -410,22 +410,27 @@ pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
                 continue
             };
 
-            let compile = if address_type == "demon" {
+            fn resolve_ptr(address_type: &str, hooks: &HashMap<String, Hook>, ptr: &str) -> String {
+                let compile = if address_type == "demon" {
+                    format!("{ptr} as *const _")
+                } else if let Some(c) = hooks.get(ptr) {
+                    let address = match address_type {
+                        "tag" => &c.tag,
+                        "cache" => &c.cache,
+                        _ => unreachable!()
+                    }.as_ref();
+                    match address {
+                        Some(s) => format_address(&s).to_owned(),
+                        None => panic!("Found hook {ptr}, but no address for {address_type}")
+                    }
+                } else {
+                    format_address(&ptr)
+                };
                 compile
-            } else if let Some(c) = hooks.get(compile) {
-                let address = match address_type {
-                    "tag" => &c.tag,
-                    "cache" => &c.cache,
-                    _ => unreachable!()
-                }.as_ref();
-                match address {
-                    Some(s) => s,
-                    None => panic!("Found hook {compile}, but no address for {address_type}")
-                }
             }
-            else {
-                compile
-            };
+
+            let compile = resolve_ptr(address_type, hooks, compile);
+            let evaluate = resolve_ptr(address_type, hooks, evaluate);
 
             let mut arg_setter_code = String::new();
             for (i, j) in i.arguments.iter().enumerate() {
@@ -437,8 +442,8 @@ pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
             fmt::write(&mut data, format_args!("description: CStrPtr::from_bytes(b\"{description}\\x00\"),")).expect(";-;");
             fmt::write(&mut data, format_args!("usage: CStrPtr::from_bytes(b\"{usage}\\x00\"),")).expect(";-;");
             fmt::write(&mut data, format_args!("return_type: ScenarioScriptValueType::{return_type},")).expect(";-;");
-            fmt::write(&mut data, format_args!("compile: {},", format_address(compile))).expect(";-;");
-            fmt::write(&mut data, format_args!("evaluate: {},", format_address(evaluate))).expect(";-;");
+            fmt::write(&mut data, format_args!("compile: {compile},")).expect(";-;");
+            fmt::write(&mut data, format_args!("evaluate: {evaluate},")).expect(";-;");
             fmt::write(&mut data, format_args!("argument_count: {},", i.arguments.len())).expect(";-;");
             fmt::write(&mut data, format_args!("argument_types: const {{
                 let mut arguments = [ScenarioScriptValueType::Unparsed; 6];
@@ -453,6 +458,7 @@ pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
         }
         data
     }
+
 
     let mut cache_list = make_data(&all_functions, "cache", &all_hooks);
     let mut tag_list = make_data(&all_functions, "tag", &all_hooks);

@@ -169,3 +169,7 @@ const HS_EXTERNAL_GLOBALS_COUNT: VariableProvider<u16> = variable! {
     cache_address: 0x0097E8CC,
     tag_address: 0x009E2D94
 };
+
+pub const HS_MACRO_FUNCTION_EVALUATE: PointerProvider<unsafe extern "C" fn(u16, u32, u8) -> *const [u8; 0]> = pointer_from_hook!("hs_macro_function_evaluate");
+pub const HS_RETURN: PointerProvider<unsafe extern "C" fn(u32, u32) -> *const [u8; 0]> = pointer_from_hook!("hs_return");
+

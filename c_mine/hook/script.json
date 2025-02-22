@@ -69,7 +69,7 @@
     },
     "hs_get_function": {
         "cache": "0x0040261C",
-        "tag": "0x005FBF10",
+        "tag": "0x00401BD1",
         "replacement": "crate::script::c::hs_get_function"
     },
     "hs_enumerate_functions": {
@@ -81,5 +81,13 @@
     "hs_macro_function_parse": {
         "cache": "0x004038CD",
         "tag": "0x00402A59"
+    },
+    "hs_macro_function_evaluate": {
+        "cache": "0x00409FCA",
+        "tag": "0x004093EF"
+    },
+    "hs_return": {
+        "cache": "0x00405466",
+        "tag": "0x0040483B"
     }
 }
