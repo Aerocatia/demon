@@ -82,7 +82,8 @@ pub unsafe extern "C" fn console_initialize() {
 
 const HS_DISABLE_FORCE_LOWERCASE: VariableProvider<u8> = variable! {
     name: "HS_DISABLE_FORCE_LOWERCASE",
-    cache_address: 0x00C7DCB0
+    cache_address: 0x00C7DCB0,
+    tag_address: 0x00D35268
 };
 
 const HS_COMPILE_AND_EVALUATE: PointerProvider<unsafe extern "C" fn(CStrPtr)> = pointer_from_hook!("hs_compile_and_evaluate");

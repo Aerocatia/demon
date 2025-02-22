@@ -27,6 +27,7 @@ const CONSOLE_PREFIX: &'static str = "halo( ";
 const CONSOLE_DISPLAY_PADDING: i16 = 4;
 const CONSOLE_ENTRY_MAX_SIZE: usize = 1024;
 const CONSOLE_INPUT_MAX_SIZE: usize = 512;
+const CONSOLE_MAX_INPUT_HISTORY: usize = 2000;
 const CONSOLE_MAX_SCROLLBACK: usize = 1024;
 const CONSOLE_DEFAULT_TEXT_COLOR: ColorARGB = ColorARGB { a: 1.0, color: ColorRGB { r: 0.7, g: 0.7, b: 0.7 } };
 const CONSOLE_BACKGROUND_OPACITY: f32 = 0.7;
@@ -244,6 +245,9 @@ impl Console {
         self.input_cursor_timer.start();
         let input = Arc::new(core::mem::take(&mut self.input_text));
         self.history.push(input.clone());
+        while self.history.len() > CONSOLE_MAX_INPUT_HISTORY {
+            self.history.remove(0);
+        }
         self.history_offset = self.history.len();
         self.clear_input();
         input
