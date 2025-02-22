@@ -2,6 +2,7 @@ pub mod print;
 pub mod c;
 pub mod crash;
 pub mod cls;
+pub mod script_doc;
 
 use core::ffi::CStr;
 use c_mine::pointer_from_hook;
@@ -22,6 +23,7 @@ pub struct HSExternalGlobalDefinition {
     unknown: u32
 }
 
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct HSScriptFunctionDefinition {
     pub return_type: ScenarioScriptValueType,
@@ -36,6 +38,7 @@ pub struct HSScriptFunctionDefinition {
     pub argument_types: [ScenarioScriptValueType; 6]
 }
 
+#[derive(Copy, Clone)]
 pub struct ExternalGlobal {
     name_buffer: &'static [u8],
     definition: HSExternalGlobalDefinition

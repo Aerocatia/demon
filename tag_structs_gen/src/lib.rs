@@ -115,9 +115,11 @@ impl NamedTagStruct for {name} {{
 fn write_enum(enum_data: &Enum, _definitions: &ParsedDefinitions, output: &mut String) {
     let name = &enum_data.name;
     let mut members = String::with_capacity(1024 * 1024);
+    let mut members_names = String::with_capacity(1024 * 1024);
     for i in &enum_data.options {
         let name = rustify_string_pascal_case(&i.name);
-        write(&mut members, format_args!("    {name} = {},\n", i.value)).expect(";-;")
+        write(&mut members, format_args!("    {name} = {},\n", i.value)).expect(";-;");
+        write(&mut members_names, format_args!("    Self::{name} => \"{}\",\n", i.name)).expect(";-;");
     }
 
     write(output, format_args!(r#"
@@ -128,6 +130,18 @@ pub enum {name} {{
 impl NamedTagStruct for {name} {{
     fn name() -> &'static str {{
         "{name}"
+    }}
+}}
+impl {name} {{
+    fn as_str(self) -> &'static str {{
+        match self {{
+            {members_names}
+        }}
+    }}
+}}
+impl core::fmt::Display for {name} {{
+    fn fmt(&self, fmt: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {{
+        fmt.write_str(self.as_str())
     }}
 }}"#)).expect(";-;");
 }

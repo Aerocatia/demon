@@ -89,5 +89,10 @@
     "hs_return": {
         "cache": "0x00405466",
         "tag": "0x0040483B"
+    },
+    "script_doc": {
+        "cache": "0x00403CDD",
+        "tag": "0x00402EB4",
+        "replacement": "crate::script::script_doc::c::script_doc"
     }
 }
