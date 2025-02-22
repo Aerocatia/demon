@@ -10,7 +10,7 @@ use crate::init::{get_exe_type, ExeType};
 use crate::memory::table::DataTable;
 use crate::tag::{ReflexiveImpl, GLOBAL_SCENARIO_INDEX};
 use crate::tag::c::global_scenario_get;
-use crate::util::{PointerProvider, VariableProvider};
+use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -20,6 +20,20 @@ pub struct HSExternalGlobalDefinition {
     padding: u16,
     ptr: *mut [u8; 0],
     unknown: u32
+}
+
+#[repr(C)]
+pub struct HSScriptFunctionDefinition {
+    pub return_type: ScenarioScriptValueType,
+    pub padding_0x2: u16,
+    pub name: CStrPtr,
+    pub compile: *const [u8; 0],
+    pub evaluate: *const [u8; 0],
+    pub description: CStrPtr,
+    pub usage: CStrPtr,
+    pub unknown1: u16,
+    pub argument_count: u16,
+    pub argument_types: [ScenarioScriptValueType; 6]
 }
 
 pub struct ExternalGlobal {
@@ -51,6 +65,7 @@ impl ExternalGlobal {
 }
 
 const EXTERNAL_GLOBALS: (&[ExternalGlobal], &[ExternalGlobal]) = c_mine::generate_hs_external_globals_array!();
+const SCRIPT_FUNCTIONS: (&[HSScriptFunctionDefinition], &[HSScriptFunctionDefinition]) = c_mine::generate_hs_functions_array!();
 
 pub fn get_external_globals() -> &'static [ExternalGlobal] {
     let exe_type = get_exe_type();

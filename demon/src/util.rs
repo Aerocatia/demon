@@ -427,13 +427,14 @@ impl<'a> Display for PrintfFormatter<'a> {
 #[repr(transparent)]
 pub struct CStrPtr(pub *const c_char);
 impl CStrPtr {
-    pub fn from_bytes(bytes: &[u8]) -> Self {
-        if bytes.contains(&0) {
-            Self(bytes.as_ptr() as *const _)
+    pub const fn from_bytes(bytes: &[u8]) -> Self {
+        let Some(&last) = bytes.last() else {
+            panic!("CStrPtr::from_bytes with empty string")
+        };
+        if last != 0 {
+            panic!("CStrPtr::from_bytes with non-null terminated string")
         }
-        else {
-            panic!("from_bytes with non-null terminated NonNullCStrPtr")
-        }
+        Self(bytes.as_ptr() as *const _)
     }
     pub unsafe fn expect_str(&self) -> &str {
         self.as_cstr()

@@ -222,14 +222,7 @@ pub fn generate_hs_external_globals_array(_: TokenStream) -> TokenStream {
             };
 
             fmt::write(&mut data, format_args!("ExternalGlobal::new(b\"{name}\\x00\", ScenarioScriptValueType::{global_type}, ")).expect(";-;");
-
-            if !address.starts_with("0x") {
-                fmt::write(&mut data, format_args!("unsafe {{ core::mem::transmute(&mut {address} as *mut _) }}")).expect(";-;");
-            }
-            else {
-                fmt::write(&mut data, format_args!("{address} as *mut [u8; 0]")).expect(";-;");
-            }
-
+            fmt::write(&mut data, format_args!("{}", format_address(address))).expect(";-;");
             fmt::write(&mut data, format_args!("),\n")).expect(";-;");
         }
         data
@@ -243,10 +236,10 @@ pub fn generate_hs_external_globals_array(_: TokenStream) -> TokenStream {
     tag_list += &demon_list;
 
     format!("{{\
-    const CACHE_DEFINITIONS: &[ExternalGlobal] = &[{cache_list}];
-    const TAG_DEFINITIONS: &[ExternalGlobal] = &[{tag_list}];
+    const CACHE_GLOBAL_DEFINITIONS: &[ExternalGlobal] = &[{cache_list}];
+    const TAG_GLOBAL_DEFINITIONS: &[ExternalGlobal] = &[{tag_list}];
 
-    (CACHE_DEFINITIONS, TAG_DEFINITIONS)
+    (CACHE_GLOBAL_DEFINITIONS, TAG_GLOBAL_DEFINITIONS)
     }}").parse().expect("should've parsed")
 }
 
@@ -303,6 +296,160 @@ fn get_hs_global_with_borrow(token_stream: TokenStream, borrow: &str) -> TokenSt
     };
 
     format!("match crate::init::get_exe_type() {{ crate::init::ExeType::Cache => {cache}, crate::init::ExeType::Tag => {tag} }}").parse().expect(";-;")
+}
+
+#[derive(Deserialize)]
+struct HSFunctionEntry {
+    name: String,
+    r#return_type: String,
+    compile: String,
+    evaluate: String,
+    description: Option<String>,
+    usage: Option<String>,
+    arguments: Vec<String>
+}
+
+struct HSFunction {
+    name: String,
+    r#return_type: String,
+    description: Option<String>,
+    usage: Option<String>,
+    arguments: Vec<String>,
+
+    compile_evaluate_tag: Option<(String, String)>,
+    compile_evaluate_cache: Option<(String, String)>,
+    compile_evaluate_demon: Option<(String, String)>
+}
+
+fn get_all_scripting_functions() -> HashMap<String, HSFunction> {
+    let cache_json_data: Vec<HSFunctionEntry> = serde_json::from_slice(include_bytes!("../functions/cache.json")).expect("could not parse cache json scripting commands");
+    let tag_json_data: Vec<HSFunctionEntry> = serde_json::from_slice(include_bytes!("../functions/tag.json")).expect("could not parse tag json scripting commands");
+    let demon_json_data: Vec<HSFunctionEntry> = serde_json::from_slice(include_bytes!("../functions/demon.json")).expect("could not parse demon json scripting commands");
+
+    let mut all_commands: HashSet<String> = HashSet::new();
+
+    let mut group = |data: Vec<HSFunctionEntry>| {
+        let mut functions: HashMap<String, HSFunctionEntry> = HashMap::new();
+
+        for i in data {
+            all_commands.insert(i.name.clone());
+            functions.insert(i.name.clone(), i);
+        }
+
+        functions
+    };
+
+    let mut cache_functions = group(cache_json_data);
+    let mut tag_functions = group(tag_json_data);
+    let mut demon_functions = group(demon_json_data);
+
+    let mut result = HashMap::new();
+
+    for i in all_commands {
+        let first = cache_functions
+            .get(&i)
+            .or_else(|| tag_functions.get(&i))
+            .or_else(|| demon_functions.get(&i))
+            .expect("should somehow have an entry here");
+
+        result.insert(
+            i.clone(),
+            HSFunction {
+                name: first.name.clone(),
+                return_type: first.return_type.clone(),
+                usage: first.usage.clone(),
+                description: first.description.clone(),
+                arguments: first.arguments.clone(),
+
+                compile_evaluate_cache: cache_functions.remove(&i).map(|c| (c.compile, c.evaluate)),
+                compile_evaluate_tag: tag_functions.remove(&i).map(|c| (c.compile, c.evaluate)),
+                compile_evaluate_demon: demon_functions.remove(&i).map(|c| (c.compile, c.evaluate)),
+            }
+        );
+    }
+
+    result
+}
+
+#[proc_macro]
+pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
+    let all_functions = get_all_scripting_functions();
+
+    fn make_data(entries: &HashMap<String, HSFunction>, address_type: &str) -> String {
+        let mut data = String::with_capacity(4096);
+        for i in entries.values() {
+            let name = i.name.replace("\\", "\\\\");
+            let return_type = cleanup_string(&i.return_type);
+            let description = cleanup_string(i.description.as_ref().map(|c| c.as_str()).unwrap_or(""));
+            let usage = cleanup_string(i.usage.as_ref().map(|c| c.as_str()).unwrap_or(""));
+
+            let Some((compile, evaluate)) = match address_type {
+                "demon" => &i.compile_evaluate_demon,
+                "tag" => &i.compile_evaluate_tag,
+                "cache" => &i.compile_evaluate_cache,
+                _ => unreachable!()
+            }.as_ref() else {
+                continue
+            };
+
+            let mut arg_setter_code = String::new();
+            for (i, j) in i.arguments.iter().enumerate() {
+                arg_setter_code += &format!("arguments[{i}] = ScenarioScriptValueType::{j};");
+            }
+
+            fmt::write(&mut data, format_args!("HSScriptFunctionDefinition {{")).expect(";-;");
+            fmt::write(&mut data, format_args!("name: CStrPtr::from_bytes(b\"{name}\\x00\"),")).expect(";-;");
+            fmt::write(&mut data, format_args!("description: CStrPtr::from_bytes(b\"{description}\\x00\"),")).expect(";-;");
+            fmt::write(&mut data, format_args!("usage: CStrPtr::from_bytes(b\"{usage}\\x00\"),")).expect(";-;");
+            fmt::write(&mut data, format_args!("return_type: ScenarioScriptValueType::{return_type},")).expect(";-;");
+            fmt::write(&mut data, format_args!("compile: {},", format_address(compile))).expect(";-;");
+            fmt::write(&mut data, format_args!("evaluate: {},", format_address(evaluate))).expect(";-;");
+            fmt::write(&mut data, format_args!("argument_count: {},", i.arguments.len())).expect(";-;");
+            fmt::write(&mut data, format_args!("argument_types: const {{
+                let mut arguments = [ScenarioScriptValueType::Unparsed; 6];
+                {arg_setter_code}
+                arguments
+            }},")).expect(";-;");
+
+            // SAFETY: This struct is perfectly safe to be zeroed.
+            fmt::write(&mut data, format_args!("..unsafe {{ core::mem::zeroed() }}")).expect(";-;");
+
+            fmt::write(&mut data, format_args!("}},\n")).expect(";-;");
+        }
+        data
+    }
+
+    let mut cache_list = make_data(&all_functions, "cache");
+    let mut tag_list = make_data(&all_functions, "tag");
+    let demon_list = make_data(&all_functions, "demon");
+
+    cache_list += &demon_list;
+    tag_list += &demon_list;
+
+    let parsed = format!("{{\
+    const CACHE_FUNCTION_DEFINITIONS: &[HSScriptFunctionDefinition] = &[{cache_list}];
+    const TAG_FUNCTION_DEFINITIONS: &[HSScriptFunctionDefinition] = &[{tag_list}];
+
+    (CACHE_FUNCTION_DEFINITIONS, TAG_FUNCTION_DEFINITIONS)
+    }}");
+
+    parsed.parse().expect("should've parsed")
+}
+
+fn cleanup_string(string: &str) -> String {
+    string
+        .replace("\\", "\\\\")
+        .replace("\n", "\\\n")
+        .replace("\"", "\\\"")
+}
+
+fn format_address(address: &str) -> String {
+    if !address.starts_with("0x") {
+        format!("unsafe {{ core::mem::transmute(&mut {address} as *mut _) }}")
+    }
+    else {
+        format!("{address} as *mut [u8; 0]")
+    }
 }
 
 #[derive(Deserialize)]
