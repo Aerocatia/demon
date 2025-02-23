@@ -1,0 +1,7 @@
+{
+    "window_set_focus": {
+        "cache": "0x004015B9",
+        "tag": "0x0040A461",
+        "replacement": "crate::window::c::window_set_focus"
+    }
+}

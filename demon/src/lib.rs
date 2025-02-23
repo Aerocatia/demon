@@ -58,7 +58,6 @@ macro_rules! debug_log {
 #[macro_use]
 mod util;
 mod error_log;
-#[macro_use]
 mod console;
 mod input;
 
@@ -86,3 +85,4 @@ mod random;
 mod scrollback;
 mod model;
 mod collision;
+mod window;

@@ -6,5 +6,6 @@
     { "name": "demon_scoreboard_use_player_colors", "type": "Boolean", "address": "crate::rasterizer::scoreboard::USE_PLAYER_COLORS" },
     { "name": "demon_show_fps", "type": "Boolean", "address": "crate::rasterizer::hud::SHOW_FPS" },
     { "name": "demon_show_debug_messages", "type": "Boolean", "address": "crate::console::SHOW_DEBUG_MESSAGES" },
-    { "name": "demon_console_style", "type": "Short", "address": "crate::console::CONSOLE_STYLE"}
+    { "name": "demon_console_style", "type": "Short", "address": "crate::console::CONSOLE_STYLE"},
+    { "name": "demon_unfocused_gain", "type": "Real", "address": "crate::window::UNFOCUSED_GAIN"}
 ]
