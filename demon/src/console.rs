@@ -1,6 +1,7 @@
 pub mod c;
+mod tab_completion;
 
-use alloc::string::String;
+use alloc::string::{String, ToString};
 use alloc::sync::Arc;
 use alloc::vec::Vec;
 use core::fmt::Display;
@@ -115,6 +116,11 @@ impl Console {
             timer_started: false,
             ..ConsoleEntry::new()
         };
+
+        // SAFETY: Safe; StaticStringBytes is always null-terminated
+        unsafe {
+            printf(CStrPtr::from_bytes(b"[CONSOLE] %s\n\x00"), CStrPtr::from_bytes(latest_line.text.as_bytes_with_null()));
+        }
 
         if self.scrollback_offset > 0 {
             self.scrollback_offset = (self.scrollback_offset + 1).min(self.number_of_lines.saturating_sub(1));
@@ -509,7 +515,6 @@ extern "C" {
 
 #[no_mangle]
 unsafe extern "C" fn demon_terminal_put(color: Option<&ColorARGB>, text: CStrPtr) {
-    printf(CStrPtr::from_bytes(b"[CONSOLE] %s\n\x00"), text);
     CONSOLE_BUFFER
         .write()
         .put_message(color.unwrap_or(&CONSOLE_DEFAULT_TEXT_COLOR), text.display_lossy());
@@ -616,9 +621,26 @@ pub(crate) unsafe fn handle_win32_window_message(message: u32, parameter: u32) -
             },
             // return enters a command
             KeyboardAndMouse::VK_RETURN => {
-                let input_text = console.finalize_input();
-                drop(console);
-                run_console_command.get()(CStrPtr(input_text.as_ptr() as *const _));
+                let all_whitespace = !console.input_text.chars().any(|c| !c.is_whitespace());
+                if all_whitespace {
+                    console.clear_input();
+                }
+                else {
+                    let input_text = console.finalize_input();
+                    drop(console);
+
+                    if !input_text.chars().rev().next().unwrap().is_whitespace() {
+                        run_console_command.get()(CStrPtr(input_text.as_ptr() as *const _));
+                    }
+                    else {
+                        let mut input_text = input_text.to_string();
+                        while input_text.chars().rev().next().unwrap().is_whitespace() {
+                            input_text.pop();
+                        }
+                        input_text.push(0 as char);
+                        run_console_command.get()(CStrPtr(input_text.as_ptr() as *const _));
+                    }
+                }
             },
             // backspace/del remove characters
             KeyboardAndMouse::VK_BACK => {
@@ -629,7 +651,37 @@ pub(crate) unsafe fn handle_win32_window_message(message: u32, parameter: u32) -
             },
             // tab completion
             KeyboardAndMouse::VK_TAB => {
-                console.put_message(ColorARGB::from(ColorRGB::WHITE), "TODO: Tab completion!");
+                let suggestions = tab_completion::complete(&console.input_text);
+                if let Some((suggestion, suggestions)) = suggestions {
+                    let text_length = suggestion.len();
+                    console.input_text = suggestion;
+                    console.move_input_cursor(text_length);
+
+                    if suggestions.len() > 1 {
+                        console.put_message(CONSOLE_DEFAULT_TEXT_COLOR, "");
+
+                        if suggestions.len() > 8 {
+                            for i in suggestions.chunks(4) {
+                                if i.len() == 1 {
+                                    console.put_message(CONSOLE_DEFAULT_TEXT_COLOR, format_args!("{}", i[0]));
+                                }
+                                else {
+                                    let first = i.get(0).map(String::as_str).unwrap_or("");
+                                    let second = i.get(1).map(String::as_str).unwrap_or("");
+                                    let third = i.get(2).map(String::as_str).unwrap_or("");
+                                    let fourth = i.get(3).map(String::as_str).unwrap_or("");
+                                    console.put_message(CONSOLE_DEFAULT_TEXT_COLOR, format_args!("{first}\t{second}\t{third}\t{fourth}"));
+                                }
+                            }
+                        }
+                        else {
+                            for i in suggestions {
+                                console.put_message(CONSOLE_DEFAULT_TEXT_COLOR, i);
+                            }
+                        }
+                    }
+
+                }
             }
             _ => ()
         }
