@@ -10,6 +10,7 @@ pub mod motion_sensor;
 pub mod player_colors;
 pub mod font;
 pub mod hud;
+pub mod c;
 
 /// Global canvas bounds for drawing interfaces.
 ///

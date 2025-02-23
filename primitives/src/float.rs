@@ -5,6 +5,7 @@ pub trait FloatFunctions: Copy + Copy {
     fn fabs(self) -> Self;
     fn sin(self) -> Self;
     fn cos(self) -> Self;
+    fn round_to_int(self) -> i32;
 }
 
 impl FloatFunctions for f32 {
@@ -22,4 +23,7 @@ impl FloatFunctions for f32 {
     }
     fn sin(self) -> Self { libm::sinf(self) }
     fn cos(self) -> Self { libm::cosf(self) }
+    fn round_to_int(self) -> i32 {
+        (self + 0.5) as i32
+    }
 }

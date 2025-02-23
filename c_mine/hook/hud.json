@@ -55,5 +55,11 @@
     "draw_temporary_hud": {
         "cache": "0x006231D0",
         "tag": "0x00628B12"
+    },
+    "calculate_static_element_screen_position": {
+        "cache": "0x00626900",
+        "tag": "0x0062D7F0",
+        "replacement": "crate::rasterizer::hud::c::calculate_static_element_screen_position",
+        "sudo": true
     }
 }

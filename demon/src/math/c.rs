@@ -133,3 +133,8 @@ pub extern "C" fn negate_vector3d(from: &Vector3D, to: &mut Vector3D) -> *mut Ve
 pub extern "C" fn plane3d_distance_to_point(plane: &Plane3D, point: &Vector3D) -> f32 {
     plane.distance_to_point(*point)
 }
+
+#[c_mine]
+pub extern "C" fn round_to_int(what: f32) -> i32 {
+    what.round_to_int()
+}
