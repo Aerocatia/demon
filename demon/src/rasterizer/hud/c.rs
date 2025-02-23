@@ -1,6 +1,9 @@
 use c_mine::c_mine;
 use tag_structs::{BitmapData, HUDInterfaceAnchor};
-use crate::rasterizer::hud::draw_hud;
+use tag_structs::primitives::float::FloatFunctions;
+use tag_structs::primitives::vector::Vector2DInt;
+use crate::rasterizer::get_global_interface_canvas_bounds;
+use crate::rasterizer::hud::{draw_hud, HUD_LEFT_TOP_OFFSET};
 
 #[c_mine]
 pub unsafe extern "C" fn hud_draw_screen() {
@@ -93,4 +96,52 @@ pub extern "C" fn calculate_static_element_screen_position(
             ..RenderRectangle::default()
         },
     }
+}
+
+#[c_mine]
+pub extern "C" fn hud_calculate_point(
+    local_player_index: u16,
+    absolute_placement: &u16,
+    placement: &Vector2DInt,
+    _param_4: usize,
+    override_scale: u8,
+    scale: f32,
+    output: &mut Vector2DInt
+) {
+    if _param_4 != 0 {
+        panic!("param_4 was nonzero! (0x{_param_4:08X}); report this and how this happened and what map please!");
+    }
+
+    // is this used for split screen?
+    let scale = if override_scale == 0 || scale == 0.0 || scale.is_nan() { 1.0 } else { scale };
+
+    let anchor = HUDInterfaceAnchor::try_from(*absolute_placement).expect("hud_calculate_point: invalid anchor given");
+    let global_bounds = get_global_interface_canvas_bounds();
+
+    let x = match anchor {
+        HUDInterfaceAnchor::Center | HUDInterfaceAnchor::BottomCenter | HUDInterfaceAnchor::TopCenter => {
+            ((global_bounds.left + global_bounds.right) as f32 * 0.5) + (placement.x as f32) * scale
+        },
+        HUDInterfaceAnchor::TopLeft | HUDInterfaceAnchor::LeftCenter | HUDInterfaceAnchor::BottomLeft => {
+            (global_bounds.left as f32) + (placement.x as f32) * scale + HUD_LEFT_TOP_OFFSET
+        },
+        HUDInterfaceAnchor::TopRight | HUDInterfaceAnchor::RightCenter | HUDInterfaceAnchor::BottomRight => {
+            (global_bounds.right as f32) - (placement.x as f32) * scale
+        },
+    };
+
+    let y = match anchor {
+        HUDInterfaceAnchor::Center | HUDInterfaceAnchor::LeftCenter | HUDInterfaceAnchor::RightCenter => {
+            ((global_bounds.bottom + global_bounds.top) as f32 * 0.5) + (placement.y as f32) * scale
+        },
+        HUDInterfaceAnchor::TopLeft | HUDInterfaceAnchor::TopCenter | HUDInterfaceAnchor::TopRight => {
+            (global_bounds.top as f32) + (placement.y as f32) * scale + HUD_LEFT_TOP_OFFSET
+        },
+        HUDInterfaceAnchor::BottomLeft | HUDInterfaceAnchor::BottomCenter | HUDInterfaceAnchor::BottomRight => {
+            (global_bounds.bottom as f32) - (placement.y as f32) * scale
+        },
+    };
+
+    output.x = x.round_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
+    output.y = y.round_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
 }

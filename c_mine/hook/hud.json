@@ -61,5 +61,10 @@
         "tag": "0x0062D7F0",
         "replacement": "crate::rasterizer::hud::c::calculate_static_element_screen_position",
         "sudo": true
+    },
+    "hud_calculate_point": {
+        "cache": "0x00407B5D",
+        "tag": "0x00406CE9",
+        "replacement": "crate::rasterizer::hud::c::hud_calculate_point"
     }
 }
