@@ -620,6 +620,14 @@ pub(crate) unsafe fn handle_win32_window_message(message: u32, parameter: u32) -
             KeyboardAndMouse::VK_NEXT => {
                 console.scrollback_queue = console.scrollback_queue.saturating_sub(1);
             },
+            // home/end goes to beginning and end of input
+            KeyboardAndMouse::VK_HOME => {
+                console.move_input_cursor(0);
+            }
+            KeyboardAndMouse::VK_END => {
+                let end = console.input_text.len();
+                console.move_input_cursor(end);
+            }
             // return enters a command
             KeyboardAndMouse::VK_RETURN => {
                 let all_whitespace = !console.input_text.chars().any(|c| !c.is_whitespace());
