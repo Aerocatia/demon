@@ -3,7 +3,7 @@ use tag_structs::{BitmapData, HUDInterfaceAnchor};
 use tag_structs::primitives::float::FloatFunctions;
 use tag_structs::primitives::vector::Vector2DInt;
 use crate::rasterizer::get_global_interface_canvas_bounds;
-use crate::rasterizer::hud::{draw_hud, HUD_LEFT_TOP_OFFSET};
+use crate::rasterizer::hud::{draw_hud, HUD_SAFE_ZONE_BOTTOM, HUD_SAFE_ZONE_LEFT, HUD_SAFE_ZONE_RIGHT, HUD_SAFE_ZONE_TOP};
 
 #[c_mine]
 pub unsafe extern "C" fn hud_draw_screen() {
@@ -99,7 +99,7 @@ pub extern "C" fn calculate_static_element_screen_position(
 }
 
 #[c_mine]
-pub extern "C" fn hud_calculate_point(
+pub unsafe extern "C" fn hud_calculate_point(
     local_player_index: u16,
     absolute_placement: &u16,
     placement: &Vector2DInt,
@@ -123,10 +123,10 @@ pub extern "C" fn hud_calculate_point(
             ((global_bounds.left + global_bounds.right) as f32 * 0.5) + (placement.x as f32) * scale
         },
         HUDInterfaceAnchor::TopLeft | HUDInterfaceAnchor::LeftCenter | HUDInterfaceAnchor::BottomLeft => {
-            (global_bounds.left as f32) + (placement.x as f32) * scale + HUD_LEFT_TOP_OFFSET
+            (global_bounds.left as f32) + (placement.x as f32) * scale + HUD_SAFE_ZONE_LEFT
         },
         HUDInterfaceAnchor::TopRight | HUDInterfaceAnchor::RightCenter | HUDInterfaceAnchor::BottomRight => {
-            (global_bounds.right as f32) - (placement.x as f32) * scale
+            (global_bounds.right as f32) - (placement.x as f32) * scale - HUD_SAFE_ZONE_RIGHT
         },
     };
 
@@ -135,13 +135,13 @@ pub extern "C" fn hud_calculate_point(
             ((global_bounds.bottom + global_bounds.top) as f32 * 0.5) + (placement.y as f32) * scale
         },
         HUDInterfaceAnchor::TopLeft | HUDInterfaceAnchor::TopCenter | HUDInterfaceAnchor::TopRight => {
-            (global_bounds.top as f32) + (placement.y as f32) * scale + HUD_LEFT_TOP_OFFSET
+            (global_bounds.top as f32) + (placement.y as f32) * scale + HUD_SAFE_ZONE_TOP
         },
         HUDInterfaceAnchor::BottomLeft | HUDInterfaceAnchor::BottomCenter | HUDInterfaceAnchor::BottomRight => {
-            (global_bounds.bottom as f32) - (placement.y as f32) * scale
+            (global_bounds.bottom as f32) - (placement.y as f32) * scale - HUD_SAFE_ZONE_BOTTOM
         },
     };
 
-    output.x = x.round_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
-    output.y = y.round_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
+    output.x = x.floor_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
+    output.y = y.floor_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
 }

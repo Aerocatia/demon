@@ -135,6 +135,6 @@ pub extern "C" fn plane3d_distance_to_point(plane: &Plane3D, point: &Vector3D) -
 }
 
 #[c_mine]
-pub extern "C" fn round_to_int(what: f32) -> i32 {
-    what.round_to_int()
+pub extern "C" fn floor_to_int(what: f32) -> i32 {
+    what.floor_to_int()
 }

@@ -14,7 +14,12 @@ pub mod c;
 
 pub static mut SHOW_FPS: bool = false;
 
-const HUD_LEFT_TOP_OFFSET: f32 = 8.0;
+pub static mut HUD_SAFE_ZONE_TOP: f32 = 8.0;
+pub static mut HUD_SAFE_ZONE_LEFT: f32 = 8.0;
+pub static mut HUD_SAFE_ZONE_BOTTOM: f32 = 8.0;
+pub static mut HUD_SAFE_ZONE_RIGHT: f32 = 8.0;
+
+
 
 const RASTERIZER_HUD_BEGIN: PointerProvider<extern "C" fn()> = pointer_from_hook!("rasterizer_hud_begin");
 const RASTERIZER_HUD_END: PointerProvider<extern "C" fn()> = pointer_from_hook!("rasterizer_hud_end");

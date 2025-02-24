@@ -6,6 +6,7 @@ pub trait FloatFunctions: Copy + Copy {
     fn sin(self) -> Self;
     fn cos(self) -> Self;
     fn round_to_int(self) -> i32;
+    fn floor_to_int(self) -> i32;
 }
 
 impl FloatFunctions for f32 {
@@ -25,5 +26,13 @@ impl FloatFunctions for f32 {
     fn cos(self) -> Self { libm::cosf(self) }
     fn round_to_int(self) -> i32 {
         (self + 0.5) as i32
+    }
+    fn floor_to_int(self) -> i32 {
+        if !self.is_finite() {
+            return 0
+        }
+        unsafe {
+            self.clamp(i32::MIN as f32, i32::MAX as f32).to_int_unchecked()
+        }
     }
 }
