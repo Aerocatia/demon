@@ -6,7 +6,6 @@ use alloc::string::{String, ToString};
 use alloc::sync::Arc;
 use alloc::vec::Vec;
 use core::fmt::Display;
-use num_enum::FromPrimitive;
 use spin::RwLock;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetKeyState, VIRTUAL_KEY};
@@ -55,14 +54,7 @@ static CONSOLE_COLOR: RwLock<ColorARGB> = RwLock::new(ColorARGB {
     }
 });
 
-#[derive(Copy, Clone, PartialEq, FromPrimitive)]
-#[repr(u16)]
-enum ConsoleStyle {
-    #[num_enum(default)]
-    Default,
-    HighContrast
-}
-pub static mut CONSOLE_STYLE: u16 = ConsoleStyle::Default as u16;
+pub static mut HIGH_CONTRAST: u8 = 0;
 
 pub static CONSOLE_BUFFER: RwLock<Console> = RwLock::new(Console::new());
 
@@ -102,13 +94,19 @@ impl Console {
             new_messages_while_scrolling_back: 0
         }
     }
-    pub fn put_message(&mut self, color: impl AsRef<ColorARGB>, what: impl Display) {
+
+    fn put_message(&mut self, color: impl AsRef<ColorARGB>, what: impl Display) {
         let color = color.as_ref();
         assert!(color.is_valid(), "Console::put with invalid color!");
 
         let latest = self.next;
         self.next = (latest + 1) % CONSOLE_MAX_SCROLLBACK;
         self.number_of_lines = (latest + 1).max(self.number_of_lines);
+
+        if self.scrollback_offset > 0 {
+            self.scrollback_offset = (self.scrollback_offset + 1).min(self.number_of_lines.saturating_sub(1));
+            self.new_messages_while_scrolling_back += 1;
+        }
 
         let latest_line = &mut self.lines[latest];
         *latest_line = ConsoleEntry {
@@ -122,12 +120,8 @@ impl Console {
         unsafe {
             printf(CStrPtr::from_bytes(b"[CONSOLE] %s\n\x00"), CStrPtr::from_bytes(latest_line.text.as_bytes_with_null()));
         }
-
-        if self.scrollback_offset > 0 {
-            self.scrollback_offset = (self.scrollback_offset + 1).min(self.number_of_lines.saturating_sub(1));
-            self.new_messages_while_scrolling_back += 1;
-        }
     }
+
     fn insert_input_char(&mut self, character: char) {
         let mut bytes = [0u8; 4];
         let string = character.encode_utf8(&mut bytes);
@@ -348,7 +342,7 @@ unsafe fn render_console() {
         // line height is bullshit; no console
         return
     }
-    let console_type: ConsoleStyle = CONSOLE_STYLE.into();
+    let use_high_contrast_console = HIGH_CONTRAST != 0;
 
     let console_color = CONSOLE_COLOR.read();
     let mut writer = DrawStringWriter::new_simple(
@@ -376,7 +370,7 @@ unsafe fn render_console() {
             ..bounds
         };
 
-        if console_type == ConsoleStyle::HighContrast {
+        if use_high_contrast_console {
             draw_box(ColorARGB { a: CONSOLE_BACKGROUND_OPACITY, color: ColorRGB::BLACK }, interface_bounds);
         }
 
@@ -458,49 +452,58 @@ unsafe fn render_console() {
         true
     };
 
+    let hide_messages = unsafe { PRINT_WHEN_CLOSED == 0 };
+
+    // Handle timers
+    for entry in console_buffer.iterate_messages_mut() {
+        if console_active {
+            if !use_high_contrast_console {
+                // Text fades out on close
+                entry.last_read_timer_value = CONSOLE_FADE_START;
+                entry.timer_offset = CONSOLE_FADE_START;
+            }
+            else {
+                // Text instantly goes away on close
+                entry.timer_offset = CONSOLE_MAX_TIME_VISIBLE;
+                entry.last_read_timer_value = CONSOLE_MAX_TIME_VISIBLE;
+            }
+            entry.life_timer.start();
+            entry.timer_started = true;
+        }
+        else {
+            // Start the timer on the first frame the text is shown so that the player doesn't miss
+            // it (if there's no spew of text following this)
+            if !entry.timer_started {
+                entry.life_timer.start();
+                entry.timer_started = true;
+
+                // ...unless the player DOES want to miss these
+                if hide_messages {
+                    entry.timer_offset = CONSOLE_MAX_TIME_VISIBLE;
+                    entry.last_read_timer_value = CONSOLE_MAX_TIME_VISIBLE;
+                }
+            }
+        }
+    }
+
+    // Render
     for (index, entry) in console_buffer
         .iterate_messages_mut()
         .enumerate()
         .skip(scrollback_offset) {
         let mut color = entry.default_color;
 
-        if console_active {
-            match console_type {
-                ConsoleStyle::Default => {
-                    // Text fades out on close
-                    entry.last_read_timer_value = entry.last_read_timer_value.min(CONSOLE_FADE_START);
-                    entry.timer_offset = entry.last_read_timer_value;
-                    entry.life_timer.start();
-                }
-                ConsoleStyle::HighContrast => {
-                    // Text instantly goes away on close
-                    entry.timer_offset = CONSOLE_MAX_TIME_VISIBLE;
-                    entry.last_read_timer_value = CONSOLE_MAX_TIME_VISIBLE;
-                }
-            }
-        }
-
         if !console_active {
-            if entry.last_read_timer_value >= CONSOLE_MAX_TIME_VISIBLE {
-                break;
-            }
-
-            // Start the timer on the first frame the text is shown so that the player doesn't miss
-            // it (if there's no spew of text following this)
-            if !entry.timer_started {
-                entry.life_timer.start();
-                entry.timer_started = true;
-            }
-
-            if !console_active {
-                let time = entry.life_timer.seconds() + entry.timer_offset;
-                entry.last_read_timer_value = time;
-            }
-
-            // Apply fade to the alpha.
+            let time = entry.life_timer.seconds() + entry.timer_offset;
+            entry.last_read_timer_value = time;
             let console_fade_offset = entry.last_read_timer_value - CONSOLE_FADE_START;
             if console_fade_offset > 0.0 {
-                color.a = color.a * (1.0 - console_fade_offset / CONSOLE_FADE_TIME).clamp(0.0, 1.0) as f32;
+                let opacity = (1.0 - console_fade_offset / CONSOLE_FADE_TIME).clamp(0.0, 1.0) as f32;
+                color.a = color.a * opacity;
+
+                if opacity == 0.0 {
+                    break
+                }
             }
         }
 
@@ -516,22 +519,10 @@ extern "C" {
 
 #[no_mangle]
 unsafe extern "C" fn demon_terminal_put(color: Option<&ColorARGB>, text: CStrPtr) {
-    CONSOLE_BUFFER
-        .write()
-        .put_message(color.unwrap_or(&CONSOLE_DEFAULT_TEXT_COLOR), text.display_lossy());
+    console_put_args(color, format_args!("{}", text.display_lossy()));
 }
 
-
-pub static mut SHOW_DEBUG_MESSAGES: u8 = 1;
-
-pub fn show_debug_messages() -> bool {
-    // SAFETY: This is probably going to cause UB on systems that aren't x86 Windows, and thus it
-    //         should be changed to an atomic when globals are reworked to use atomics.
-    //
-    //         In this case, the risk is acceptable in the interim.
-    //
-    unsafe { SHOW_DEBUG_MESSAGES != 0 }
-}
+pub static mut PRINT_WHEN_CLOSED: u8 = 0;
 
 pub fn console_put_args(color: Option<&ColorARGB>, fmt: core::fmt::Arguments) {
     CONSOLE_BUFFER.write().put_message(color.unwrap_or(&CONSOLE_DEFAULT_TEXT_COLOR), fmt);
