@@ -1,5 +1,6 @@
 pub mod c;
 mod tab_completion;
+pub mod hsc;
 
 use alloc::string::{String, ToString};
 use alloc::sync::Arc;
@@ -690,6 +691,6 @@ pub(crate) unsafe fn handle_win32_window_message(message: u32, parameter: u32) -
     true
 }
 
-fn set_console_color(color: ColorRGB) {
+pub fn set_console_color(color: ColorRGB) {
     *CONSOLE_COLOR.write() = color.into()
 }
