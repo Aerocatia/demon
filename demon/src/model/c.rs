@@ -23,7 +23,7 @@ pub unsafe extern "C" fn model_get_marker_by_name(
     assert!(!object_nodes.is_null(), "model_get_marker_by_name with null object nodes");
     assert!(!object_markers.is_null(), "model_get_marker_by_name with null markers");
 
-    let Ok(model) = get_model_tag_data(model_tag) else {
+    let Ok((_, model)) = get_model_tag_data(model_tag) else {
         return 0
     };
 

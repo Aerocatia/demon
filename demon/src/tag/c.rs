@@ -4,13 +4,15 @@ use tag_structs::primitives::data::{Data, Index, Reflexive};
 use tag_structs::{Biped, BipedFlagsFields, ModelAnimations, ModelAnimationsAnimationGraphNodeFlagsFields, Scenario};
 use tag_structs::primitives::float::FloatFunctions;
 use crate::model::get_model_tag_data;
-use crate::tag::{get_tag_data, get_tag_data_checking_tag_group, get_tag_info, lookup_tag, ReflexiveImpl, TagData, TagGroupUnsafe, TagID, UnknownType, GLOBAL_SCENARIO};
+use crate::tag::{get_tag_info, get_tag_info_typed, lookup_tag, ReflexiveImpl, TagData, TagGroupUnsafe, TagID, UnknownType, GLOBAL_SCENARIO};
 use crate::timing::TICK_RATE;
 use crate::util::CStrPtr;
 
 #[c_mine]
 pub unsafe extern "C" fn tag_get(group: TagGroupUnsafe, id: TagID) -> *mut [u8; 0] {
-    get_tag_data_checking_tag_group(id, group).expect("tag_get failed!")
+    let data = get_tag_info(id).expect("tag_get with invalid tag id");
+    data.verify_tag_group(group).expect("tag_get with valid tag id but incorrect group");
+    data.get_tag_data_address()
 }
 
 #[c_mine]
@@ -83,7 +85,7 @@ pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
     let unknown = unknown != 0;
     let mut success = false;
 
-    let biped = get_tag_data::<Biped>(tag_id).expect("can't find the biped we just passed in?");
+    let (biped_info, biped) = get_tag_info_typed::<Biped>(tag_id).expect("failed to get biped");
 
     let crouch_camera_ticks = biped.crouch_transition_time * TICK_RATE;
     biped.crouch_camera_velocity = if crouch_camera_ticks > 0.0 { 1.0 / crouch_camera_ticks } else { 1.0 };
@@ -94,12 +96,12 @@ pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
     biped.sine_uphill_falloff_angle = biped.uphill_falloff_angle.0.sin();
     biped.sine_uphill_cutoff_angle = biped.uphill_cutoff_angle.0.sin();
 
-    let Ok(model) = get_model_tag_data(biped.unit.object.model.tag_id.into()) else {
-        panic!("Biped {} does not have a model reference.", get_tag_info(tag_id).unwrap().get_tag_path());
+    let Ok((model_info, model)) = get_model_tag_data(biped.unit.object.model.tag_id.into()) else {
+        panic!("Biped {} does not have a model reference.", biped_info.get_tag_path());
     };
 
-    let Ok(animation) = get_tag_data::<ModelAnimations>(biped.unit.object.animation_graph.tag_id.into()) else {
-        panic!("Biped {} does not have an animation tag reference.", get_tag_info(tag_id).unwrap().get_tag_path());
+    let Ok((animation_info, animation)) = get_tag_info_typed::<ModelAnimations>(biped.unit.object.animation_graph.tag_id.into()) else {
+        panic!("Biped {} does not have an animation tag reference.", biped_info.get_tag_path());
     };
 
     let find_node = |node: &str| -> Index {
@@ -112,11 +114,11 @@ pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
     biped.head_model_node_index = find_node("bip01 head");
 
     if model.get_marker("body").is_none() {
-        panic!("Biped {} does not have a \"body\" marker.", get_tag_info(tag_id).unwrap().get_tag_path());
+        panic!("Biped {} model {} does not have a \"body\" marker.", biped_info.get_tag_path(), model_info.get_tag_path());
     }
 
     if model.get_marker("head").is_none() {
-        panic!("Biped {} does not have a \"head\" marker.", get_tag_info(tag_id).unwrap().get_tag_path());
+        panic!("Biped {} model {} does not have a \"head\" marker.", biped_info.get_tag_path(), model_info.get_tag_path());
     }
 
     let mut flags = biped.flags;
@@ -127,7 +129,7 @@ pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
             let difference = (node.node_distance_from_parent - magnitude).fabs();
             if difference >= 0.0001 {
                 flags.unset(BipedFlagsFields::UsesLimpBodyPhysics);
-                error!("Biped {}'s model nodes cannot use limp body physics. Limp body physics have been disabled.", get_tag_info(tag_id).unwrap().get_tag_path());
+                error!("Biped {} model {}'s nodes cannot use limp body physics. Limp body physics have been disabled.", biped_info.get_tag_path(), model_info.get_tag_path());
                 break;
             }
         }
@@ -138,7 +140,7 @@ pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
             let magnitude = node.base_vector.magnitude();
             if magnitude.fabs() < 0.0001 {
                 flags.unset(BipedFlagsFields::UsesLimpBodyPhysics);
-                error!("Biped {}'s animation nodes cannot use limp body physics. Limp body physics have been disabled.", get_tag_info(tag_id).unwrap().get_tag_path());
+                error!("Biped {} animation {}'s nodes cannot use limp body physics. Limp body physics have been disabled.", biped_info.get_tag_path(), animation_info.get_tag_path());
                 break;
             }
         }

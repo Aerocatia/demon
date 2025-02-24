@@ -1,6 +1,6 @@
 use tag_structs::{GBXModel, Model, ModelMarker, ModelNode};
 use tag_structs::primitives::tag_group::TagGroup;
-use crate::tag::{get_tag_info, GetTagDataError, ReflexiveImpl, TagID};
+use crate::tag::{get_tag_info, GetTagDataError, ReflexiveImpl, TagID, TagIndex};
 use crate::util::compare_ascii_case_insensitive;
 
 pub mod c;
@@ -41,17 +41,17 @@ pub unsafe trait ModelFunctions {
     }
 }
 
-pub unsafe fn get_model_tag_data(model_tag: TagID) -> Result<&'static dyn ModelFunctions, GetTagDataError> {
+pub unsafe fn get_model_tag_data(model_tag: TagID) -> Result<(&'static dyn TagIndex, &'static dyn ModelFunctions), GetTagDataError> {
     let tag = get_tag_info(model_tag).ok_or(GetTagDataError::NoMatch { id: model_tag })?;
 
     if tag.verify_tag_group(TagGroup::Model.into()).is_ok() {
-        let data = &*(tag.get_tag_data() as *mut Model);
-        return Ok(data);
+        let data = &*(tag.get_tag_data_address() as *mut Model);
+        return Ok((tag, data));
     }
 
     if tag.verify_tag_group(TagGroup::GBXModel.into()).is_ok() {
-        let data = &*(tag.get_tag_data() as *mut GBXModel);
-        return Ok(data);
+        let data = &*(tag.get_tag_data_address() as *mut GBXModel);
+        return Ok((tag, data));
     }
 
     Err(GetTagDataError::BadTagGroup {

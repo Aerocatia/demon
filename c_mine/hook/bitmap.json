@@ -1,0 +1,18 @@
+{
+    "bitmap_group_get_bitmap_index_from_sequence": {
+        "cache": "0x00407ABD",
+        "tag": "0x00406C26",
+        "replacement": "forbid"
+    },
+    "bitmap_group_get_bitmap_from_sequence": {
+        "cache": "0x0040767B",
+        "tag": "0x0040679E",
+        "replacement": "crate::bitmap::c::bitmap_group_get_bitmap_from_sequence"
+    },
+    "bitmap_group_get_bitmap_from_sequence_unused": {
+        "cache": "0x004DB500",
+        "tag": "0x004E7D30",
+        "replacement": "forbid",
+        "sudo": true
+    }
+}

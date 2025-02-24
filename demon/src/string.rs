@@ -1,4 +1,4 @@
-use crate::tag::{get_tag_data, get_tag_info, ReflexiveImpl, TagData, TagID};
+use crate::tag::{get_tag_info_typed, ReflexiveImpl, TagData, TagID};
 use c_mine::c_mine;
 use tag_structs::UnicodeStringList;
 use utf16_lit::utf16_null;
@@ -6,21 +6,19 @@ use utf16_lit::utf16_null;
 pub unsafe fn get_unicode_string_list_string(tag_id: TagID, index: u16) -> Option<&'static [u16]> {
     let index = index as usize;
 
-    let tag_data = get_tag_data::<UnicodeStringList>(tag_id)
+    let (unicode_string_list_info, unicode_string_list) = get_tag_info_typed::<UnicodeStringList>(tag_id)
         .expect("unicode_string_list_get_string failed to get a tag");
-    let string = tag_data.strings.get(index)?;
+    let string = unicode_string_list.strings.get(index)?;
     let string_data = string.string;
     let data = string_data.as_slice();
     let len = data.len();
     if len % size_of::<u16>() != 0 {
-        let tag = get_tag_info(tag_id).expect("we got the tag earlier");
-        panic!("unicode_string_list_get_string tried to get a string that doesn't divide into u16s (tag={}, index={index})", tag.get_tag_path())
+        panic!("unicode_string_list_get_string tried to get a string that doesn't divide into u16s (tag={}, index={index})", unicode_string_list_info.get_tag_path())
     }
 
     let u16 = core::slice::from_raw_parts(data.as_ptr() as *const u16, len / size_of::<u16>());
     if u16.last() != Some(&0x00u16) {
-        let tag = get_tag_info(tag_id).expect("we got the tag earlier");
-        panic!("unicode_string_list_get_string tried to get a non-null terminated string (tag={}, index={index})", tag.get_tag_path())
+        panic!("unicode_string_list_get_string tried to get a non-null terminated string (tag={}, index={index})", unicode_string_list_info.get_tag_path())
     }
 
     Some(u16)

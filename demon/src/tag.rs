@@ -206,7 +206,7 @@ pub trait TagIndex {
     ///
     /// This is unsafe because tag_path is not verified to be accurate or even pointing to anything.
     unsafe fn get_tag_path(&self) -> &str;
-    fn get_tag_data(&self) -> *mut [u8; 0];
+    fn get_tag_data_address(&self) -> *mut [u8; 0];
 }
 
 /// Used only in cache builds.
@@ -234,16 +234,16 @@ impl TagIndex for CacheTagInstance {
         self.tertiary_tag_group
     }
 
+    fn get_tag_id(&self) -> TagID {
+        self.tag_id
+    }
+
     unsafe fn get_tag_path(&self) -> &str {
         self.tag_path.expect_str()
     }
 
-    fn get_tag_data(&self) -> *mut [u8; 0] {
+    fn get_tag_data_address(&self) -> *mut [u8; 0] {
         self.tag_data
-    }
-
-    fn get_tag_id(&self) -> TagID {
-        self.tag_id
     }
 }
 
@@ -285,7 +285,7 @@ impl TagIndex for TagTagInstance {
             .expect("Tag path is not UTF-8!")
     }
 
-    fn get_tag_data(&self) -> *mut [u8; 0] {
+    fn get_tag_data_address(&self) -> *mut [u8; 0] {
         self.tag_data
     }
 
@@ -365,17 +365,15 @@ pub unsafe fn get_tag_info(id: TagID) -> Option<&'static dyn TagIndex> {
             Some(tag.get())
         }
     }
-
 }
 
-/// Gets the tag data.
-unsafe fn get_tag_data_checking_tag_group(id: TagID, group: TagGroupUnsafe) -> Result<*mut [u8; 0], GetTagDataError> {
-    get_tag_info(id)
-        .ok_or(GetTagDataError::NoMatch { id })
-        .and_then(|tag| tag.verify_tag_group(group).map(|_| tag.get_tag_data()))
+/// Gets the tag info as well as the data (typed).
+pub unsafe fn get_tag_info_typed<T: TagGroupStruct>(id: TagID) -> Result<(&'static dyn TagIndex, &'static mut T), GetTagDataError> {
+    let info = get_tag_info(id).ok_or(GetTagDataError::NoMatch { id })?;
+    Ok((info, get_tag_data_from_info(info)?))
 }
 
-/// Gets the tag data for the group.
-pub unsafe fn get_tag_data<T: TagGroupStruct>(id: TagID) -> Result<&'static mut T, GetTagDataError> {
-    get_tag_data_checking_tag_group(id, T::get_tag_group().into()).map(|t| &mut *(t as *mut T))
+pub unsafe fn get_tag_data_from_info<T: TagGroupStruct>(info: &dyn TagIndex) -> Result<&'static mut T, GetTagDataError> {
+    info.verify_tag_group(T::get_tag_group().into())?;
+    Ok(&mut *(info.get_tag_data_address() as *mut T))
 }

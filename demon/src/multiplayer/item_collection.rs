@@ -1,9 +1,9 @@
 use tag_structs::{ItemCollection, ItemCollectionPermutation};
 use crate::random::lcg::LCGRandomRange;
-use crate::tag::{get_tag_data, get_tag_info, ReflexiveImpl, TagID};
+use crate::tag::{get_tag_info_typed, ReflexiveImpl, TagID};
 
 pub unsafe fn choose_item_collection_item(item_collection_tag_id: TagID) -> TagID {
-    let item_collection = get_tag_data::<ItemCollection>(item_collection_tag_id)
+    let (item_collection_info, item_collection) = get_tag_info_typed::<ItemCollection>(item_collection_tag_id)
         .expect("choose_item_collection_item failed to get the item collection tag");
 
     let permutations = item_collection.permutations.as_slice();
@@ -12,13 +12,11 @@ pub unsafe fn choose_item_collection_item(item_collection_tag_id: TagID) -> TagI
     for (index, permutation) in permutations.iter().enumerate() {
         let weight = permutation.weight;
         if weight < 1.0 || !weight.is_finite() || weight > 65535.0 {
-            let name = get_tag_info(item_collection_tag_id).expect("*screams*").get_tag_path();
-            panic!("Item #{index} of item_collection tag {name} has an invalid weight {weight}");
+            panic!("Item #{index} of item_collection tag {name} has an invalid weight {weight}", name = item_collection_info.get_tag_path());
         }
         let weight_integer = weight.to_int_unchecked::<u16>();
         if weight_integer as f32 != weight {
-            let name = get_tag_info(item_collection_tag_id).expect("*screams*").get_tag_path();
-            panic!("Item #{index} of item_collection tag {name} has a non-integer weight {weight}");
+            panic!("Item #{index} of item_collection tag {name} has a non-integer weight {weight}", name = item_collection_info.get_tag_path());
         }
     }
 
@@ -41,8 +39,7 @@ pub unsafe fn choose_item_collection_item(item_collection_tag_id: TagID) -> TagI
     };
 
     let Some(total_weight) = total_weight else {
-        let name = get_tag_info(item_collection_tag_id).expect("*screams*").get_tag_path();
-        panic!("item_collection tag {name} has above 65535 weight");
+        panic!("item_collection tag {name} has above 65535 weight", name = item_collection_info.get_tag_path());
     };
 
     let random_weight = u16::lcg_global_random_range(0, total_weight);
@@ -54,6 +51,5 @@ pub unsafe fn choose_item_collection_item(item_collection_tag_id: TagID) -> TagI
         }
     }
 
-    let name = get_tag_info(item_collection_tag_id).expect("*screams*").get_tag_path();
-    unreachable!("item_collection tag {name} somehow could not calculate a random item; this is a bug!");
+    unreachable!("item_collection tag {name} somehow could not calculate a random item; this is a bug!", name = item_collection_info.get_tag_path());
 }

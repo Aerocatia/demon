@@ -87,3 +87,4 @@ mod model;
 mod collision;
 mod window;
 mod map;
+mod bitmap;
