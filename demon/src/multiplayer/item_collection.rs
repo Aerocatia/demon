@@ -12,11 +12,11 @@ pub unsafe fn choose_item_collection_item(item_collection_tag_id: TagID) -> TagI
     for (index, permutation) in permutations.iter().enumerate() {
         let weight = permutation.weight;
         if weight < 1.0 || !weight.is_finite() || weight > 65535.0 {
-            panic!("Item #{index} of item_collection tag {name} has an invalid weight {weight}", name = item_collection_info.get_tag_path());
+            panic!("Item #{index} of item_collection tag {item_collection_info} has an invalid weight {weight}");
         }
         let weight_integer = weight.to_int_unchecked::<u16>();
         if weight_integer as f32 != weight {
-            panic!("Item #{index} of item_collection tag {name} has a non-integer weight {weight}", name = item_collection_info.get_tag_path());
+            panic!("Item #{index} of item_collection tag {item_collection_info} has a non-integer weight {weight}");
         }
     }
 
@@ -39,7 +39,7 @@ pub unsafe fn choose_item_collection_item(item_collection_tag_id: TagID) -> TagI
     };
 
     let Some(total_weight) = total_weight else {
-        panic!("item_collection tag {name} has above 65535 weight", name = item_collection_info.get_tag_path());
+        panic!("item_collection tag {item_collection_info} has above 65535 weight");
     };
 
     let random_weight = u16::lcg_global_random_range(0, total_weight);
@@ -51,5 +51,5 @@ pub unsafe fn choose_item_collection_item(item_collection_tag_id: TagID) -> TagI
         }
     }
 
-    unreachable!("item_collection tag {name} somehow could not calculate a random item; this is a bug!", name = item_collection_info.get_tag_path());
+    unreachable!("item_collection tag {item_collection_info} somehow could not calculate a random item; this is a bug!");
 }

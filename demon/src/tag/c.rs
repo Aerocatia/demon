@@ -97,11 +97,11 @@ pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
     biped.sine_uphill_cutoff_angle = biped.uphill_cutoff_angle.0.sin();
 
     let Ok((model_info, model)) = get_model_tag_data(biped.unit.object.model.tag_id.into()) else {
-        panic!("Biped {} does not have a model reference.", biped_info.get_tag_path());
+        panic!("Biped {biped_info} does not have a model reference.");
     };
 
     let Ok((animation_info, animation)) = get_tag_info_typed::<ModelAnimations>(biped.unit.object.animation_graph.tag_id.into()) else {
-        panic!("Biped {} does not have an animation tag reference.", biped_info.get_tag_path());
+        panic!("Biped {biped_info} does not have an animation tag reference.");
     };
 
     let find_node = |node: &str| -> Index {
@@ -114,11 +114,11 @@ pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
     biped.head_model_node_index = find_node("bip01 head");
 
     if model.get_marker("body").is_none() {
-        panic!("Biped {} model {} does not have a \"body\" marker.", biped_info.get_tag_path(), model_info.get_tag_path());
+        panic!("Biped {biped_info} model {model_info} does not have a \"body\" marker.");
     }
 
     if model.get_marker("head").is_none() {
-        panic!("Biped {} model {} does not have a \"head\" marker.", biped_info.get_tag_path(), model_info.get_tag_path());
+        panic!("Biped {biped_info} model {model_info} does not have a \"head\" marker.");
     }
 
     let mut flags = biped.flags;
@@ -129,7 +129,7 @@ pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
             let difference = (node.node_distance_from_parent - magnitude).fabs();
             if difference >= 0.0001 {
                 flags.unset(BipedFlagsFields::UsesLimpBodyPhysics);
-                error!("Biped {} model {}'s nodes cannot use limp body physics. Limp body physics have been disabled.", biped_info.get_tag_path(), model_info.get_tag_path());
+                error!("Biped {biped_info} model {model_info}'s nodes cannot use limp body physics. Limp body physics have been disabled.");
                 break;
             }
         }
@@ -140,7 +140,7 @@ pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
             let magnitude = node.base_vector.magnitude();
             if magnitude.fabs() < 0.0001 {
                 flags.unset(BipedFlagsFields::UsesLimpBodyPhysics);
-                error!("Biped {} animation {}'s nodes cannot use limp body physics. Limp body physics have been disabled.", biped_info.get_tag_path(), animation_info.get_tag_path());
+                error!("Biped {biped_info} animation {animation_info}'s nodes cannot use limp body physics. Limp body physics have been disabled.");
                 break;
             }
         }

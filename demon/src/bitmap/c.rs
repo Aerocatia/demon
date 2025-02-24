@@ -17,8 +17,7 @@ pub unsafe extern "C" fn bitmap_group_get_bitmap_from_sequence(tag: TagID, seque
     let sequences = bitmap.bitmap_group_sequence.as_slice();
     let Some(sequence) = sequences.get(sequence_index) else {
         panic!(
-            "bitmap_group_get_bitmap_from_sequence with bad sequence index {sequence_index} (bitmap {} only has {} sequence(s))",
-            bitmap_info.get_tag_path(),
+            "bitmap_group_get_bitmap_from_sequence with bad sequence index {sequence_index} (bitmap {bitmap_info} only has {} sequence(s))",
             sequences.len()
         );
     };
@@ -36,8 +35,7 @@ pub unsafe extern "C" fn bitmap_group_get_bitmap_from_sequence(tag: TagID, seque
         let Some(index) = sequence.bitmap_index.get() else {
             // TODO: Check this on load!
             panic!(
-                "bitmap {} sequence {sequence_index} frame index {frame_index} has no bitmap; this tag is corrupt",
-                bitmap_info.get_tag_path()
+                "bitmap {bitmap_info} sequence {sequence_index} frame index {frame_index} has no bitmap; this tag is corrupt"
             );
         };
         index
@@ -48,8 +46,7 @@ pub unsafe extern "C" fn bitmap_group_get_bitmap_from_sequence(tag: TagID, seque
         let Some(first_index) = sequence.first_bitmap_index.get() else {
             // TODO: Check this on load!
             panic!(
-                "bitmap {} sequence {sequence_index} has no first bitmap; this tag is corrupt",
-                bitmap_info.get_tag_path()
+                "bitmap {bitmap_info} sequence {sequence_index} has no first bitmap; this tag is corrupt"
             );
         };
         first_index + frame_index % bitmap_count
@@ -58,8 +55,8 @@ pub unsafe extern "C" fn bitmap_group_get_bitmap_from_sequence(tag: TagID, seque
     let bitmap_data = bitmap.bitmap_data.as_mut_slice();
     let Some(bitmap_data) = bitmap_data.get_mut(bitmap_index) else {
         panic!(
-            "bitmap {} sequence {sequence_index} frame index {frame_index} references an out-of-bounds bitmap index {bitmap_index} when there are only {} bitmap data entry(s)", bitmap_data.len(),
-            bitmap_info.get_tag_path()
+            "bitmap {bitmap_info} sequence {sequence_index} frame index {frame_index} references an out-of-bounds bitmap index {bitmap_index} when there are only {} bitmap data entry(s)",
+            bitmap_data.len(),
         )
     };
 

@@ -1,5 +1,5 @@
 use core::ffi::CStr;
-use core::fmt::{Debug, Formatter};
+use core::fmt::{Debug, Display, Formatter};
 use tag_structs::primitives::NamedTagStruct;
 use tag_structs::primitives::tag_group::{TagGroup, TagGroupStruct, TagGroupUnsafe};
 use tag_structs::Scenario;
@@ -175,7 +175,7 @@ pub struct CacheFileTagHeader {
     pub tag_count: u32
 }
 
-pub trait TagIndex {
+pub trait TagIndex: Display {
     fn get_primary_tag_group(&self) -> TagGroupUnsafe;
     fn get_secondary_tag_group(&self) -> TagGroupUnsafe;
     fn get_tertiary_tag_group(&self) -> TagGroupUnsafe;
@@ -200,12 +200,8 @@ pub trait TagIndex {
     ///
     /// # Panics
     ///
-    /// Panics if tag_path is null or is not valid UTF-8.
-    ///
-    /// # Safety
-    ///
-    /// This is unsafe because tag_path is not verified to be accurate or even pointing to anything.
-    unsafe fn get_tag_path(&self) -> &str;
+    /// Panics if tag_path is not valid UTF-8.
+    fn get_tag_path(&self) -> &str;
     fn get_tag_data_address(&self) -> *mut [u8; 0];
 }
 
@@ -238,12 +234,24 @@ impl TagIndex for CacheTagInstance {
         self.tag_id
     }
 
-    unsafe fn get_tag_path(&self) -> &str {
-        self.tag_path.expect_str()
+    fn get_tag_path(&self) -> &str {
+        unsafe { self.tag_path.expect_str() }
     }
 
     fn get_tag_data_address(&self) -> *mut [u8; 0] {
         self.tag_data
+    }
+}
+
+impl Display for CacheTagInstance {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        f.write_fmt(format_args!("{}.{}", self.get_tag_path(), TagGroup::from_unsafe(self.primary_tag_group).unwrap_or(TagGroup::Null)))
+    }
+}
+
+impl Display for TagTagInstance {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        f.write_fmt(format_args!("{}.{}", self.get_tag_path(), TagGroup::from_unsafe(self.primary_tag_group).unwrap_or(TagGroup::Null)))
     }
 }
 
@@ -278,7 +286,7 @@ impl TagIndex for TagTagInstance {
         self.tertiary_tag_group
     }
 
-    unsafe fn get_tag_path(&self) -> &str {
+    fn get_tag_path(&self) -> &str {
         CStr::from_bytes_until_nul(self.tag_path.as_ref())
             .expect("Tag path is not a null-terminated C string!")
             .to_str()
@@ -290,13 +298,12 @@ impl TagIndex for TagTagInstance {
     }
 
     fn get_tag_id(&self) -> TagID {
-        // SAFETY: This is safe because the tag path is self-contained in the struct.
-        let path = unsafe { self.get_tag_path() };
+        let path = self.get_tag_path();
         let group = self.primary_tag_group;
 
         // SAFETY: This is safe provided there are no data races. Therefore, it's not safe. Hopefully we don't blow up!
         let Some(t) = (unsafe { lookup_tag(path, self.primary_tag_group) }) else {
-            panic!("Calling TagTagInstance::get_tag_id, but can't get the tag ID ({path}.{group:?})", )
+            panic!("Calling TagTagInstance::get_tag_id, but can't get the tag ID ({self})", )
         };
 
         t.1
