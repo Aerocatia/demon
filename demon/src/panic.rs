@@ -279,5 +279,5 @@ pub fn crash_process() -> ! {
 }
 
 #[cfg(not(test))]
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn rust_eh_personality() {}

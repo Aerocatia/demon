@@ -71,7 +71,7 @@ unsafe extern "C" fn log_error_message(priority: ErrorPriority, message: impl Di
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 unsafe extern "C" fn demon_error_catcher(priority: i16, message: CStrPtr) {
     let desired_priority = ErrorPriority::try_from(priority).expect("invalid priority!");
     log_error_message(desired_priority, message.display_lossy());

@@ -2,6 +2,26 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 
+// Allows calls to unsafe functions inside other unsafe functions without needing an unsafe block.
+//
+// This warning was turned on in Rust 2024. It makes sense in most cases (like preventing accidental
+// footgun usage), but this crate has to interface with Halo x86 code directly, and it has to share
+// data with it in order to work.
+//
+// This is giga-unsafe! Calling Halo code without causing a slow and painful death of the process
+// (or an instant but equally painful death) requires great care. Additionally, data can be
+// read/written to at any point (the game does make light use of threads), and we can't track this,
+// yet.
+//
+// The sheer amount of unsafe code in this crate would necessitate having tons of unsafe {} blocks
+// OR surrounding each function in an unsafe block. The former makes the codebase unreadable (which
+// would make writing safe code around it more painful), and the latter negates the entire purpose
+// of this lint.
+//
+// Until we are able to make this codebase more safe (which will take a very long time), the lint
+// stays off.
+#![allow(unsafe_op_in_unsafe_fn)]
+
 #[cfg(not(all(target_pointer_width = "32", windows)))]
 compile_error!("This crate can only be compiled for i686-pc-windows-* targets!");
 

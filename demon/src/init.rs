@@ -34,7 +34,7 @@ impl ExeType {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 unsafe extern "system" fn DllMain(_hinstance: HINSTANCE, reason: u32, _reserved: *mut c_void) {
     match reason {
         SystemServices::DLL_PROCESS_ATTACH => attach_if_not_attached(),

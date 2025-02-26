@@ -145,7 +145,7 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
             target = &name;
 
             if c_targets_generated.insert(function.to_owned()) {
-                fmt::write(&mut codegen, format_args!("extern {{ fn {function}(); }}")).expect(";-;");
+                fmt::write(&mut codegen, format_args!("unsafe extern \"C\" {{ fn {function}(); }}")).expect(";-;");
             }
 
             fmt::write(&mut codegen, format_args!("

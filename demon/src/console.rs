@@ -513,11 +513,11 @@ unsafe fn render_console() {
     }
 }
 
-extern "C" {
+unsafe extern "C" {
     fn printf(fmt: CStrPtr, ...) -> i32;
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 unsafe extern "C" fn demon_terminal_put(color: Option<&ColorARGB>, text: CStrPtr) {
     console_put_args(color, format_args!("{}", text.display_lossy()));
 }

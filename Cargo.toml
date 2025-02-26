@@ -6,7 +6,7 @@ members = [
     "tag_structs_gen",
     "primitives"
 ]
-resolver = "2"
+resolver = "3"
 
 [profile.dev]
 panic = "abort"
