@@ -216,7 +216,7 @@ pub fn generate_hs_external_globals_array(_: TokenStream) -> TokenStream {
                 continue
             };
 
-            fmt::write(&mut data, format_args!("ExternalGlobal::new(b\"{name}\\x00\", ScenarioScriptValueType::{global_type}, ")).expect(";-;");
+            fmt::write(&mut data, format_args!("ExternalGlobal::new(c\"{name}\", ScenarioScriptValueType::{global_type}, ")).expect(";-;");
             fmt::write(&mut data, format_args!("{}", format_address(address))).expect(";-;");
             fmt::write(&mut data, format_args!("),\n")).expect(";-;");
         }
@@ -438,9 +438,9 @@ pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
             }
 
             fmt::write(&mut data, format_args!("HSScriptFunctionDefinition {{")).expect(";-;");
-            fmt::write(&mut data, format_args!("name: CStrPtr::from_bytes(b\"{name}\\x00\"),")).expect(";-;");
-            fmt::write(&mut data, format_args!("description: CStrPtr::from_bytes(b\"{description}\\x00\"),")).expect(";-;");
-            fmt::write(&mut data, format_args!("usage: CStrPtr::from_bytes(b\"{usage}\\x00\"),")).expect(";-;");
+            fmt::write(&mut data, format_args!("name: CStrPtr::from_cstr(c\"{name}\"),")).expect(";-;");
+            fmt::write(&mut data, format_args!("description: CStrPtr::from_cstr(c\"{description}\"),")).expect(";-;");
+            fmt::write(&mut data, format_args!("usage: CStrPtr::from_cstr(c\"{usage}\"),")).expect(";-;");
             fmt::write(&mut data, format_args!("return_type: ScenarioScriptValueType::{return_type},")).expect(";-;");
             fmt::write(&mut data, format_args!("compile: {compile},")).expect(";-;");
             fmt::write(&mut data, format_args!("evaluate: {evaluate},")).expect(";-;");

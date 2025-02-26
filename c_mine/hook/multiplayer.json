@@ -13,7 +13,7 @@
     "death": {
         "_tag": "0x00402586",
         "_cache": "0x00403468",
-        "replacement": "crate::multiplayer::death"
+        "_replacement": "crate::multiplayer::death"
     },
     "get_game_connection_state": {
         "cache": "0x004082CE",

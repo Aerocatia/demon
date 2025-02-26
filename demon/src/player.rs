@@ -265,12 +265,12 @@ pub unsafe extern "C" fn local_player_get_player_index(player_index: u16) -> Pla
 #[c_mine]
 pub unsafe extern "C" fn players_initialize() {
     *PLAYERS_TABLE.get_mut() = Some(&mut *(game_state_data_new.get()(
-        CStrPtr::from_bytes(b"players\x00"),
+        CStrPtr::from_cstr(c"players"),
         MAXIMUM_NUMBER_OF_PLAYERS as u16,
         0x1F8
     ) as *mut _));
     *PLAYER_GLOBALS.get_mut() = Some(&mut *(game_state_malloc.get()(
-        CStrPtr::from_bytes(b"players globals\x00"),
+        CStrPtr::from_cstr(c"players globals"),
         null(),
         0x98
     ) as *mut PlayerGlobals));
@@ -281,7 +281,7 @@ pub unsafe extern "C" fn players_initialize() {
     globals._unknown_0x00 = 0xFFFFFFFF;
 
     *PLAYER_CONTROLS.get_mut() = Some(&mut *(game_state_malloc.get()(
-        CStrPtr::from_bytes(b"player control globals\x00"),
+        CStrPtr::from_cstr(c"player control globals"),
         null(),
         size_of::<PlayerControlTable>()
     ) as *mut _));

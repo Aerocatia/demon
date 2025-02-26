@@ -118,7 +118,7 @@ impl Console {
 
         // SAFETY: Safe; StaticStringBytes is always null-terminated
         unsafe {
-            printf(CStrPtr::from_bytes(b"[CONSOLE] %s\n\x00"), CStrPtr::from_bytes(latest_line.text.as_bytes_with_null()));
+            printf(CStrPtr::from_cstr(c"[CONSOLE] %s\n"), CStrPtr::from_bytes(latest_line.text.as_bytes_with_null()));
         }
     }
 

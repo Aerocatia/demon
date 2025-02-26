@@ -436,6 +436,11 @@ impl CStrPtr {
         }
         Self(bytes.as_ptr() as *const _)
     }
+
+    pub const fn from_cstr(string: &CStr) -> Self {
+        Self(string.as_ptr())
+    }
+
     pub unsafe fn expect_str(&self) -> &str {
         self.as_cstr()
             .to_str()

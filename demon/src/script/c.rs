@@ -11,7 +11,7 @@ use crate::util::{CStrPtr, PointerProvider, StaticStringBytes};
 #[c_mine]
 pub unsafe extern "C" fn hs_runtime_initialize() {
     let hs_thread_table = game_state_data_new.get()(
-        CStrPtr::from_bytes(b"hs thread\x00"),
+        CStrPtr::from_cstr(c"hs thread"),
         0x100,
         0x218
     );
@@ -19,7 +19,7 @@ pub unsafe extern "C" fn hs_runtime_initialize() {
         panic!("hs_runtime_initialize failed to allocate hs_thread_table")
     }
     let hs_globals_table = game_state_data_new.get()(
-        CStrPtr::from_bytes(b"hs globals\x00"),
+        CStrPtr::from_cstr(c"hs globals"),
         0x400,
         8
     );
@@ -115,7 +115,7 @@ pub unsafe extern "C" fn hs_enumerate_globals() {
         if i.definition.ptr.is_null() {
             continue
         }
-        HS_ENUMERATE_ADD_RESULT.get()(i.name_buffer.as_ptr())
+        HS_ENUMERATE_ADD_RESULT.get()(i.name_buffer.as_ptr() as *const u8)
     }
     for i in get_scenario_globals() {
         HS_ENUMERATE_ADD_RESULT.get()(i.name.to_str().as_ptr())
@@ -131,7 +131,8 @@ pub unsafe extern "C" fn hs_enumerate_functions() {
 
 #[c_mine]
 pub unsafe extern "C" fn hs_global_get_name(index: u16) -> *const u8 {
-    get_global_by_index(index).name_bytes().as_ptr()
+    // SAFETY: External globals are safe; scenario globals are only safe if they are null terminated.
+    get_global_by_index(index).name().as_ptr()
 }
 
 #[c_mine]

@@ -16,7 +16,7 @@ use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct HSExternalGlobalDefinition {
-    name: *const u8,
+    name: CStrPtr,
     global_type: ScenarioScriptValueType,
     padding: u16,
     ptr: *mut [u8; 0],
@@ -40,15 +40,15 @@ pub struct HSScriptFunctionDefinition {
 
 #[derive(Copy, Clone)]
 pub struct ExternalGlobal {
-    name_buffer: &'static [u8],
+    name_buffer: &'static CStr,
     definition: HSExternalGlobalDefinition
 }
 impl ExternalGlobal {
-    pub const fn new(name: &'static [u8], global_type: ScenarioScriptValueType, address: *mut [u8; 0]) -> Self {
+    pub const fn new(name: &'static CStr, global_type: ScenarioScriptValueType, address: *mut [u8; 0]) -> Self {
         Self {
             name_buffer: name,
             definition: HSExternalGlobalDefinition {
-                name: name.as_ptr(),
+                name: CStrPtr::from_cstr(name),
                 global_type: global_type,
                 padding: 0,
                 ptr: address,
@@ -57,10 +57,7 @@ impl ExternalGlobal {
         }
     }
     pub const fn name(&self) -> &str {
-        let Ok(n) = CStr::from_bytes_until_nul(self.name_buffer) else {
-            panic!("not null terminated")
-        };
-        let Ok(n) = n.to_str() else {
+        let Ok(n) = self.name_buffer.to_str() else {
             panic!("not utf-8")
         };
         n
@@ -94,19 +91,16 @@ pub unsafe fn get_scenario_globals() -> &'static [ScenarioGlobal] {
 }
 
 trait HSGlobal {
-    /// Name (not null terminated)
+    /// Name
     fn name(&'static self) -> &'static str;
-
-    /// Null terminated
-    fn name_bytes(&'static self) -> &'static [u8];
 
     /// Type of global
     fn global_type(&self) -> ScenarioScriptValueType;
 }
 
-fn get_global_by_index(index: u16) -> &'static dyn HSGlobal {
+unsafe fn get_global_by_index(index: u16) -> &'static dyn HSGlobal {
     let global = if (index & 0x8000) == 0 {
-        match unsafe { get_scenario_globals().get(index as usize) } {
+        match get_scenario_globals().get(index as usize) {
             Some(n) => n as &dyn HSGlobal,
             None => panic!("No scenario global of index 0x{index:04X}")
         }
@@ -124,9 +118,6 @@ impl HSGlobal for ExternalGlobal {
     fn name(&'static self) -> &'static str {
         self.name()
     }
-    fn name_bytes(&'static self) -> &'static [u8] {
-        self.name_buffer
-    }
     fn global_type(&self) -> ScenarioScriptValueType {
         self.definition.global_type
     }
@@ -135,9 +126,6 @@ impl HSGlobal for ExternalGlobal {
 impl HSGlobal for ScenarioGlobal {
     fn name(&'static self) -> &'static str {
         self.name.to_str()
-    }
-    fn name_bytes(&'static self) -> &'static [u8] {
-        self.name.to_str().as_bytes()
     }
     fn global_type(&self) -> ScenarioScriptValueType {
         self.r#type.get()

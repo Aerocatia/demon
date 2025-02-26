@@ -225,8 +225,3 @@ pub extern "C" fn set_game_connection_state(state: u16) {
 pub extern "C" fn get_game_connection_state() -> GameConnectionState {
     GAME_CONNECTION_STATE.load(Ordering::Relaxed).try_into().expect("get_game_connection_state with invalid state")
 }
-
-#[c_mine]
-pub unsafe extern "C" fn death() -> *const u8 {
-    "putput\x00".as_ptr()
-}
