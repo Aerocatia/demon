@@ -152,6 +152,6 @@
     "round": {
         "cache": "0x00406B36",
         "tag": "0x00405B4B",
-        "replacement": "crate::math::c::floor_to_int"
+        "replacement": "crate::math::c::round_to_int"
     }
 }
