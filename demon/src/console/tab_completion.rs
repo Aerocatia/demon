@@ -1,21 +1,23 @@
-use alloc::borrow::ToOwned;
+use alloc::borrow::{Cow, ToOwned};
 use alloc::format;
-use alloc::string::{String, ToString};
+use alloc::string::String;
 use alloc::vec::Vec;
+use core::iter::FusedIterator;
 use crate::console::printf;
 use crate::file::Win32DirectoryIterator;
 use crate::init::{get_exe_type, ExeType};
 use crate::script::{get_external_globals, get_functions};
 use crate::util::CStrPtr;
 
+type Argument<'a> = Cow<'a, str>;
+
 pub fn complete(what: &str) -> Option<(String, Vec<String>)> {
     let what = what.trim_start();
-    let words: Vec<&str> = what.split_whitespace().collect();
-    let first_command = if words.is_empty() {
-        ""
-    }
-    else {
-        words[0]
+
+    let words: Vec<Argument> = CommandParser::new(what).collect();
+    let first_command = match words.first() {
+        Some(a) => a.as_ref(),
+        None => ""
     };
 
     let mut suggestions = Vec::new();
@@ -47,23 +49,30 @@ pub fn complete(what: &str) -> Option<(String, Vec<String>)> {
     }
 
     if suggestions.is_empty() {
-        None
+        return None
     }
-    else {
-        suggestions.sort();
 
-        // Find the most common prefix of all of these suggestions
-        let len = find_largest_shared_prefix_length(&suggestions);
-        let suggestion = suggestions[0][..len].to_owned();
+    suggestions.sort();
 
-        // Only show the last word in suggestion
-        // FIXME: Handle quoted stuff
-        for i in &mut suggestions {
-            *i = i.split_whitespace().rev().next().unwrap().to_string();
-        }
+    // Find the most common prefix of all of these suggestions
+    let len = find_largest_shared_prefix_length(&suggestions);
+    let suggestion = suggestions[0][..len].to_owned();
 
-        Some((suggestion, suggestions))
+    // Only show the last word in suggestion
+    let mut incomplete_last_argument_may_have_spaces = false;
+    for i in &mut suggestions {
+        *i = CommandParser::new(i.as_str()).last().expect("can't parse nothing").into_owned();
+        incomplete_last_argument_may_have_spaces = incomplete_last_argument_may_have_spaces || i.chars().any(|c| c.is_whitespace())
     }
+
+    incomplete_last_argument_may_have_spaces = incomplete_last_argument_may_have_spaces && suggestions.len() > 1;
+
+    let mut new_suggestion = add_quotes_as_needed(CommandParser::new(suggestion.as_str()), incomplete_last_argument_may_have_spaces);
+    if suggestions.len() == 1 && suggestion.ends_with(" ") {
+        new_suggestion += " ";
+    }
+
+    Some((new_suggestion, suggestions))
 }
 
 fn find_largest_shared_prefix_length(what: &[String]) -> usize {
@@ -99,14 +108,14 @@ fn starts_with_ignoring_case(string: &str, with: &str) -> bool {
     true
 }
 
-fn complete_map_name(words: &[&str]) -> Option<Vec<String>> {
+fn complete_map_name(words: &[Argument]) -> Option<Vec<String>> {
     if words.len() > 2 {
         return None
     }
 
     let mut suggestions = Vec::new();
     let cmd = words[0].to_ascii_lowercase();
-    let map = words.get(1).unwrap_or(&"");
+    let map = words.get(1).map(|a| a.as_ref()).unwrap_or("");
 
     match get_exe_type() {
         ExeType::Cache => {
@@ -119,13 +128,8 @@ fn complete_map_name(words: &[&str]) -> Option<Vec<String>> {
                     continue
                 }
 
-                // FIXME: handle spaces better
-                if basename.contains(" ") {
-                    continue;
-                }
-
                 if starts_with_ignoring_case(basename, map) {
-                    suggestions.push(format!("{cmd} {basename} "));
+                    suggestions.push(format!("{cmd} \"{basename}\" "));
                     unsafe { printf(CStrPtr::from_cstr(c"%s\n"), format!("{}\x00", i.basename()).as_ptr()); }
                 }
             }
@@ -148,8 +152,7 @@ fn complete_map_name(words: &[&str]) -> Option<Vec<String>> {
                     if i.extension() == Some("scenario") {
                         let path_str = i.as_str();
                         let path = &path_str[5..path_str.rfind(".").unwrap()];
-                        // FIXME: handle spaces better
-                        results.push(format!("{cmd} {path} "));
+                        results.push(format!("{cmd} \"{path}\" "));
                     }
                     iteratafy(needle, i.as_str(), results, recursion + 1, cmd);
                 }
@@ -164,4 +167,82 @@ fn complete_map_name(words: &[&str]) -> Option<Vec<String>> {
     }
 
     Some(suggestions)
+}
+
+struct CommandParser<'a> {
+    string: &'a str
+}
+
+impl<'a> CommandParser<'a> {
+    pub fn new(string: &'a str) -> CommandParser<'a> {
+        CommandParser {
+            string
+        }
+    }
+}
+
+impl<'a> Iterator for CommandParser<'a> {
+    type Item = Cow<'a, str>;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.string = self.string.trim_start();
+        if self.string.is_empty() {
+            return None
+        }
+
+        let mut argument = None;
+        let mut in_quotes = false;
+        for (index, character) in self.string.char_indices() {
+            if !in_quotes && character.is_whitespace() {
+                let (a, b) = self.string.split_at(index);
+                self.string = b;
+                argument = Some(a);
+                break;
+            }
+
+            if character == '\"' {
+                in_quotes = !in_quotes;
+            }
+        }
+
+        let argument = argument.unwrap_or_else(|| core::mem::take(&mut self.string));
+
+        if argument.contains('\"') {
+            Some(Cow::Owned(argument.replace('\"', "")))
+        }
+        else {
+            Some(Cow::Borrowed(argument))
+        }
+    }
+}
+
+impl<'a> FusedIterator for CommandParser<'a> {}
+
+fn add_quotes_as_needed<T: AsRef<str>>(i: impl Iterator<Item = T>, incomplete_last_argument_may_have_spaces: bool) -> String {
+    let mut r = String::new();
+    let mut peek = i.peekable();
+
+    loop {
+        let Some(n) = peek.next() else {
+            return r;
+        };
+
+        let mut already_added_quotes = false;
+        if peek.peek().is_none() && incomplete_last_argument_may_have_spaces {
+            r += "\"";
+            already_added_quotes = true;
+        }
+
+        let string = n.as_ref();
+        if !already_added_quotes && string.chars().any(|c| c.is_whitespace()) {
+            r += "\"";
+            r += string;
+            r += "\"";
+        } else {
+            r += string;
+        }
+
+        if peek.peek().is_some() {
+            r += " ";
+        }
+    }
 }
