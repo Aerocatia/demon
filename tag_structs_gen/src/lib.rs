@@ -43,7 +43,7 @@ fn write_struct(struct_data: &Struct, definitions: &ParsedDefinitions, output: &
                 let object_type = match o {
                     ObjectType::NamedObject(n) => {
                         match definitions.objects.get(n) {
-                            Some(NamedObject::Enum(_)) => format!("primitives::EnumWrapper<{n}>"),
+                            Some(NamedObject::Enum(_)) => format!("primitives::enum_wrapper::EnumWrapper<{n}>"),
                             _ => n.to_owned()
                         }
                     },
@@ -89,7 +89,7 @@ fn write_struct(struct_data: &Struct, definitions: &ParsedDefinitions, output: &
                 let object_type = match i.count {
                     FieldCount::One => object_type,
                     FieldCount::Array(l) => format!("[{object_type}; {l}]"),
-                    FieldCount::Bounds => format!("primitives::Bounds<{object_type}>")
+                    FieldCount::Bounds => format!("primitives::bounds::Bounds<{object_type}>")
                 };
 
                 let struct_field_name = rustify_string(&i.name);

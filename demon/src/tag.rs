@@ -1,6 +1,6 @@
 use core::ffi::CStr;
 use core::fmt::{Debug, Display, Formatter};
-use tag_structs::primitives::NamedTagStruct;
+use tag_structs::primitives::named_tag_struct::NamedTagStruct;
 use tag_structs::primitives::tag_group::{TagGroup, TagGroupStruct, TagGroupUnsafe};
 use tag_structs::Scenario;
 use crate::id::ID;
