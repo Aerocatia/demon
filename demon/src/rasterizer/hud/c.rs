@@ -142,6 +142,6 @@ pub unsafe extern "C" fn hud_calculate_point(
         },
     };
 
-    output.x = x.floor_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
-    output.y = y.floor_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
+    output.x = x.round_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
+    output.y = y.round_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
 }
