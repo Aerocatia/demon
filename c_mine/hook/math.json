@@ -153,5 +153,25 @@
         "cache": "0x00406B36",
         "tag": "0x00405B4B",
         "replacement": "crate::math::c::round_to_int"
+    },
+    "quaternions_interpolate_and_normalize": {
+        "cache": "0x00409967",
+        "tag": "0x00408D0A",
+        "replacement": "crate::math::c::quaternions_interpolate_and_normalize"
+    },
+    "quaternions_interpolate": {
+        "cache": "0x0040142E",
+        "tag": "0x0040A38F",
+        "replacement": "crate::math::c::quaternions_interpolate"
+    },
+    "quaternion_normalize": {
+        "cache": "0x00402856",
+        "tag": "0x00401CE9",
+        "replacement": "crate::math::c::quaternion_normalize"
+    },
+    "inverse_square_root": {
+        "cache": "0x00403936",
+        "tag": "0x00590760",
+        "replacement": "crate::math::c::inverse_square_root"
     }
 }

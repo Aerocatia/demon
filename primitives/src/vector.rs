@@ -1,4 +1,4 @@
-use core::ops::{Mul, Neg};
+use core::ops::{Add, Mul, Neg, Sub};
 use crate::float::FloatFunctions;
 
 pub const MIN_MAGNITUDE: f32 = 0.0001;
@@ -57,8 +57,14 @@ pub struct Quaternion {
 }
 
 impl Quaternion {
+    pub const IDENTITY: Self = Self { x: 0.0, y: 0.0, z: 0.0, w: 1.0 };
+
+    pub const fn square_length(self) -> f32 {
+        self.dot(self)
+    }
+
     pub const fn as_matrix(self) -> Matrix3x3 {
-        let square_length = self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w;
+        let square_length = self.square_length();
         if square_length.is_nan() || square_length == 0.0 {
             return Matrix3x3::IDENTITY;
         }
@@ -95,6 +101,162 @@ impl Quaternion {
                 y: yz + wx,
                 z: 1.0 - (xx + yy)
             }
+        }
+    }
+    pub fn normalized(self) -> Quaternion {
+        let square_length = self.square_length();
+        if square_length <= 0.0 {
+            return Self::IDENTITY
+        }
+
+        let inv = square_length.inverse_sqrt();
+        Self {
+            x: self.x * inv,
+            y: self.y * inv,
+            z: self.z * inv,
+            w: self.w * inv
+        }
+    }
+
+    /// Interpolate this quaternion with another one by `by` amount, returning a normalized vector.
+    ///
+    /// This function is more accurate than [linear_interpolated](Self::linear_interpolated), but it
+    /// is less performant.
+    ///
+    /// This function returns a normalized vector. If one isn't necessary, use
+    /// [interpolated_unnormalized](Self::interpolated_unnormalized).
+    pub fn interpolated(self, with: Quaternion, by: f32) -> Quaternion {
+        self.interpolated_unnormalized(with, by).normalized()
+    }
+
+    /// Linear interpolate this quaternion with another one by `by` amount, returning a normalized
+    /// vector.
+    ///
+    /// This function is faster than [interpolate](Self::interpolated) but less accurate.
+    ///
+    /// This function returns a normalized vector. If one isn't necessary, use
+    /// [linear_interpolated_unnormalized](Self::linear_interpolated_unnormalized).
+    pub fn linear_interpolated(self, with: Quaternion, by: f32) -> Quaternion {
+        self.linear_interpolated_unnormalized(with, by).normalized()
+    }
+
+    /// Interpolate this quaternion with another one by `by` amount, returning an unnormalized
+    /// vector.
+    ///
+    /// This function is more accurate than [linear_interpolated_unnormalized](Self::linear_interpolated_unnormalized),
+    /// but it is less performant.
+    ///
+    /// This function returns a (most likely) unnormalized vector. If one is necessary, use
+    /// [interpolated](Self::interpolated).
+    pub fn interpolated_unnormalized(self, with: Quaternion, by: f32) -> Quaternion {
+        // special thanks to MosesOfEgypt for the rotation interpolation stuff here
+        let mut cos_half_theta = self.dot(with);
+
+        let mut with_n = with;
+        if cos_half_theta < 0.0 {
+            with_n = -with_n;
+            cos_half_theta = -cos_half_theta;
+        }
+
+        if cos_half_theta.fabs() < 0.01 {
+            return self.linear_interpolated_unnormalized(with, by)
+        }
+
+        let half_theta = cos_half_theta.min(1.0).acos();
+        let m = 1.0 - cos_half_theta*cos_half_theta;
+        let sin_half_theta = m.max(0.0);
+
+        let mut r0 = 1.0 - by;
+        let mut r1 = by;
+
+        if sin_half_theta > 0.00001 {
+            r0 = (r0 * half_theta).sin() / sin_half_theta;
+            r1 = (r1 * half_theta).sin() / sin_half_theta;
+        }
+
+        with_n * r1 + self * r0
+    }
+
+    /// Linear interpolate this quaternion with another one by `by` amount, returning an
+    /// unnormalized vector.
+    ///
+    /// This function is faster than [interpolated_unnormalized](Self::interpolated_unnormalized)
+    /// but less accurate.
+    ///
+    /// This function returns a (most likely) unnormalized vector. If one is necessary, use
+    /// [linear_interpolated](Self::linear_interpolated).
+    pub fn linear_interpolated_unnormalized(self, with: Quaternion, by: f32) -> Quaternion {
+        // linear interpolate; this is not very good, but this is how Halo originally does it
+        let dot = self.dot(with);
+
+        let this_amt = 1.0 - by;
+        let with_amt = if dot < 0.0 {
+            -by
+        }
+        else {
+            by
+        };
+
+        self * this_amt + with * with_amt
+    }
+
+    const fn dot(self, with: Quaternion) -> f32 {
+        let xx = self.x * with.x;
+        let yy = self.y * with.y;
+        let zz = self.z * with.z;
+        let ww = self.w * with.w;
+        xx + yy + zz + ww
+    }
+
+    const fn multiplied_by(self, by: f32) -> Quaternion {
+        Quaternion {
+            x: self.x * by,
+            y: self.y * by,
+            z: self.z * by,
+            w: self.w * by,
+        }
+    }
+}
+
+impl Neg for Quaternion {
+    type Output = Quaternion;
+    fn neg(self) -> Self::Output {
+        Self {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+            w: -self.w,
+        }
+    }
+}
+
+impl Mul<f32> for Quaternion {
+    type Output = Quaternion;
+    fn mul(self, rhs: f32) -> Self::Output {
+        self.multiplied_by(rhs)
+    }
+}
+
+impl Add<Quaternion> for Quaternion {
+    type Output = Quaternion;
+    fn add(self, rhs: Quaternion) -> Self::Output {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
+            w: self.w + rhs.w,
+        }
+    }
+}
+
+impl Sub<Quaternion> for Quaternion {
+    type Output = Quaternion;
+    fn sub(self, rhs: Quaternion) -> Self::Output {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
+            w: self.w - rhs.w,
         }
     }
 }

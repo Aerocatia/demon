@@ -138,3 +138,23 @@ pub extern "C" fn plane3d_distance_to_point(plane: &Plane3D, point: &Vector3D) -
 pub extern "C" fn round_to_int(what: f32) -> i32 {
     what.round_to_int()
 }
+
+#[c_mine]
+pub extern "C" fn inverse_square_root(what: f32) -> f32 {
+    what.inverse_sqrt()
+}
+
+#[c_mine]
+pub extern "C" fn quaternion_normalize(quaternion: &mut Quaternion) {
+    *quaternion = quaternion.normalized()
+}
+
+#[c_mine]
+pub extern "C" fn quaternions_interpolate(a: &Quaternion, b: &Quaternion, by: f32, output: &mut Quaternion) {
+    *output = a.interpolated_unnormalized(*b, by)
+}
+
+#[c_mine]
+pub extern "C" fn quaternions_interpolate_and_normalize(a: &Quaternion, b: &Quaternion, by: f32, output: &mut Quaternion) {
+    *output = a.interpolated(*b, by)
+}

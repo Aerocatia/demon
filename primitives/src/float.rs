@@ -2,11 +2,13 @@ use core::cmp::Ordering;
 
 pub trait FloatFunctions: Copy + Copy {
     fn sqrt(self) -> Self;
+    fn inverse_sqrt(self) -> Self;
     fn powi(self, exponent: i32) -> Self;
     fn powf(self, exponent: Self) -> Self;
     fn fabs(self) -> Self;
     fn sin(self) -> Self;
     fn cos(self) -> Self;
+    fn acos(self) -> Self;
     fn round_to_int(self) -> i32;
     fn round_towards_zero(self) -> i32;
     fn floor_to_int(self) -> i32;
@@ -22,11 +24,15 @@ impl FloatFunctions for f32 {
     fn sqrt(self) -> Self {
         libm::sqrtf(self)
     }
+    fn inverse_sqrt(self) -> Self {
+        1.0 / self.sqrt()
+    }
     fn fabs(self) -> Self {
         libm::fabsf(self)
     }
     fn sin(self) -> Self { libm::sinf(self) }
     fn cos(self) -> Self { libm::cosf(self) }
+    fn acos(self) -> Self { libm::acosf(self) }
 
     // Implementation of the x87 FISTP instruction in nearest mode.
     // If rounding is not done exactly this way, it leads to death!
