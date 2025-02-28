@@ -45,7 +45,7 @@ pub unsafe fn fmt_scoreboard_heading<'a>(
                 // multi-team support not implemented
                 ""
             };
-            StaticStringBytes::from_display(str)
+            StaticStringBytes::from_str(str)
         }
     }
     else {

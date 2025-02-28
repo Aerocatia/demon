@@ -167,11 +167,11 @@ unsafe fn draw_player_score(
     let name = StaticStringBytes::<256>::from_utf16(&player.name);
     let score = format_score(player_score_data.score, server_info);
     let deaths: StaticStringBytes<16> = if player.quit != 0 {
-        StaticStringBytes::from_display(scoreboard_text.quit.as_str())
+        StaticStringBytes::from_display(scoreboard_text.quit)
     } else if maximum_lives == 0 {
         StaticStringBytes::from_display(player.deaths)
     } else if player.out_of_lives() {
-        StaticStringBytes::from_display(scoreboard_text.dead.as_str())
+        StaticStringBytes::from_display(scoreboard_text.dead)
     } else {
         StaticStringBytes::from_display(maximum_lives - player.deaths as u32)
     };

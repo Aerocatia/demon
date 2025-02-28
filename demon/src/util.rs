@@ -301,6 +301,17 @@ impl<const SIZE: usize> StaticStringBytes<SIZE> {
         StaticStringBytes(bytes, length)
     }
 
+    pub const fn from_str(string: &str) -> Self {
+        let bytes = string.as_bytes();
+        let length = bytes.len();
+        let mut into = Self([0u8; SIZE], 0);
+        while into.1 < length && into.1 + 1 < SIZE {
+            into.0[into.1] = bytes[into.1];
+            into.1 += 1;
+        }
+        into
+    }
+
     pub fn from_utf16(utf16: &[u16]) -> StaticStringBytes<SIZE> {
         let mut bytes = [0u8; SIZE];
         let length = decode_utf16_inplace(utf16, &mut bytes[..SIZE - 1]).len();
@@ -553,4 +564,41 @@ pub fn decode_win32_character(character: u8) -> char {
     }
 
     c
+}
+
+pub fn display_utf16(what: &[u16]) -> impl Display {
+    struct Displayer<'a> {
+        what: &'a [u16]
+    }
+
+    impl<'a> Display for Displayer<'a> {
+        fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+            for i in decode_utf16(self.what.iter().copied()) {
+                match i {
+                    Ok('\x00') => break,
+                    Ok(i) => f.write_char(i)?,
+                    _ => ()
+                }
+            }
+            Ok(())
+        }
+    }
+
+    Displayer { what }
+}
+
+pub const unsafe fn utf16_to_slice(what: *const u16) -> &'static [u16] {
+    assert!(!what.is_null());
+
+    let mut len = 0usize;
+    let mut s = what;
+    loop {
+        if *s == 0 {
+            break
+        }
+        len += 1;
+        s = s.wrapping_add(1);
+    }
+
+    core::slice::from_raw_parts(what, len)
 }

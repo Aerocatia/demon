@@ -1,38 +1,9 @@
-use core::fmt::{Display, Formatter};
 use tag_structs::primitives::tag_group::TagGroup;
 use crate::string::get_unicode_string_list_string;
 use crate::tag::lookup_tag;
-use crate::util::decode_utf16_inplace;
+use crate::util::StaticStringBytes;
 
-#[derive(Copy, Clone, Default)]
-pub struct SizedString32 {
-    bytes: [u8; 32],
-    size: usize
-}
-impl SizedString32 {
-    pub const fn from_str(string: &str) -> Self {
-        let bytes = string.as_bytes();
-        let length = bytes.len();
-        let mut into = SizedString32 {
-            bytes: [0u8; 32],
-            size: length
-        };
-        let mut i = 0;
-        while i < length {
-            into.bytes[i] = bytes[i];
-            i += 1;
-        }
-        into
-    }
-    pub fn as_str(&self) -> &str {
-        core::str::from_utf8(&self.bytes[..self.size]).expect("not utf-8???")
-    }
-}
-impl Display for SizedString32 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
-        f.write_str(self.as_str())
-    }
-}
+pub type SizedString32 = StaticStringBytes<32>;
 
 pub struct ScoreboardScreenText {
     pub place: SizedString32,
@@ -91,7 +62,7 @@ impl ScoreboardScreenText {
         no_lives: SizedString32::from_str("(no lives)"),
         red_leads: SizedString32::from_str("Red leads Blue %s to %s %s"),
         blue_leads: SizedString32::from_str("Blue leads Red %s to %s %s"),
-        teams_tied: SizedString32::from_str("Teams tied at %s to %s %s"),
+        teams_tied: SizedString32::from_str("Teams tied at %s to %s"),
         game_ends_in_a_draw: SizedString32::from_str("Game ends in a draw"),
         you_won: SizedString32::from_str("You won"),
         your_team_won: SizedString32::from_str("Your team won"),
@@ -127,10 +98,7 @@ impl ScoreboardScreenText {
             let Some(t) = get_unicode_string_list_string(multiplayer_game_text, index) else {
                 return
             };
-
-            let mut writer = [0u8; 32];
-            into.size = decode_utf16_inplace(t, &mut writer).len();
-            into.bytes = writer;
+            *into = SizedString32::from_utf16(t)
         };
 
         copy_memes(&mut current.place, 67);
