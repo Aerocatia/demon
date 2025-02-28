@@ -40,6 +40,14 @@ macro_rules! console {
     }};
 }
 
+/// Print the formatted string to the in-game HUD.
+#[allow(unused_macros)]
+macro_rules! hud {
+    ($($args:tt)*) => {{
+        crate::rasterizer::hud::hud_put_args(format_args!($($args)*));
+    }};
+}
+
 /// Print the formatted string to the in-game console with a given color.
 ///
 /// The first argument must be [`ColorARGB`] or [`&ColorARGB`].

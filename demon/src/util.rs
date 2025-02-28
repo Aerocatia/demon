@@ -324,6 +324,15 @@ impl<const SIZE: usize> StaticStringBytes<SIZE> {
         &self.0[..self.1 + 1]
     }
 
+    pub fn as_utf16(self) -> [u16; SIZE] {
+        let string = self.as_str().encode_utf16();
+        let mut beep = [0u16; SIZE];
+        for (from, to) in string.zip(beep[..SIZE - 1].iter_mut()) {
+            *to = from;
+        }
+        beep
+    }
+
     pub const fn into_bytes(self) -> [u8; SIZE] {
         self.0
     }

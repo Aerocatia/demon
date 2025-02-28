@@ -66,5 +66,9 @@
         "cache": "0x00407B5D",
         "tag": "0x00406CE9",
         "replacement": "crate::rasterizer::hud::c::hud_calculate_point"
+    },
+    "hud_print_message": {
+        "cache": "0x00405510",
+        "tag": "0x004048EA"
     }
 }

@@ -1,3 +1,4 @@
+use core::fmt::Display;
 use core::sync::atomic::{AtomicU32, Ordering};
 use c_mine::{get_hs_global, pointer_from_hook};
 use crate::game_engine::GAME_ENGINE_RUNNING;
@@ -8,7 +9,7 @@ use crate::rasterizer::font::get_font_tag_height;
 use crate::rasterizer::motion_sensor::update_motion_sensor;
 use crate::rasterizer::{get_global_interface_canvas_bounds, Rectangle, Perspective};
 use crate::timing::InterpolatedTimer;
-use crate::util::{PointerProvider, VariableProvider};
+use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
 
 pub mod c;
 
@@ -19,7 +20,12 @@ pub static mut HUD_SAFE_ZONE_LEFT: f32 = 8.0;
 pub static mut HUD_SAFE_ZONE_BOTTOM: f32 = 8.0;
 pub static mut HUD_SAFE_ZONE_RIGHT: f32 = 8.0;
 
+const HUD_PRINT_MESSAGE: PointerProvider<unsafe extern "C" fn(i16, *const u16)> = pointer_from_hook!("hud_print_message");
 
+pub fn hud_put_args(what: impl Display) {
+    let message = StaticStringBytes::<256>::from_display(what).as_utf16();
+    unsafe { HUD_PRINT_MESSAGE.get()(0, message.as_ptr()) };
+}
 
 const RASTERIZER_HUD_BEGIN: PointerProvider<extern "C" fn()> = pointer_from_hook!("rasterizer_hud_begin");
 const RASTERIZER_HUD_END: PointerProvider<extern "C" fn()> = pointer_from_hook!("rasterizer_hud_end");

@@ -44,5 +44,10 @@
     "network_game_client_local_player_quit": {
         "cache": "0x004060C8",
         "tag": "0x0040A150"
+    },
+    "keystone_put": {
+        "cache": "0x00401EF1",
+        "tag": "0x0040A948",
+        "replacement": "crate::multiplayer::c::keystone_put"
     }
 }
