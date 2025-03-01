@@ -461,6 +461,14 @@ impl CStrPtr {
         Self(string.as_ptr())
     }
 
+    pub unsafe fn get_str(&self) -> Option<&str> {
+        if self.0.is_null() {
+            None
+        }
+        else {
+            Some(self.expect_str())
+        }
+    }
     pub unsafe fn expect_str(&self) -> &str {
         self.as_cstr()
             .to_str()

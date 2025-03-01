@@ -1,4 +1,5 @@
 [
-    { "target": "cls", "aliases": ["clear"] },
-    { "target": "player_effect_set_max_rumble", "aliases": ["player_effect_set_max_vibrate"] }
+    { "target": "player_effect_set_max_rumble", "alias": "player_effect_set_max_vibrate" },
+    { "target": "cls", "alias": "clear" },
+    { "target": "quit", "alias": "exit" }
 ]

@@ -171,7 +171,7 @@
     },
     "inverse_square_root": {
         "cache": "0x00403936",
-        "tag": "0x00590760",
+        "tag": "0x00402ACC",
         "replacement": "crate::math::c::inverse_square_root"
     }
 }

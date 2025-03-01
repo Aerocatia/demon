@@ -368,7 +368,7 @@ fn get_all_scripting_functions() -> Vec<HSFunction> {
     #[derive(Deserialize)]
     struct Alias {
         target: String,
-        aliases: Vec<String>
+        alias: String
     }
 
     let aliases: Vec<Alias> = serde_json::from_slice(include_bytes!("../functions/alias.json")).expect("could not parse script aliases json");
@@ -377,12 +377,10 @@ fn get_all_scripting_functions() -> Vec<HSFunction> {
             panic!("Alias {} refers to a function that doesn't exist.", i.target);
         };
         let original = original.clone();
-        for name in i.aliases {
-            result.push(HSFunction {
-                name,
-                ..original.clone()
-            });
-        }
+        result.push(HSFunction {
+            name: i.alias,
+            ..original.clone()
+        });
     }
 
     result
@@ -440,7 +438,13 @@ pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
             fmt::write(&mut data, format_args!("HSScriptFunctionDefinition {{")).expect(";-;");
             fmt::write(&mut data, format_args!("name: CStrPtr::from_cstr(c\"{name}\"),")).expect(";-;");
             fmt::write(&mut data, format_args!("description: CStrPtr::from_cstr(c\"{description}\"),")).expect(";-;");
-            fmt::write(&mut data, format_args!("usage: CStrPtr::from_cstr(c\"{usage}\"),")).expect(";-;");
+            if usage.is_empty() {
+                fmt::write(&mut data, format_args!("usage: CStrPtr(core::ptr::null()),")).expect(";-;");
+            }
+            else {
+                fmt::write(&mut data, format_args!("usage: CStrPtr::from_cstr(c\"{usage}\"),")).expect(";-;");
+            }
+
             fmt::write(&mut data, format_args!("return_type: ScenarioScriptValueType::{return_type},")).expect(";-;");
             fmt::write(&mut data, format_args!("compile: {compile},")).expect(";-;");
             fmt::write(&mut data, format_args!("evaluate: {evaluate},")).expect(";-;");

@@ -15,8 +15,8 @@ pub mod c {
 
         for i in functions {
             let name = i.name.expect_str();
-            let description = i.description.expect_str();
-            let usage = i.usage.expect_str();
+            let description = i.description.get_str().unwrap_or("");
+            let usage = i.usage.get_str().unwrap_or("");
 
             core::fmt::write(&mut args, format_args!("(<{}> {name}", i.return_type)).expect(";-;");
 
