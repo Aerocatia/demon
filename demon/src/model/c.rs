@@ -1,10 +1,10 @@
 use crate::model::get_model_tag_data;
+use crate::object::ObjectMarker;
 use crate::tag::{get_tag_info_typed, ReflexiveImpl, TagID};
 use crate::util::CStrPtr;
 use c_mine::c_mine;
-use tag_structs::ModelAnimations;
 use tag_structs::primitives::vector::Matrix4x3;
-use crate::object::ObjectMarker;
+use tag_structs::ModelAnimations;
 
 /// # Safety
 ///

@@ -37,6 +37,52 @@ impl Matrix3x3 {
             }
         }
     }
+
+    /// Interpolate this matrix by another one by `by` amount.
+    pub fn interpolated(self, with: Matrix3x3, by: f32) -> Matrix3x3 {
+        self.as_quaternion().interpolated(with.as_quaternion(), by).into()
+    }
+    
+    pub fn as_quaternion(&self) -> Quaternion {
+        // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
+        let tr = self.a.x + self.b.y + self.c.z;
+        if tr > 0.0 {
+            let s = (tr + 1.0).sqrt() * 2.0; // S=4*qw
+            Quaternion {
+                w: 0.25 * s,
+                x: (self.c.y - self.b.z) / s,
+                y: (self.a.z - self.c.x) / s,
+                z: (self.b.x - self.a.y) / s,
+            }
+        }
+        else if (self.a.x > self.b.y) & (self.a.x > self.c.z) {
+            let s = (1.0 + self.a.x - self.b.y - self.c.z).sqrt() * 2.0; // S=4*qx
+            Quaternion {
+                w: (self.c.y - self.b.z) / s,
+                x: 0.25 * s,
+                y: (self.a.y + self.b.x) / s,
+                z: (self.a.z + self.c.x) / s,
+            }
+        }
+        else if self.b.y > self.c.z  {
+            let s = (1.0 + self.b.y - self.a.x - self.c.z).sqrt() * 2.0; // S=4*qy
+            Quaternion {
+                w: (self.a.z - self.c.x) / s,
+                x: (self.a.y + self.b.x) / s,
+                y: 0.25 * s,
+                z: (self.b.z + self.c.y) / s,
+            }
+        }
+        else {
+            let s = (1.0 + self.c.z - self.a.x - self.b.y).sqrt() * 2.0; // S=4*qz
+            Quaternion {
+                w: (self.b.x - self.a.y) / s,
+                x: (self.a.z + self.c.x) / s,
+                y: (self.b.z + self.c.y) / s,
+                z: 0.25 * s,
+            }
+        }
+    }
 }
 
 impl Mul<Matrix3x3> for Matrix3x3 {
@@ -261,6 +307,18 @@ impl Sub<Quaternion> for Quaternion {
     }
 }
 
+impl From<Matrix3x3> for Quaternion {
+    fn from(value: Matrix3x3) -> Self {
+        value.as_quaternion()
+    }
+}
+
+impl From<Quaternion> for Matrix3x3 {
+    fn from(value: Quaternion) -> Self {
+        value.as_matrix()
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct Vector2D {
@@ -299,6 +357,15 @@ impl Vector3D {
     pub const fn magnitude_squared(self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
+
+    /// Interpolate this vector with another one by `by` amount.
+    pub fn linear_interpolated(self, with: Vector3D, by: f32) -> Vector3D {
+        let by = by.clamp(0.0, 1.0);
+        let a = by;
+        let b = 1.0 - by;
+        self * b + with * a
+    }
+
     pub fn magnitude(self) -> f32 {
         self.magnitude_squared().sqrt()
     }
@@ -326,6 +393,42 @@ impl Neg for Vector3D {
 
     fn neg(self) -> Self::Output {
         self.negated()
+    }
+}
+
+impl Add<Vector3D> for Vector3D {
+    type Output = Self;
+
+    fn add(self, value: Vector3D) -> Self::Output {
+        Self {
+            x: self.x + value.x,
+            y: self.y + value.y,
+            z: self.z + value.z,
+        }
+    }
+}
+
+impl Sub<Vector3D> for Vector3D {
+    type Output = Self;
+
+    fn sub(self, value: Vector3D) -> Self::Output {
+        Self {
+            x: self.x - value.x,
+            y: self.y - value.y,
+            z: self.z - value.z,
+        }
+    }
+}
+
+impl Mul<f32> for Vector3D {
+    type Output = Self;
+
+    fn mul(self, value: f32) -> Self::Output {
+        Self {
+            x: self.x * value,
+            y: self.y * value,
+            z: self.z * value,
+        }
     }
 }
 
@@ -427,6 +530,15 @@ impl Matrix4x3 {
         Self {
             position: point,
             ..Self::from_matrix3x3(quaternion.as_matrix())
+        }
+    }
+    /// Interpolate this matrix by another one by `by` amount.
+    pub fn interpolated(self, with: Matrix4x3, by: f32) -> Matrix4x3 {
+        let by = by.clamp(0.0, 1.0);
+        Self {
+            scale: (1.0 - by) * self.scale + by * with.scale,
+            position: self.position.linear_interpolated(with.position, by),
+            rotation_matrix: self.rotation_matrix.interpolated(with.rotation_matrix, by)
         }
     }
 }

@@ -2,7 +2,7 @@ use core::fmt::{Debug, Formatter};
 
 const NULL_ID: u32 = 0xFFFFFFFF;
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Ord, Eq)]
 #[repr(transparent)]
 pub struct ID<const SALT: u16> {
     full_id: u32
