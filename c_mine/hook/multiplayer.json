@@ -49,5 +49,9 @@
         "cache": "0x00401EF1",
         "tag": "0x0040A948",
         "replacement": "crate::multiplayer::c::keystone_put"
+    },
+    "begin_end_game": {
+        "cache": "0x0040288D",
+        "tag": "0x0040AEC5"
     }
 }

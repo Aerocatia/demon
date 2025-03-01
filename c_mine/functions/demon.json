@@ -16,5 +16,14 @@
         "description": "Return to the main menu.",
         "usage": "",
         "arguments": []
+    },
+    {
+        "name": "sv_map_restart",
+        "return_type": "Void",
+        "compile": "crate::script::c::hs_macro_function_parse_c",
+        "evaluate": "crate::multiplayer::hsc::sv_map_restart_eval",
+        "description": "Restart the current game.",
+        "usage": "",
+        "arguments": []
     }
 ]

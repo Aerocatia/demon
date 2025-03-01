@@ -1,0 +1,7 @@
+{
+    "game_set_players_are_double_speed": {
+        "cache": "0x00401F46",
+        "tag": "0x00401875",
+        "replacement": "nop"
+    }
+}
