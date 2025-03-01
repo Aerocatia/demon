@@ -1,7 +1,8 @@
 use crate::model::get_model_tag_data;
-use crate::tag::{ReflexiveImpl, TagID};
+use crate::tag::{get_tag_info_typed, ReflexiveImpl, TagID};
 use crate::util::CStrPtr;
 use c_mine::c_mine;
+use tag_structs::ModelAnimations;
 use tag_structs::primitives::vector::Matrix4x3;
 use crate::object::ObjectMarker;
 
@@ -73,4 +74,27 @@ pub unsafe extern "C" fn model_get_marker_by_name(
         .count();
 
     marker_count as u16
+}
+
+#[c_mine]
+pub unsafe extern "C" fn copy_fp_node_data(
+    model_id: TagID,
+    into: *mut Matrix4x3,
+    animation_id: TagID,
+    from: *const Matrix4x3,
+    animation_graph_node_indices: *const u16
+) {
+    let model_data = get_model_tag_data(model_id).unwrap();
+    let animation_data = get_tag_info_typed::<ModelAnimations>(animation_id).unwrap();
+
+    let model_node_count = model_data.1.get_nodes().len();
+    let animation_graph_node_indices = core::slice::from_raw_parts(animation_graph_node_indices, model_node_count);
+
+    let animation_model_node_count = animation_data.1.nodes.len();
+    let into = core::slice::from_raw_parts_mut(into, animation_model_node_count);
+    let from = core::slice::from_raw_parts(from, animation_model_node_count);
+
+    for (model_node, animation_node) in animation_graph_node_indices.iter().map(|m| *m as usize).enumerate() {
+        into[model_node] = from[animation_node];
+    }
 }

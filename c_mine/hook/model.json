@@ -12,5 +12,11 @@
     "model_find_node": {
         "tag": "0x00404601",
         "replacement": "forbid"
+    },
+    "copy_fp_node_data": {
+        "cache": "0x00620DA0",
+        "tag": "0x00627A30",
+        "sudo": true,
+        "replacement": "crate::model::c::copy_fp_node_data"
     }
 }
