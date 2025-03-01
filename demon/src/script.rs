@@ -5,6 +5,7 @@ pub mod cls;
 pub mod script_doc;
 
 use core::ffi::CStr;
+use core::mem::transmute;
 use c_mine::pointer_from_hook;
 use tag_structs::{ScenarioGlobal, ScenarioScriptValueType};
 use crate::init::{get_exe_type, ExeType};
@@ -25,7 +26,7 @@ pub struct HSExternalGlobalDefinition {
 
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct HSScriptFunctionDefinition {
+pub struct HSScriptFunctionDefinition<const ARGUMENT_COUNT: usize> {
     pub return_type: ScenarioScriptValueType,
     pub padding_0x2: u16,
     pub name: CStrPtr,
@@ -35,8 +36,31 @@ pub struct HSScriptFunctionDefinition {
     pub usage: CStrPtr,
     pub unknown1: u16,
     pub argument_count: u16,
-    pub argument_types: [ScenarioScriptValueType; 6]
+    pub argument_types: [ScenarioScriptValueType; ARGUMENT_COUNT]
 }
+
+impl<const ARGUMENT_COUNT: usize> HSScriptFunctionDefinition<ARGUMENT_COUNT> {
+    /// Convert this reference into a `HSScriptFunctionDefinition<0>`.
+    pub const fn as_generic(&self) -> &HSScriptFunctionDefinition<0> {
+        unsafe { transmute(self) }
+    }
+}
+
+impl HSScriptFunctionDefinition<0> {
+    /// Gets the arguments for the function.
+    ///
+    /// This is used for if the number of arguments should be determined at compile time.
+    ///
+    /// # Safety
+    ///
+    /// This requires `argument_count` to be correct and `self` actually pointing to an object of
+    /// type `HSScriptFunctionDefinition<self.argument_count>`.
+    pub unsafe fn get_argument_types(&self) -> &[ScenarioScriptValueType] {
+        let arguments = &self.argument_types as *const ScenarioScriptValueType;
+        core::slice::from_raw_parts(arguments, self.argument_count as usize)
+    }
+}
+
 
 #[derive(Copy, Clone)]
 pub struct ExternalGlobal {
@@ -65,7 +89,7 @@ impl ExternalGlobal {
 }
 
 const EXTERNAL_GLOBALS: (&[ExternalGlobal], &[ExternalGlobal]) = c_mine::generate_hs_external_globals_array!();
-const SCRIPT_FUNCTIONS: (&[HSScriptFunctionDefinition], &[HSScriptFunctionDefinition]) = c_mine::generate_hs_functions_array!();
+const SCRIPT_FUNCTIONS: (&[&HSScriptFunctionDefinition<0>], &[&HSScriptFunctionDefinition<0>]) = c_mine::generate_hs_functions_array!();
 
 pub fn get_external_globals() -> &'static [ExternalGlobal] {
     let exe_type = get_exe_type();
@@ -75,7 +99,7 @@ pub fn get_external_globals() -> &'static [ExternalGlobal] {
     }
 }
 
-pub fn get_functions() -> &'static [HSScriptFunctionDefinition] {
+pub fn get_functions() -> &'static [&'static HSScriptFunctionDefinition<0>] {
     let exe_type = get_exe_type();
     match exe_type {
         ExeType::Cache => SCRIPT_FUNCTIONS.0,

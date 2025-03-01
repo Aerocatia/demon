@@ -430,35 +430,36 @@ pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
             let compile = resolve_ptr(address_type, hooks, compile);
             let evaluate = resolve_ptr(address_type, hooks, evaluate);
 
-            let mut arg_setter_code = String::new();
-            for (i, j) in i.arguments.iter().enumerate() {
-                arg_setter_code += &format!("arguments[{i}] = ScenarioScriptValueType::{j};");
+            let mut args = String::new();
+            for i in i.arguments.iter() {
+                args += &format!("ScenarioScriptValueType::{i},");
             }
 
-            fmt::write(&mut data, format_args!("HSScriptFunctionDefinition {{")).expect(";-;");
-            fmt::write(&mut data, format_args!("name: CStrPtr::from_cstr(c\"{name}\"),")).expect(";-;");
-            fmt::write(&mut data, format_args!("description: CStrPtr::from_cstr(c\"{description}\"),")).expect(";-;");
-            if usage.is_empty() {
-                fmt::write(&mut data, format_args!("usage: CStrPtr(core::ptr::null()),")).expect(";-;");
+            let usage_str = if usage.is_empty() {
+                "CStrPtr(core::ptr::null())".to_owned()
             }
             else {
-                fmt::write(&mut data, format_args!("usage: CStrPtr::from_cstr(c\"{usage}\"),")).expect(";-;");
-            }
+                format!("CStrPtr::from_cstr(c\"{usage}\")")
+            };
 
-            fmt::write(&mut data, format_args!("return_type: ScenarioScriptValueType::{return_type},")).expect(";-;");
-            fmt::write(&mut data, format_args!("compile: {compile},")).expect(";-;");
-            fmt::write(&mut data, format_args!("evaluate: {evaluate},")).expect(";-;");
-            fmt::write(&mut data, format_args!("argument_count: {},", i.arguments.len())).expect(";-;");
-            fmt::write(&mut data, format_args!("argument_types: const {{
-                let mut arguments = [ScenarioScriptValueType::Unparsed; 6];
-                {arg_setter_code}
-                arguments
-            }},")).expect(";-;");
+            let arg_len = i.arguments.len();
 
-            // SAFETY: This struct is perfectly safe to be zeroed.
-            fmt::write(&mut data, format_args!("..unsafe {{ core::mem::zeroed() }}")).expect(";-;");
+            fmt::write(&mut data, format_args!("
+            const {{
+                HSScriptFunctionDefinition {{
+                    name: CStrPtr::from_cstr(c\"{name}\"),
+                    description: CStrPtr::from_cstr(c\"{description}\"),
+                    compile: {compile},
+                    evaluate: {evaluate},
+                    usage: {usage_str},
+                    return_type: ScenarioScriptValueType::{return_type},
+                    argument_count: {arg_len},
+                    argument_types: [ {args} ],
 
-            fmt::write(&mut data, format_args!("}},\n")).expect(";-;");
+                    // SAFETY: This struct is perfectly safe to be zeroed.
+                    ..unsafe {{ core::mem::zeroed() }}
+                }}
+            }}.as_generic(),")).expect(";-;");
         }
         data
     }
@@ -472,8 +473,8 @@ pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
     tag_list += &demon_list;
 
     let parsed = format!("{{\
-    const CACHE_FUNCTION_DEFINITIONS: &[HSScriptFunctionDefinition] = &[{cache_list}];
-    const TAG_FUNCTION_DEFINITIONS: &[HSScriptFunctionDefinition] = &[{tag_list}];
+    const CACHE_FUNCTION_DEFINITIONS: &[&HSScriptFunctionDefinition<0>] = &[{cache_list}];
+    const TAG_FUNCTION_DEFINITIONS: &[&HSScriptFunctionDefinition<0>] = &[{tag_list}];
 
     (CACHE_FUNCTION_DEFINITIONS, TAG_FUNCTION_DEFINITIONS)
     }}");

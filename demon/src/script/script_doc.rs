@@ -21,7 +21,8 @@ pub mod c {
             core::fmt::write(&mut args, format_args!("(<{}> {name}", i.return_type)).expect(";-;");
 
             if usage.is_empty() {
-                for i in &i.argument_types[..i.argument_count as usize] {
+                // SAFETY: `get_argument_types`'s precondition is guaranteed by `c_mine`
+                for i in unsafe { i.get_argument_types() } {
                     core::fmt::write(&mut args, format_args!(" <{i}>")).expect(";-;");
                 }
             }

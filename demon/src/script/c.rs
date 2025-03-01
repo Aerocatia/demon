@@ -197,7 +197,7 @@ pub unsafe extern "C" fn hs_find_function_by_name(name: CStrPtr) -> usize {
 }
 
 #[c_mine]
-pub unsafe extern "C" fn hs_get_function(index: u16) -> &'static HSScriptFunctionDefinition {
+pub unsafe extern "C" fn hs_get_function(index: u16) -> &'static HSScriptFunctionDefinition<0> {
     match get_functions().get(index as usize) {
         Some(n) => n,
         None => panic!("hs_get_function with index {index}")
