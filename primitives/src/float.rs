@@ -9,8 +9,8 @@ pub trait FloatFunctions: Copy + Copy {
     fn sin(self) -> Self;
     fn cos(self) -> Self;
     fn acos(self) -> Self;
-    fn round_to_int(self) -> i32;
-    fn round_towards_zero(self) -> i32;
+    fn round_ties_even_to_int(self) -> i32;
+    fn round_towards_zero_to_int(self) -> i32;
     fn floor_to_int(self) -> i32;
 }
 
@@ -34,9 +34,7 @@ impl FloatFunctions for f32 {
     fn cos(self) -> Self { libm::cosf(self) }
     fn acos(self) -> Self { libm::acosf(self) }
 
-    // Implementation of the x87 FISTP instruction in nearest mode.
-    // If rounding is not done exactly this way, it leads to death!
-    fn round_to_int(self) -> i32 {
+    fn round_ties_even_to_int(self) -> i32 {
         let a = self.floor_to_int();
         let b = a.saturating_add(1);
         let low = self - (a as f32);
@@ -46,21 +44,18 @@ impl FloatFunctions for f32 {
             Ordering::Less => a,
             Ordering::Greater => b,
 
-            // Fractional part is X.5; conventionally, you'd round up (if positive), but if you do
-            // this, you will get stabbed by the sentinels on c40.
-            //
-            // Instead, we round up if flooring resulted in an odd number.
+            // Round to the nearest even number
             Ordering::Equal => if (a & 1) != 0 { b } else { a }
         }
     }
-    fn round_towards_zero(self) -> i32 {
+    fn round_towards_zero_to_int(self) -> i32 {
         self as i32
     }
     fn floor_to_int(self) -> i32 {
         match self.total_cmp(&0.0) {
             Ordering::Equal => 0,
-            Ordering::Greater => self.round_towards_zero(),
-            Ordering::Less => self.round_towards_zero() - 1
+            Ordering::Greater => self.round_towards_zero_to_int(),
+            Ordering::Less => self.round_towards_zero_to_int() - 1
         }
     }
 }
