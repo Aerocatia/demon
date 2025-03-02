@@ -154,7 +154,7 @@ pub unsafe extern "C" fn display_scripting_error(file: CStrPtr, reason: CStrPtr,
 
     let error_message = StaticStringBytes::<1024>::from_fmt(
         format_args!("{}: {offending_line}", reason.display_lossy())
-    ).expect(";-;");
+    ).unwrap();
 
     let location: StaticStringBytes<256> = if file.is_null() {
         StaticStringBytes::from_fmt(
@@ -174,7 +174,7 @@ pub unsafe extern "C" fn display_scripting_error(file: CStrPtr, reason: CStrPtr,
         StaticStringBytes::from_fmt(
             format_args!("{}:{line}", file.display_lossy())
         )
-    }.expect(";-;");
+    }.unwrap();
 
     debug_log!("HSC syntax error @ {location} - {error_message}");
 

@@ -42,5 +42,10 @@
         "cache": "0x00407D29",
         "tag": "0x00406ED8",
         "replacement": "forbid"
+    },
+    "rasterizer_text_rendering_globals_setup": {
+        "cache": "0x0040973C",
+        "tag": "0x00408AB7",
+        "replacement": "crate::rasterizer::c::rasterizer_text_rendering_globals_setup"
     }
 }

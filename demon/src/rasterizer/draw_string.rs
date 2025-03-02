@@ -3,7 +3,7 @@ use core::ptr::null;
 use num_enum::TryFromPrimitive;
 use c_mine::pointer_from_hook;
 use tag_structs::primitives::color::{ColorARGB, ColorRGB, Pixel32};
-use tag_structs::primitives::vector::Rectangle;
+use tag_structs::primitives::rectangle::Rectangle;
 use crate::rasterizer::draw_string::c::{draw_string_set_color, draw_string_set_font, draw_string_set_format, rasterizer_text_set_shadow_color, set_tab_stops};
 use crate::tag::TagID;
 use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
@@ -89,7 +89,7 @@ pub struct DrawStringWriter {
     flags: DrawStringFlags,
     shadow_color: Option<ColorARGB>,
     tab_stop_count: usize,
-    tab_stops: [u16; MAXIMUM_NUMBER_OF_TAB_STOPS],
+    tab_stops: [i16; MAXIMUM_NUMBER_OF_TAB_STOPS],
     color: ColorARGB
 }
 impl DrawStringWriter {
@@ -110,7 +110,7 @@ impl DrawStringWriter {
                     justification: DrawStringJustification,
                     flags: DrawStringFlags,
                     shadow_color: Option<ColorARGB>,
-                    tab_stops: &[u16],
+                    tab_stops: &[i16],
                     color: ColorARGB) -> Self {
         let mut writer = Self {
             font_tag, style, justification, flags, tab_stops: Default::default(), tab_stop_count: 0, color, shadow_color
@@ -136,7 +136,7 @@ impl DrawStringWriter {
     pub fn set_flags(&mut self, flags: DrawStringFlags) {
         self.flags = flags;
     }
-    pub fn set_tab_stops(&mut self, tab_stops: &[u16]) {
+    pub fn set_tab_stops(&mut self, tab_stops: &[i16]) {
         assert!(tab_stops.len() <= MAXIMUM_NUMBER_OF_TAB_STOPS);
         self.tab_stops[..tab_stops.len()].copy_from_slice(tab_stops);
         self.tab_stop_count = tab_stops.len();
@@ -205,7 +205,7 @@ const TAB_STOP_COUNT: VariableProvider<u16> = variable! {
     tag_address: 0x00FFDD58
 };
 
-const TAB_STOPS: VariableProvider<[u16; 0x10]> = variable! {
+const TAB_STOPS: VariableProvider<[i16; 0x10]> = variable! {
     name: "TAB_STOPS",
     cache_address: 0x00F457FA,
     tag_address: 0x00FFDD5A

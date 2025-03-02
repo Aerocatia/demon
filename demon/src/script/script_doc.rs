@@ -8,7 +8,7 @@ pub mod c {
     pub unsafe extern "C" fn script_doc() {
         let mut args = String::with_capacity(65536);
 
-        core::fmt::write(&mut args, format_args!("[Functions]\n\n")).expect(";-;");
+        core::fmt::write(&mut args, format_args!("[Functions]\n\n")).unwrap();
 
         let mut functions = get_functions().to_vec();
         functions.sort_by(|a, b| a.name.expect_str().cmp(b.name.expect_str()));
@@ -18,38 +18,38 @@ pub mod c {
             let description = i.description.get_str().unwrap_or("");
             let usage = i.usage.get_str().unwrap_or("");
 
-            core::fmt::write(&mut args, format_args!("(<{}> {name}", i.return_type)).expect(";-;");
+            core::fmt::write(&mut args, format_args!("(<{}> {name}", i.return_type)).unwrap();
 
             if usage.is_empty() {
                 // SAFETY: `get_argument_types`'s precondition is guaranteed by `c_mine`
                 for i in unsafe { i.get_argument_types() } {
-                    core::fmt::write(&mut args, format_args!(" <{i}>")).expect(";-;");
+                    core::fmt::write(&mut args, format_args!(" <{i}>")).unwrap();
                 }
             }
             else {
-                core::fmt::write(&mut args, format_args!(" {usage}")).expect(";-;");
+                core::fmt::write(&mut args, format_args!(" {usage}")).unwrap();
             }
 
-            core::fmt::write(&mut args, format_args!(")\n")).expect(";-;");
+            core::fmt::write(&mut args, format_args!(")\n")).unwrap();
 
             if description.is_empty() {
-                core::fmt::write(&mut args, format_args!("<no description>\n")).expect(";-;");
+                core::fmt::write(&mut args, format_args!("<no description>\n")).unwrap();
             }
             else {
-                core::fmt::write(&mut args, format_args!("{}\n", i.description.expect_str())).expect(";-;");
+                core::fmt::write(&mut args, format_args!("{}\n", i.description.expect_str())).unwrap();
             }
 
-            core::fmt::write(&mut args, format_args!("\n")).expect(";-;");
+            core::fmt::write(&mut args, format_args!("\n")).unwrap();
         }
 
-        core::fmt::write(&mut args, format_args!("\n[Globals]\n\n")).expect(";-;");
+        core::fmt::write(&mut args, format_args!("\n[Globals]\n\n")).unwrap();
 
         let mut globals = get_external_globals().to_vec();
         globals.sort_by(|a, b| a.name().cmp(b.name()));
 
         for i in globals {
             let name = i.name();
-            core::fmt::write(&mut args, format_args!("<{}> {name}\n", i.definition.global_type)).expect(";-;");
+            core::fmt::write(&mut args, format_args!("<{}> {name}\n", i.definition.global_type)).unwrap();
         }
 
         match write_to_file("hs_doc.txt", args.as_bytes()) {

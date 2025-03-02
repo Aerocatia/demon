@@ -11,5 +11,7 @@
     { "name": "demon_safe_zone_top", "type": "Real", "address": "crate::rasterizer::hud::HUD_SAFE_ZONE_TOP"},
     { "name": "demon_safe_zone_left", "type": "Real", "address": "crate::rasterizer::hud::HUD_SAFE_ZONE_LEFT"},
     { "name": "demon_safe_zone_bottom", "type": "Real", "address": "crate::rasterizer::hud::HUD_SAFE_ZONE_BOTTOM"},
-    { "name": "demon_safe_zone_right", "type": "Real", "address": "crate::rasterizer::hud::HUD_SAFE_ZONE_RIGHT"}
+    { "name": "demon_safe_zone_right", "type": "Real", "address": "crate::rasterizer::hud::HUD_SAFE_ZONE_RIGHT"},
+
+    { "name": "demon_widescreen_test", "type": "Boolean", "address": "crate::rasterizer::WIDESCREEN_TEST"}
 ]

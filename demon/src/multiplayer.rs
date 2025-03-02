@@ -122,9 +122,9 @@ pub enum Gametype {
 pub unsafe fn get_player_score(player_id: PlayerID, server_info: &ServerInfo) -> i32 {
     let player_getter = || PLAYERS_TABLE
         .get_copied()
-        .expect("NO PLAYER TABLE?!")
+        .unwrap()
         .get_element(player_id)
-        .expect("Failed to get player!")
+        .unwrap()
         .get();
 
     match server_info.get_gametype() {

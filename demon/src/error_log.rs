@@ -47,16 +47,16 @@ unsafe extern "C" fn log_error_message(priority: ErrorPriority, message: impl Di
         console_color!(&const { ColorRGB::WHITE.as_colorargb() }, "{message}");
     }
 
-    let message_to_log = if priority == ErrorPriority::Death {
-        StaticStringBytes::<{ MAX_LOG_LEN + 32 }>::from_fmt(format_args!("(death) {message}\r\n"))
+    let message_to_log: StaticStringBytes<{ MAX_LOG_LEN + 32 }> = if priority == ErrorPriority::Death {
+        StaticStringBytes::from_fmt(format_args!("(death) {message}\r\n"))
             .expect("failed to die; task failed successfully!")
     }
     else if priority == ErrorPriority::Exception {
-        StaticStringBytes::<{ MAX_LOG_LEN + 32 }>::from_fmt(format_args!("(exception) {message}\r\n"))
+        StaticStringBytes::from_fmt(format_args!("(exception) {message}\r\n"))
             .expect("failed to die; task failed successfully!")
     }
     else {
-        StaticStringBytes::<{ MAX_LOG_LEN + 32 }>::from_fmt(format_args!("{message}\r\n"))
+        StaticStringBytes::from_fmt(format_args!("{message}\r\n"))
             .expect("an error occurred while loading the previous error")
     };
 

@@ -9,8 +9,7 @@ use serde::Deserialize;
 /// Wraps the function into a CFunctionProvider
 #[proc_macro_attribute]
 pub fn c_mine(_: TokenStream, token_stream: TokenStream) -> TokenStream {
-    let parsed: syn::ItemFn = syn::parse(token_stream.clone())
-        .expect("Cannot parse!");
+    let parsed: syn::ItemFn = syn::parse(token_stream.clone()).unwrap();
 
     let ident = parsed.sig.ident.clone();
     let fn_name = ident.to_string();
@@ -33,14 +32,14 @@ pub fn c_mine(_: TokenStream, token_stream: TokenStream) -> TokenStream {
             return format!(
                 "{sig} {{ compile_error!(\"Function \\\"{fn_name}\\\" {error}\") }}",
                 sig=parsed.sig.clone().to_token_stream()
-            ).parse().expect(":(");
+            ).parse().unwrap();
         }
     }
 
     let visibility = parsed.vis.to_token_stream();
     let fn_name_literal: proc_macro2::TokenStream = format!("\"{fn_name}\"")
         .parse()
-        .expect("idk how it didn't parse");
+        .unwrap();
 
     let fn_type = parsed.sig.clone();
     let args = fn_type.inputs.to_token_stream();
@@ -77,7 +76,7 @@ pub fn pointer_from_hook(t: TokenStream) -> TokenStream {
     let name = parsed.value();
     let all_hooks = get_all_hooks();
     let Some(hook) = all_hooks.get(&parsed.value()) else {
-        return format!("compile_error!(\"No such hook `{name}`\");").parse().expect(";-;")
+        return format!("compile_error!(\"No such hook `{name}`\");").parse().unwrap()
     };
 
     let cache = hook.cache.as_ref().map(String::as_str).unwrap_or("0x00000000");
@@ -88,7 +87,7 @@ pointer! {{
     name: \"{name}\",
     cache_address: {cache},
     tag_address: {tag}
-}}").parse().expect(";-;")
+}}").parse().unwrap()
 }
 
 fn get_all_hooks() -> HashMap<String, Hook> {
@@ -96,7 +95,7 @@ fn get_all_hooks() -> HashMap<String, Hook> {
     let mut cache_addresses: HashSet<String> = HashSet::new();
     let mut tag_addresses: HashSet<String> = HashSet::new();
 
-    for i in std::fs::read_dir("c_mine/hook").expect("WHERE?").filter_map(|d| d.ok()) {
+    for i in std::fs::read_dir("c_mine/hook").unwrap().filter_map(|d| d.ok()) {
         let path = i.path();
         if path.extension() != Some("json".as_ref()) {
             continue
@@ -145,7 +144,7 @@ pub fn generate_hook_setup_code(_: TokenStream) -> TokenStream {
             target = &name;
 
             if c_targets_generated.insert(function.to_owned()) {
-                fmt::write(&mut codegen, format_args!("unsafe extern \"C\" {{ fn {function}(); }}")).expect(";-;");
+                fmt::write(&mut codegen, format_args!("unsafe extern \"C\" {{ fn {function}(); }}")).unwrap();
             }
 
             fmt::write(&mut codegen, format_args!("
@@ -157,22 +156,22 @@ const {name}: crate::util::CFunctionProvider<unsafe extern \"C\" fn()> = crate::
     }}
 }};
 
-")).expect(";-;");
+")).unwrap();
         }
 
         else if target == "forbid" {
             target = &name;
-            fmt::write(&mut codegen, format_args!("#[c_mine] extern \"C\" fn {name}() {{ panic!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
+            fmt::write(&mut codegen, format_args!("#[c_mine] extern \"C\" fn {name}() {{ panic!(\"Entered stubbed-out function `{name}`\") }}")).unwrap();
         }
 
         else if target == "error" {
             target = &name;
-            fmt::write(&mut codegen, format_args!("#[c_mine] extern \"C\" fn {name}() {{ error!(\"Entered stubbed-out function `{name}`\") }}")).expect(";-;");
+            fmt::write(&mut codegen, format_args!("#[c_mine] extern \"C\" fn {name}() {{ error!(\"Entered stubbed-out function `{name}`\") }}")).unwrap();
         }
 
         else if target == "nop" {
             target = &name;
-            fmt::write(&mut codegen, format_args!("#[c_mine] extern \"C\" fn {name}() {{ }}")).expect(";-;");
+            fmt::write(&mut codegen, format_args!("#[c_mine] extern \"C\" fn {name}() {{ }}")).unwrap();
         }
 
         else if target == "original" {
@@ -187,14 +186,14 @@ const {name}: crate::util::CFunctionProvider<unsafe extern \"C\" fn()> = crate::
         };
 
         if let Some(tag) = hook.tag {
-            fmt::write(&mut tag_code, format_args!("{write_fn}(\"{name}\", {tag} as *mut _, {target});")).expect("*sad Butterfree noises*");
+            fmt::write(&mut tag_code, format_args!("{write_fn}(\"{name}\", {tag} as *mut _, {target});")).unwrap();
         }
         if let Some(cache) = hook.cache {
-            fmt::write(&mut cache_code, format_args!("{write_fn}(\"{name}\", {cache} as *mut _, {target});")).expect("*sad Butterfree noises*");
+            fmt::write(&mut cache_code, format_args!("{write_fn}(\"{name}\", {cache} as *mut _, {target});")).unwrap();
         }
     }
 
-    format!("{codegen} match get_exe_type() {{\nExeType::Cache => {{ {cache_code} }},\nExeType::Tag => {{ {tag_code} }} }}").parse().expect(";-;")
+    format!("{codegen} match get_exe_type() {{\nExeType::Cache => {{ {cache_code} }},\nExeType::Tag => {{ {tag_code} }} }}").parse().unwrap()
 }
 
 
@@ -216,9 +215,9 @@ pub fn generate_hs_external_globals_array(_: TokenStream) -> TokenStream {
                 continue
             };
 
-            fmt::write(&mut data, format_args!("ExternalGlobal::new(c\"{name}\", ScenarioScriptValueType::{global_type}, ")).expect(";-;");
-            fmt::write(&mut data, format_args!("{}", format_address(address))).expect(";-;");
-            fmt::write(&mut data, format_args!("),\n")).expect(";-;");
+            fmt::write(&mut data, format_args!("ExternalGlobal::new(c\"{name}\", ScenarioScriptValueType::{global_type}, ")).unwrap();
+            fmt::write(&mut data, format_args!("{}", format_address(address))).unwrap();
+            fmt::write(&mut data, format_args!("),\n")).unwrap();
         }
         data
     }
@@ -235,7 +234,7 @@ pub fn generate_hs_external_globals_array(_: TokenStream) -> TokenStream {
     const TAG_GLOBAL_DEFINITIONS: &[ExternalGlobal] = &[{tag_list}];
 
     (CACHE_GLOBAL_DEFINITIONS, TAG_GLOBAL_DEFINITIONS)
-    }}").parse().expect("should've parsed")
+    }}").parse().unwrap()
 }
 
 /// # Safety
@@ -261,14 +260,14 @@ pub fn get_hs_global_mut(token_stream: TokenStream) -> TokenStream {
 }
 
 fn get_hs_global_with_borrow(token_stream: TokenStream, borrow: &str) -> TokenStream {
-    let parsed: syn::LitStr = syn::parse(token_stream).expect("expected a literal string");
+    let parsed: syn::LitStr = syn::parse(token_stream).unwrap();
     let name = parsed.value();
     let all_globals = get_all_globals();
     let Some(global) = all_globals.get(&parsed.value()) else {
-        return format!("compile_error!(\"No such global `{name}`\");").parse().expect(";-;")
+        return format!("compile_error!(\"No such global `{name}`\");").parse().unwrap()
     };
     if let Some(global) = global.address_demon.as_ref() {
-        return format!("{borrow}{global}").parse().expect(";-;")
+        return format!("{borrow}{global}").parse().unwrap()
     };
 
     let type_to_use = match global.r#type.as_str() {
@@ -277,7 +276,7 @@ fn get_hs_global_with_borrow(token_stream: TokenStream, borrow: &str) -> TokenSt
         "Real" => "f32",
         "Short" => "i16",
         "Long" => "i32",
-        n => return format!("compile_error!(\"`{name}` is a {n} which cannot be used with get_hs_global_* methods\");").parse().expect(";-;")
+        n => return format!("compile_error!(\"`{name}` is a {n} which cannot be used with get_hs_global_* methods\");").parse().unwrap()
     };
 
     let cache = match global.address_cache.as_ref() {
@@ -290,7 +289,7 @@ fn get_hs_global_with_borrow(token_stream: TokenStream, borrow: &str) -> TokenSt
         None => format!("panic!(\"{name} is not available on tag builds\")")
     };
 
-    format!("match crate::init::get_exe_type() {{ crate::init::ExeType::Cache => {cache}, crate::init::ExeType::Tag => {tag} }}").parse().expect(";-;")
+    format!("match crate::init::get_exe_type() {{ crate::init::ExeType::Cache => {cache}, crate::init::ExeType::Tag => {tag} }}").parse().unwrap()
 }
 
 #[derive(Deserialize)]
@@ -348,7 +347,7 @@ fn get_all_scripting_functions() -> Vec<HSFunction> {
             .get(&i)
             .or_else(|| tag_functions.get(&i))
             .or_else(|| demon_functions.get(&i))
-            .expect("should somehow have an entry here");
+            .unwrap();
 
         result.push(
             HSFunction {
@@ -459,7 +458,7 @@ pub fn generate_hs_functions_array(_: TokenStream) -> TokenStream {
                     // SAFETY: This struct is perfectly safe to be zeroed.
                     ..unsafe {{ core::mem::zeroed() }}
                 }}
-            }}.as_generic(),")).expect(";-;");
+            }}.as_generic(),")).unwrap();
         }
         data
     }
@@ -528,7 +527,7 @@ fn get_all_globals() -> HashMap<String, ExternalGlobal> {
             });
             global = result.get_mut(&what.name);
         }
-        let global = global.expect("we just inserted it!");
+        let global = global.unwrap();
         assert!(what.r#type == global.r#type, "type mismatch for {}", what.name);
         let addr = match address_type {
             "demon" => &mut global.address_demon,

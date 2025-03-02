@@ -1,5 +1,4 @@
 use core::fmt::{Debug, Formatter};
-use c_mine::c_mine;
 use tag_structs::{ModelMarkerInstance, ObjectType};
 use tag_structs::primitives::vector::{Matrix4x3, Vector3D};
 use crate::id::ID;
@@ -8,6 +7,7 @@ use crate::tag::TagID;
 use crate::util::VariableProvider;
 
 pub mod weapon;
+pub mod c;
 
 const OBJECT_SALT: u16 = 0x626F;
 
@@ -16,9 +16,16 @@ pub type ObjectID = ID<OBJECT_SALT>;
 #[repr(C)]
 pub struct ObjectIndex {
     pub identifier: u16,
-    pub _unknown_0x2: u16,
+    pub _unknown_0x2: u8,
+    pub object_type: u8,
     pub _unknown_0x4: u32,
     pub object_data: *mut [u8; 0]
+}
+
+impl ObjectIndex {
+    pub fn try_get_object_type(&self) -> Option<ObjectType> {
+        ObjectType::try_from(self.object_type as u16).ok()
+    }
 }
 
 pub const OBJECT_TABLE: VariableProvider<Option<&mut DataTable<ObjectIndex, OBJECT_SALT>>> = variable! {
@@ -83,7 +90,7 @@ impl ObjectTypes {
         Self(value)
     }
     pub const fn from_single(object_type: ObjectType) -> Self {
-        Self(1 << (object_type as u32))
+        Self(1u32.wrapping_shl(object_type as u32))
     }
     pub const fn contains(&self, what: ObjectType) -> bool {
         (Self::from_single(what).0 & self.0) != 0
@@ -160,22 +167,4 @@ pub struct BaseObject {
 
     pub position: Vector3D,
     pub velocity: Vector3D
-}
-
-#[c_mine]
-pub unsafe extern "C" fn object_get_and_verify_type(object_id: ObjectID, object_types: ObjectTypes) -> *mut [u8; 0] {
-    let object = OBJECT_TABLE
-        .get_copied()
-        .expect("object_get_and_verify_type called with null object table")
-        .get_element(object_id)
-        .expect("object_get_and_verify_type could not get an object");
-
-    let data = object.get().object_data;
-    let data_usize = data as usize;
-    let object_type: ObjectType = (*(data.wrapping_byte_add(0x70) as *const u16))
-        .try_into()
-        .unwrap_or_else(|_| panic!("object_get_and_verify_type got object {object_id:?} @ 0x{data_usize:08X} which has an invalid object type"));
-
-    assert!(object_types.contains(object_type), "object_get_and_verify_type got object {object_id:?} @ 0x{data_usize:08X} which is {object_type:?}, not {object_types:?}");
-    data
 }

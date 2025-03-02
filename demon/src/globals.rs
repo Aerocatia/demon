@@ -12,7 +12,7 @@ pub const GLOBAL_GAME_GLOBALS: VariableProvider<Option<&Globals>> = variable! {
 pub unsafe fn get_interface_bitmaps() -> &'static GlobalsInterfaceBitmaps {
     let globals = GLOBAL_GAME_GLOBALS.get().expect("get_interface_bitmaps with null globals");
     let interface_bitmaps = globals.interface_bitmaps;
-    interface_bitmaps.get(0).expect("no interface bitmaps?!")
+    interface_bitmaps.get(0).unwrap()
 }
 
 pub struct InterfaceFonts {

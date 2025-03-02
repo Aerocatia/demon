@@ -76,7 +76,7 @@ pub unsafe extern "C" fn display_assert(assertion: CStrPtr, file: CStrPtr, line:
 
     let err = StaticStringBytes::<1024>::from_fmt(
         format_args!("Halo assertion failed ({error_type}): {file}:{line} @ 0x{return_address:08X}: {reason}")
-    ).expect(";-;");
+    ).unwrap();
 
     error!("Halo assertion failed ({error_type}): {file}:{line} @ 0x{return_address:08X}: {reason}");
 

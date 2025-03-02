@@ -2,7 +2,7 @@ use crate::globals::get_interface_fonts;
 use crate::input::INPUT_GET_BUTTON_STATE;
 use crate::multiplayer::game_engine::{get_game_engine_globals_mode, GameEngineGlobalsMode};
 use crate::multiplayer::{get_server_info, ServerInfo};
-use crate::player::{get_local_player_index, local_player_get_player_index, PlayerControlsAction, PlayerID, MAXIMUM_NUMBER_OF_PLAYERS, PLAYERS_TABLE};
+use crate::player::{get_local_player_index, local_player_index_to_id, PlayerControlsAction, PlayerID, MAXIMUM_NUMBER_OF_PLAYERS, PLAYERS_TABLE};
 use crate::timing::InterpolatedTimer;
 use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
 use c_mine::{c_mine, pointer_from_hook};
@@ -94,7 +94,7 @@ const FADE_SPEED: f32 = 0.5;
 
 unsafe fn game_engine_post_rasterize_scoreboard() {
     let local_player = get_local_player_index();
-    let player_index = local_player_get_player_index.get()(local_player);
+    let local_player_id = local_player_index_to_id(local_player);
 
     // Acts as though the scoreboard button is pressed and game rules is not pressed
     let force_show_scoreboard = unsafe { get_game_engine_globals_mode() } == GameEngineGlobalsMode::PostgameDelay;
@@ -116,7 +116,7 @@ unsafe fn game_engine_post_rasterize_scoreboard() {
     // These screens are mutually exclusive and should not be drawn together
     // Note that 1.9 is a magic number from the game...
     if scoreboard_fade > 0.0 {
-        draw_scoreboard_screen(player_index, scoreboard_fade.powf(1.9))
+        draw_scoreboard_screen(local_player_id, scoreboard_fade.powf(1.9))
     }
     else if game_rules_fade > 0.0 {
         DRAW_GAME_RULES_SCREEN.get()(game_rules_fade.powf(1.9))
@@ -142,10 +142,10 @@ unsafe fn format_score<'a>(score: i32, server_info: &ServerInfo) -> StaticString
         let seconds = score / 30;
         let minutes = seconds / 60;
         let seconds_trunc = seconds % 60;
-        StaticStringBytes::from_fmt(format_args!("{minutes}:{seconds_trunc:02}")).expect(";-;")
+        StaticStringBytes::from_fmt(format_args!("{minutes}:{seconds_trunc:02}")).unwrap()
     }
     else {
-        StaticStringBytes::from_fmt(format_args!("{score}")).expect(";-;")
+        StaticStringBytes::from_fmt(format_args!("{score}")).unwrap()
     }
 }
 
@@ -160,7 +160,7 @@ unsafe fn draw_scoreboard_screen(local_player: PlayerID, opacity: f32) {
 
     let mut player_ids = [PlayerID::NULL; MAXIMUM_NUMBER_OF_PLAYERS];
     let mut index = 0;
-    let player_table = PLAYERS_TABLE.get_copied().expect("where is the player table???");
+    let player_table = PLAYERS_TABLE.get_copied().unwrap();
     let mut player_iterator = player_table.iter();
     while index < player_ids.len() && player_iterator.next().is_some() {
         player_ids[index] = player_iterator.id();

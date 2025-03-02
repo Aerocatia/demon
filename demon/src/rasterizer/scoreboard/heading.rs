@@ -70,7 +70,7 @@ unsafe fn fmt_scoreboard_heading_game_in_progress<'a>(
                         printf_string: scoreboard_text.n_lives.as_str(),
                         items: &[&n]
                     };
-                    StaticStringBytes::from_fmt(format_args!("{formatter}")).expect(";-;")
+                    StaticStringBytes::from_fmt(format_args!("{formatter}")).unwrap()
                 }
             }
         }
@@ -92,7 +92,7 @@ unsafe fn fmt_scoreboard_heading_game_in_progress<'a>(
                     &lives
                 ]
             };
-            return StaticStringBytes::from_fmt(format_args!("{formatter}")).expect(";-;");
+            return StaticStringBytes::from_fmt(format_args!("{formatter}")).unwrap();
         }
 
         let printf_string;
@@ -119,7 +119,7 @@ unsafe fn fmt_scoreboard_heading_game_in_progress<'a>(
             ]
         };
 
-        StaticStringBytes::from_fmt(format_args!("{formatter}")).expect(";-;")
+        StaticStringBytes::from_fmt(format_args!("{formatter}")).unwrap()
     }
     else if server_info.is_team_game() {
         // TODO: multiple teams
@@ -173,5 +173,5 @@ unsafe fn write_nth_place<'a>(
             &lives
         ]
     };
-    StaticStringBytes::from_fmt(format_args!("{scoreboard}")).expect(";-;")
+    StaticStringBytes::from_fmt(format_args!("{scoreboard}")).unwrap()
 }

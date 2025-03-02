@@ -25,7 +25,7 @@ impl TagGroupStruct for {struct_name} {{
 }}"#)).unwrap()
     }
 
-    data.parse().expect("failed to parse tag definitions ;-;")
+    data.parse().unwrap()
 }
 
 fn write_struct(struct_data: &Struct, definitions: &ParsedDefinitions, output: &mut String) {
@@ -36,7 +36,7 @@ fn write_struct(struct_data: &Struct, definitions: &ParsedDefinitions, output: &
     for (index, i) in struct_data.fields.iter().enumerate() {
         match &i.field_type {
             StructFieldType::Padding(p) => {
-                write(&mut members, format_args!("    pub _padding_{index}: [u8; {p}],\n")).expect(";-;");
+                write(&mut members, format_args!("    pub _padding_{index}: [u8; {p}],\n")).unwrap();
             },
             StructFieldType::EditorSection(_) => {},
             StructFieldType::Object(o) => {
@@ -75,7 +75,7 @@ fn write_struct(struct_data: &Struct, definitions: &ParsedDefinitions, output: &
                     ObjectType::Plane3D => "primitives::vector::Plane3D".to_owned(),
                     ObjectType::Euler2D => "primitives::vector::Euler2D".to_owned(),
                     ObjectType::Euler3D => "primitives::vector::Euler3D".to_owned(),
-                    ObjectType::Rectangle => "primitives::vector::Rectangle".to_owned(),
+                    ObjectType::Rectangle => "primitives::rectangle::Rectangle".to_owned(),
                     ObjectType::Quaternion => "primitives::vector::Quaternion".to_owned(),
                     ObjectType::Matrix3x3 => "primitives::vector::Matrix3x3".to_owned(),
                     ObjectType::ColorRGBFloat => "primitives::color::ColorRGB".to_owned(),
@@ -93,7 +93,7 @@ fn write_struct(struct_data: &Struct, definitions: &ParsedDefinitions, output: &
                 };
 
                 let struct_field_name = rustify_string(&i.name);
-                write(&mut members, format_args!("    pub {struct_field_name}: {object_type},\n")).expect(";-;");
+                write(&mut members, format_args!("    pub {struct_field_name}: {object_type},\n")).unwrap();
             }
         }
     }
@@ -109,7 +109,7 @@ impl NamedTagStruct for {name} {{
         "{name}"
     }}
 }}
-"#)).expect(";-;");
+"#)).unwrap();
 }
 
 fn write_enum(enum_data: &Enum, _definitions: &ParsedDefinitions, output: &mut String) {
@@ -118,8 +118,8 @@ fn write_enum(enum_data: &Enum, _definitions: &ParsedDefinitions, output: &mut S
     let mut members_names = String::with_capacity(1024 * 1024);
     for i in &enum_data.options {
         let name = rustify_string_pascal_case(&i.name);
-        write(&mut members, format_args!("    {name} = {},\n", i.value)).expect(";-;");
-        write(&mut members_names, format_args!("    Self::{name} => \"{}\",\n", i.name)).expect(";-;");
+        write(&mut members, format_args!("    {name} = {},\n", i.value)).unwrap();
+        write(&mut members_names, format_args!("    Self::{name} => \"{}\",\n", i.name)).unwrap();
     }
 
     write(output, format_args!(r#"
@@ -143,7 +143,7 @@ impl core::fmt::Display for {name} {{
     fn fmt(&self, fmt: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {{
         fmt.write_str(self.as_str())
     }}
-}}"#)).expect(";-;");
+}}"#)).unwrap();
 }
 
 fn write_bitfield(bitfield_data: &Bitfield, _definitions: &ParsedDefinitions, output: &mut String) {
@@ -153,14 +153,14 @@ fn write_bitfield(bitfield_data: &Bitfield, _definitions: &ParsedDefinitions, ou
     let mut members = String::with_capacity(1024 * 1024);
     for i in &bitfield_data.fields {
         let name = rustify_string_pascal_case(&i.name);
-        write(&mut members, format_args!("    {name} = 0x{:08X},\n", i.value)).expect(";-;")
+        write(&mut members, format_args!("    {name} = 0x{:08X},\n", i.value)).unwrap()
     }
 
     write(output, format_args!(r#"
 #[repr(u{width})]
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum {name}Fields {{
-{members}}}"#)).expect(";-;");
+{members}}}"#)).unwrap();
 
     write(output, format_args!(r#"
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -184,7 +184,7 @@ impl {name} {{
         self.0 = self.0 & !(field as u{width});
     }}
 }}
-"#)).expect(";-;");
+"#)).unwrap();
 }
 
 fn rustify_string(string: &str) -> String {

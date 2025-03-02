@@ -166,46 +166,22 @@ impl Quaternion {
 
     /// Interpolate this quaternion with another one by `by` amount, returning a normalized vector.
     ///
-    /// This function is more accurate than [linear_interpolated](Self::linear_interpolated), but it
-    /// is less performant.
-    ///
-    /// This function returns a normalized vector. If one isn't necessary, use
-    /// [interpolated_unnormalized](Self::interpolated_unnormalized).
-    pub fn interpolated(self, with: Quaternion, by: f32) -> Quaternion {
-        self.interpolated_unnormalized(with, by).normalized()
-    }
-
-    /// Linear interpolate this quaternion with another one by `by` amount, returning a normalized
-    /// vector.
-    ///
-    /// This function is faster than [interpolate](Self::interpolated) but less accurate.
-    ///
-    /// This function returns a normalized vector. If one isn't necessary, use
-    /// [linear_interpolated_unnormalized](Self::linear_interpolated_unnormalized).
-    pub fn linear_interpolated(self, with: Quaternion, by: f32) -> Quaternion {
-        self.linear_interpolated_unnormalized(with, by).normalized()
-    }
-
-    /// Interpolate this quaternion with another one by `by` amount, returning an unnormalized
-    /// vector.
-    ///
     /// This function is more accurate than [linear_interpolated_unnormalized](Self::linear_interpolated_unnormalized),
     /// but it is less performant.
-    ///
-    /// This function returns a (most likely) unnormalized vector. If one is necessary, use
-    /// [interpolated](Self::interpolated).
-    pub fn interpolated_unnormalized(self, with: Quaternion, by: f32) -> Quaternion {
+    pub fn interpolated(self, b: Quaternion, by: f32) -> Quaternion {
         // special thanks to MosesOfEgypt for the rotation interpolation stuff here
-        let mut cos_half_theta = self.dot(with);
+        let a = self.normalized();
+        let b = b.normalized();
+        let mut cos_half_theta = a.dot(b);
 
-        let mut with_n = with;
+        let mut with_n = b;
         if cos_half_theta < 0.0 {
             with_n = -with_n;
             cos_half_theta = -cos_half_theta;
         }
 
         if cos_half_theta.fabs() < 0.01 {
-            return self.linear_interpolated_unnormalized(with, by)
+            return a.linear_interpolated(b, by)
         }
 
         let half_theta = cos_half_theta.min(1.0).acos();
@@ -220,7 +196,18 @@ impl Quaternion {
             r1 = (r1 * half_theta).sin() / sin_half_theta;
         }
 
-        with_n * r1 + self * r0
+        (with_n * r1 + a * r0).normalized()
+    }
+
+    /// Linear interpolate this quaternion with another one by `by` amount, returning a normalized
+    /// vector.
+    ///
+    /// This function is faster than [interpolate](Self::interpolated) but less accurate.
+    ///
+    /// This function returns a normalized vector. If one isn't necessary, use
+    /// [linear_interpolated_unnormalized](Self::linear_interpolated_unnormalized).
+    pub fn linear_interpolated(self, with: Quaternion, by: f32) -> Quaternion {
+        self.linear_interpolated_unnormalized(with, by).normalized()
     }
 
     /// Linear interpolate this quaternion with another one by `by` amount, returning an
@@ -452,15 +439,6 @@ pub struct Euler3D {
     pub yaw: f32,
     pub pitch: f32,
     pub roll: f32
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-#[repr(C)]
-pub struct Rectangle {
-    pub top: i16,
-    pub left: i16,
-    pub bottom: i16,
-    pub right: i16
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]

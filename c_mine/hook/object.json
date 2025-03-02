@@ -2,17 +2,22 @@
     "object_get_and_verify_type": {
         "cache": "0x00404AE3",
         "tag": "0x00403DF0",
-        "replacement": "crate::object::object_get_and_verify_type"
+        "replacement": "crate::object::c::object_get_and_verify_type"
+    },
+    "object_try_and_get_verify_type": {
+        "cache": "0x00407CA7",
+        "tag": "0x00406E47",
+        "replacement": "crate::object::c::object_try_and_get_verify_type"
     },
     "get_cheat_infinite_ammo": {
         "cache": "0x00405993",
         "tag": "0x00404C64",
-        "replacement": "crate::object::weapon::get_cheat_infinite_ammo"
+        "replacement": "crate::object::c::get_cheat_infinite_ammo"
     },
     "get_weapon_age": {
         "cache": "0x0040A362",
         "tag": "0x004097CD",
-        "replacement": "crate::object::weapon::get_weapon_age"
+        "replacement": "crate::object::c::get_weapon_age"
     },
     "object_disconnect_from_map": {
         "cache": "0x004084D6",

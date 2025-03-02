@@ -3,7 +3,7 @@ use core::sync::atomic::{AtomicU32, Ordering};
 use c_mine::{get_hs_global, pointer_from_hook};
 use crate::game_engine::GAME_ENGINE_RUNNING;
 use crate::globals::get_interface_fonts;
-use crate::player::{get_local_player_index, local_player_get_player_index, Player, PlayerID, PLAYERS_TABLE};
+use crate::player::{get_local_player_index, local_player_index_to_id, Player, PlayerID, PLAYERS_TABLE};
 use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter};
 use crate::rasterizer::font::get_font_tag_height;
 use crate::rasterizer::motion_sensor::update_motion_sensor;
@@ -19,6 +19,7 @@ pub static mut HUD_SAFE_ZONE_TOP: f32 = 8.0;
 pub static mut HUD_SAFE_ZONE_LEFT: f32 = 8.0;
 pub static mut HUD_SAFE_ZONE_BOTTOM: f32 = 8.0;
 pub static mut HUD_SAFE_ZONE_RIGHT: f32 = 8.0;
+pub const HUD_BASE_SCALE: f32 = 1.0; // change this if you want to have fun
 
 const HUD_PRINT_MESSAGE: PointerProvider<unsafe extern "C" fn(i16, *const u16)> = pointer_from_hook!("hud_print_message");
 
@@ -61,7 +62,7 @@ pub unsafe fn draw_hud() {
 }
 
 unsafe fn draw_hud_for_local_player(local_player_index: u16) {
-    let player_id = local_player_get_player_index.get()(local_player_index);
+    let player_id = local_player_index_to_id(local_player_index);
     let Ok(player) = PLAYERS_TABLE
         .get_copied()
         .expect("draw_hud_for_player")
@@ -134,5 +135,5 @@ pub unsafe fn show_fps() {
     writer.draw(format_args!("{fps}"), Rectangle {
         bottom: height,
         ..get_global_interface_canvas_bounds()
-    }).expect(";-;");
+    }).unwrap();
 }

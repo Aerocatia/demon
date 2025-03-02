@@ -70,5 +70,10 @@
     "hud_print_message": {
         "cache": "0x00405510",
         "tag": "0x004048EA"
+    },
+    "hud_globals_get_scale": {
+        "cache": "0x0040647E",
+        "tag": "0x00405434",
+        "replacement": "crate::rasterizer::hud::c::hud_globals_get_scale"
     }
 }

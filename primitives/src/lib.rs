@@ -9,3 +9,4 @@ pub mod tag_group;
 pub mod enum_wrapper;
 pub mod bounds;
 pub mod named_tag_struct;
+pub mod rectangle;

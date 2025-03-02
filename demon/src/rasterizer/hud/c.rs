@@ -3,7 +3,7 @@ use tag_structs::{BitmapData, HUDInterfaceAnchor};
 use tag_structs::primitives::float::FloatFunctions;
 use tag_structs::primitives::vector::Vector2DInt;
 use crate::rasterizer::get_global_interface_canvas_bounds;
-use crate::rasterizer::hud::{draw_hud, HUD_SAFE_ZONE_BOTTOM, HUD_SAFE_ZONE_LEFT, HUD_SAFE_ZONE_RIGHT, HUD_SAFE_ZONE_TOP};
+use crate::rasterizer::hud::{draw_hud, HUD_BASE_SCALE, HUD_SAFE_ZONE_BOTTOM, HUD_SAFE_ZONE_LEFT, HUD_SAFE_ZONE_RIGHT, HUD_SAFE_ZONE_TOP};
 
 #[c_mine]
 pub unsafe extern "C" fn hud_draw_screen() {
@@ -113,7 +113,7 @@ pub unsafe extern "C" fn hud_calculate_point(
     }
 
     // is this used for split screen?
-    let scale = if override_scale == 0 || scale == 0.0 || scale.is_nan() { 1.0 } else { scale };
+    let scale = if override_scale == 0 || scale == 0.0 || scale.is_nan() { HUD_BASE_SCALE } else { scale };
 
     let anchor = HUDInterfaceAnchor::try_from(*absolute_placement).expect("hud_calculate_point: invalid anchor given");
     let global_bounds = get_global_interface_canvas_bounds();
@@ -144,4 +144,9 @@ pub unsafe extern "C" fn hud_calculate_point(
 
     output.x = x.round_ties_even_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
     output.y = y.round_ties_even_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
+}
+
+#[c_mine]
+pub unsafe extern "C" fn hud_globals_get_scale() -> f32 {
+    HUD_BASE_SCALE
 }

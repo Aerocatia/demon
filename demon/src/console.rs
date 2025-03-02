@@ -11,7 +11,7 @@ use windows_sys::Win32::UI::Input::KeyboardAndMouse;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetKeyState, VIRTUAL_KEY};
 use windows_sys::Win32::UI::WindowsAndMessaging::{WM_CHAR, WM_KEYDOWN};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
-use tag_structs::primitives::vector::Rectangle;
+use tag_structs::primitives::rectangle::Rectangle;
 use crate::console::c::run_console_command;
 use crate::globals::get_interface_fonts;
 use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter};
@@ -351,6 +351,7 @@ unsafe fn render_console() {
     );
 
     let interface_bounds = get_global_interface_canvas_bounds();
+    let interface_width = interface_bounds.width();
     let mut bounds = interface_bounds;
     bounds.left += CONSOLE_DISPLAY_PADDING;
     bounds.top += CONSOLE_DISPLAY_PADDING;
@@ -385,10 +386,10 @@ unsafe fn render_console() {
             else {
                 ""
             };
-            writer.draw(format_args!("{CONSOLE_PREFIX}{start}{CONSOLE_CURSOR}{actual_end}"), text_bounds).expect(";-;");
+            writer.draw(format_args!("{CONSOLE_PREFIX}{start}{CONSOLE_CURSOR}{actual_end}"), text_bounds).unwrap();
         }
         else {
-            writer.draw(format_args!("{CONSOLE_PREFIX}{}", console_buffer.input_text), text_bounds).expect(";-;");
+            writer.draw(format_args!("{CONSOLE_PREFIX}{}", console_buffer.input_text), text_bounds).unwrap();
         }
 
         let unread_messages = console_buffer.new_messages_while_scrolling_back;
@@ -403,7 +404,7 @@ unsafe fn render_console() {
                 })
             }
 
-            writer.draw(format_args!("(+{unread_messages})"), text_bounds).expect(";-;");
+            writer.draw(format_args!("(+{unread_messages})"), text_bounds).unwrap();
             writer.set_justification(DrawStringJustification::Left);
         }
     }
@@ -442,13 +443,17 @@ unsafe fn render_console() {
         let string_to_print = &buffer.as_str()[..buffer.as_str().len() - 1];
 
         if string_to_print.contains("\t") {
-            writer.set_tab_stops(&[160, 320, 480]);
+            writer.set_tab_stops(&[
+                interface_width / 4,
+                interface_width / 2,
+                interface_width / 4 * 3
+            ]);
         }
         else {
             writer.set_tab_stops(&[]);
         }
 
-        writer.draw(format_args!("{string_to_print}"), draw_bounds).expect(";-;");
+        writer.draw(format_args!("{string_to_print}"), draw_bounds).unwrap();
         true
     };
 

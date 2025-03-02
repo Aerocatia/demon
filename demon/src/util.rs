@@ -21,7 +21,7 @@ pub fn get_exe_path() -> String {
     unsafe { GetModuleFileNameA(null_mut(), path.as_mut_ptr(), path.len() as u32); }
 
     CStr::from_bytes_until_nul(&path)
-        .expect("should have gotten something")
+        .unwrap()
         .to_str()
         .expect("non-utf8 exe path???")
         .to_string()
@@ -35,7 +35,7 @@ pub fn get_exe_dir() -> String {
         PathRemoveFileSpecA(path.as_mut_ptr());
 
         CStr::from_bytes_until_nul(&path)
-            .expect("should have gotten something")
+            .unwrap()
             .to_str()
             .expect("non-utf8 exe path???")
             .to_string()
@@ -319,7 +319,7 @@ impl<const SIZE: usize> StaticStringBytes<SIZE> {
     }
 
     pub fn from_display(display: impl Display) -> StaticStringBytes<SIZE> {
-        StaticStringBytes::from_fmt(format_args!("{display}")).expect(";-;")
+        StaticStringBytes::from_fmt(format_args!("{display}")).unwrap()
     }
 
     pub fn as_str(&self) -> &str {
@@ -362,7 +362,7 @@ impl<const SIZE: usize> Default for StaticStringBytes<SIZE> {
 impl<const SIZE: usize> Display for StaticStringBytes<SIZE> {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         let str = core::str::from_utf8(&self.0[..self.1])
-            .expect("fmt_to_allocated_byte_array exploded");
+            .expect("somehow had a non-utf8 StaticStringBytes; this is very bad and is 110% a bug");
         f.write_str(str)
     }
 }
@@ -399,7 +399,7 @@ pub fn fmt_to_byte_array<'a>(bytes: &'a mut [u8], fmt: core::fmt::Arguments) -> 
     core::fmt::write(&mut buffer, fmt)?;
 
     let length = buffer.offset;
-    Ok(core::str::from_utf8(&bytes[..length]).expect("but we just formatted valid utf-8"))
+    Ok(core::str::from_utf8(&bytes[..length]).unwrap())
 }
 
 pub struct PrintfFormatter<'a> {

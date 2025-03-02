@@ -13,7 +13,7 @@ pub unsafe extern "C" fn draw_string_set_color(color: Option<&ColorARGB>) {
     *DRAW_STRING_COLOR.get_mut() = *color;
 }
 
-pub unsafe fn set_tab_stops(tab_stops: &[u16]) {
+pub unsafe fn set_tab_stops(tab_stops: &[i16]) {
     let count = tab_stops.len();
     assert!(count <= MAXIMUM_NUMBER_OF_TAB_STOPS, "set_tab_stops with {count} tab stops which is > {MAXIMUM_NUMBER_OF_TAB_STOPS}");
 
@@ -31,7 +31,7 @@ pub unsafe fn set_tab_stops(tab_stops: &[u16]) {
 ///
 /// Panics if `count > MAXIMUM_NUMBER_OF_TAB_STOPS`
 #[c_mine]
-pub unsafe extern "C" fn draw_string_set_tab_stops(new_tab_stops: *const u16, count: u16) {
+pub unsafe extern "C" fn draw_string_set_tab_stops(new_tab_stops: *const i16, count: u16) {
     if count == 0 {
         *TAB_STOP_COUNT.get_mut() = 0;
         return;

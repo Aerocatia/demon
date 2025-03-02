@@ -105,7 +105,7 @@ impl TagGroup {
     }
     pub fn name(self) -> &'static str {
         Self::get_data_from_fourcc(self as u32)
-            .expect("this fourcc should be valid")
+            .unwrap()
             .1
     }
     fn get_data_from_fourcc(fourcc: u32) -> Option<(TagGroup, &'static str)> {

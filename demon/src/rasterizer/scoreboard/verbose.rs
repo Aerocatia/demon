@@ -2,7 +2,7 @@ use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use crate::memory::table::DataTable;
 use crate::multiplayer::{get_connected_ip_address, Gametype, ServerInfo};
 use crate::player::{Player, PlayerID, MAXIMUM_LIVES, PLAYERS_TABLE};
-use crate::rasterizer::{draw_box, Rectangle};
+use crate::rasterizer::{draw_box, get_fallback_ui_bounds, get_global_interface_canvas_bounds, Rectangle};
 use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter, DEFAULT_WHITE};
 use crate::rasterizer::font::get_font_tag_height;
 use crate::rasterizer::scoreboard::color::{get_scoreboard_color, HEADER_COLOR, HEADING_COLOR, HIGHLIGHT_BOOST};
@@ -12,6 +12,19 @@ use crate::rasterizer::scoreboard::sortable_score::SortableScore;
 use crate::rasterizer::scoreboard::strings::ScoreboardScreenText;
 use crate::tag::TagID;
 use crate::util::StaticStringBytes;
+
+const SCOREBOARD_BOUNDS: Rectangle = Rectangle {
+    top: 60,
+    left: 10,
+    bottom: 390,
+    right: 630
+};
+
+const SCOREBOARD_TOP_OFFSET: i16 = 60;
+const SCOREBOARD_LEFT_OFFSET: i16 = 10;
+const SCOREBOARD_RIGHT_OFFSET: i16 = 10;
+const SCOREBOARD_MIN_HEIGHT: i16 = 390;
+const SCOREBOARD_LEFT_TEXT_INDENT: i16 = -2;
 
 pub unsafe fn draw_verbose_scoreboard(
     local_player: PlayerID,
@@ -31,18 +44,20 @@ pub unsafe fn draw_verbose_scoreboard(
     // originally hardcoded to 15, with an extra 2 pixels of leeway when doing the actual text draw
     let small_line_height = get_font_tag_height(small_ui).0;
     let large_line_height = get_font_tag_height(large_ui).0;
+    let required_height = small_line_height * (16 + 2) + 2;
+    let max_height = get_global_interface_canvas_bounds().bottom - large_line_height * 2;
 
-    let top = 60i16;
-    let left = 10i16;
-    let right = 630i16;
-    // originally 390
-    let bottom = (top + small_line_height * (16 + 2) + 2)
-        // prevent the server name and IP from being overlapped
-        .min(480 - large_line_height * 2);
+    let mut bounds = SCOREBOARD_BOUNDS;
+    bounds.bottom = (bounds.top + required_height).clamp(bounds.bottom, max_height);
 
-    // originally top - 1
-    let mut score_offset = top;
-    let mut next_score_line = |line_height: i16| { score_offset += line_height; Rectangle { top: score_offset - small_line_height, left: 8, right: 640 - 5, bottom: bottom.min(score_offset) }};
+    let bounds = get_fallback_ui_bounds(bounds);
+    let mut score_offset = bounds.top;
+
+    let mut next_score_line = |line_height: i16| { score_offset += line_height; Rectangle {
+        top: score_offset - small_line_height,
+        left: bounds.left + SCOREBOARD_LEFT_TEXT_INDENT,
+        ..bounds
+    }};
 
     draw_box(
         ColorARGB {
@@ -53,12 +68,7 @@ pub unsafe fn draw_verbose_scoreboard(
                 b: 0.125,
             }
         },
-        Rectangle {
-            top,
-            left,
-            right,
-            bottom
-        }
+        bounds
     );
 
     let maximum_lives = *MAXIMUM_LIVES.get();
@@ -74,18 +84,18 @@ pub unsafe fn draw_verbose_scoreboard(
 
     score_writer
         .draw(format_args!("{score_heading}"), next_score_line(small_line_height))
-        .expect(";-;");
+        .unwrap();
 
     score_writer.set_tab_stops(&[
-        25,
-        90,
+        bounds.left + 15,
+        bounds.left + 80,
 
         // each column is 65 pixels
-        300,
-        365,
-        430,
-        495,
-        560
+        bounds.left + 290,
+        bounds.left + 355,
+        bounds.left + 420,
+        bounds.left + 485,
+        bounds.left + 550
     ]);
 
     score_writer.set_color(ColorARGB { a: opacity, color: HEADER_COLOR });
@@ -107,7 +117,7 @@ pub unsafe fn draw_verbose_scoreboard(
             }
         ),
         next_score_line(small_line_height)
-    ).expect(";-;");
+    ).unwrap();
 
     let players = PLAYERS_TABLE.get_copied().expect("you can't draw the scoreboard without players!");
     for player_score_data in all_players.iter() {
@@ -131,7 +141,7 @@ pub unsafe fn draw_verbose_scoreboard(
         );
     }
 
-    draw_server_info(opacity, scoreboard_text, large_ui, server_info);
+    draw_server_info(opacity, scoreboard_text, large_ui, server_info, &get_global_interface_canvas_bounds());
 }
 
 unsafe fn draw_player_score(
@@ -186,10 +196,10 @@ unsafe fn draw_player_score(
             assists = player_score_data.assists
         ),
         bounds
-    ).expect(";-;");
+    ).unwrap();
 }
 
-unsafe fn draw_server_info(opacity: f32, scoreboard_text: &ScoreboardScreenText, large_font: TagID, server_info: &ServerInfo) {
+unsafe fn draw_server_info(opacity: f32, scoreboard_text: &ScoreboardScreenText, large_font: TagID, server_info: &ServerInfo, canvas_bounds: &Rectangle) {
     if SHOW_SERVER_INFO == 0 {
         return
     }
@@ -200,14 +210,14 @@ unsafe fn draw_server_info(opacity: f32, scoreboard_text: &ScoreboardScreenText,
         ColorARGB { a: opacity, color: DEFAULT_WHITE.color }
     );
     footer_writer.set_justification(DrawStringJustification::Right);
-    let mut footer_offset = 480 - large_line_height * 2;
-    let mut next_footer_line = |line_height: i16| { footer_offset += line_height; Rectangle { top: footer_offset - large_line_height, left: 8, right: 640 - 5, bottom: 480.min(footer_offset) }};
+    let mut footer_offset = canvas_bounds.bottom - large_line_height * 2;
+    let mut next_footer_line = |line_height: i16| { footer_offset += line_height; Rectangle { top: footer_offset - large_line_height, left: 8, right: canvas_bounds.right - 5, bottom: canvas_bounds.bottom.min(footer_offset) }};
 
     let server_name = StaticStringBytes::<66>::from_utf16(&server_info.server_name);
     let server_ip = format_connected_server_ip();
 
-    footer_writer.draw(format_args!("{server_name}"), next_footer_line(large_line_height)).expect(";-;");
-    footer_writer.draw(format_args!("{}{server_ip}", scoreboard_text.server_ip_address), next_footer_line(large_line_height)).expect(";-;");
+    footer_writer.draw(format_args!("{server_name}"), next_footer_line(large_line_height)).unwrap();
+    footer_writer.draw(format_args!("{}{server_ip}", scoreboard_text.server_ip_address), next_footer_line(large_line_height)).unwrap();
 }
 
 unsafe fn format_connected_server_ip() -> StaticStringBytes<66> {
@@ -221,5 +231,5 @@ unsafe fn format_connected_server_ip() -> StaticStringBytes<66> {
             (ip >> 00) & 0xFF,
             port
         )
-    ).expect("but that should have worked!")
+    ).unwrap()
 }

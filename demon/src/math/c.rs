@@ -152,10 +152,10 @@ pub extern "C" fn quaternion_normalize(quaternion: &mut Quaternion) {
 
 #[c_mine]
 pub extern "C" fn quaternions_interpolate(a: &Quaternion, b: &Quaternion, by: f32, output: &mut Quaternion) {
-    *output = a.interpolated_unnormalized(*b, by)
+    *output = a.linear_interpolated_unnormalized(*b, by)
 }
 
 #[c_mine]
 pub extern "C" fn quaternions_interpolate_and_normalize(a: &Quaternion, b: &Quaternion, by: f32, output: &mut Quaternion) {
-    *output = a.interpolated(*b, by)
+    *output = a.linear_interpolated(*b, by)
 }
