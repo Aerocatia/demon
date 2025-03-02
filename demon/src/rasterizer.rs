@@ -33,15 +33,16 @@ const _: () = assert!(size_of::<RenderCamera>() == 0x54);
 
 pub static mut WIDESCREEN_TEST: u8 = 0;
 
-const RENDER_BOUNDS_THING: VariableProvider<RenderCamera> = variable! {
-    name: "render_bounds_thing",
-    cache_address: 0x00ECFE0C
+const RENDER_CAMERA: VariableProvider<RenderCamera> = variable! {
+    name: "render_camera",
+    cache_address: 0x00ECFE0C,
+    tag_address: 0x00F873CC
 };
 
 pub fn get_render_camera() -> RenderCamera {
     // SAFETY: Not actually safe! This struct is copied around; we should intercept it and create a
     //         "safe" copy that is backed by a mutex.
-    unsafe { *RENDER_BOUNDS_THING.get() }
+    unsafe { *RENDER_CAMERA.get() }
 }
 
 /// Global canvas bounds for drawing interfaces.
