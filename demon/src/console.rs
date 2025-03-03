@@ -365,7 +365,8 @@ unsafe fn render_console() {
     if console_active {
         let console_input_text_ptr = CStrPtr::from_bytes(CONSOLE_INPUT_TEXT.get());
         let console_input_text_bytes = console_input_text_ptr.as_cstr().to_bytes();
-        let text_bounds = Rectangle {
+
+        let prompt_bounds = Rectangle {
             top: bounds.bottom,
             bottom: bounds.bottom + line_height,
             ..bounds
@@ -386,10 +387,10 @@ unsafe fn render_console() {
             else {
                 ""
             };
-            writer.draw(format_args!("{CONSOLE_PREFIX}{start}{CONSOLE_CURSOR}{actual_end}"), text_bounds).unwrap();
+            writer.draw(format_args!("{CONSOLE_PREFIX}{start}{CONSOLE_CURSOR}{actual_end}"), prompt_bounds).unwrap();
         }
         else {
-            writer.draw(format_args!("{CONSOLE_PREFIX}{}", console_buffer.input_text), text_bounds).unwrap();
+            writer.draw(format_args!("{CONSOLE_PREFIX}{}", console_buffer.input_text), prompt_bounds).unwrap();
         }
 
         let unread_messages = console_buffer.new_messages_while_scrolling_back;
@@ -404,7 +405,7 @@ unsafe fn render_console() {
                 })
             }
 
-            writer.draw(format_args!("(+{unread_messages})"), text_bounds).unwrap();
+            writer.draw(format_args!("(+{unread_messages})"), prompt_bounds).unwrap();
             writer.set_justification(DrawStringJustification::Left);
         }
     }

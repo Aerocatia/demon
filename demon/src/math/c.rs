@@ -46,7 +46,7 @@ pub extern "C" fn is_valid_point3d(point: &Vector3D) -> bool {
 
 #[c_mine]
 pub extern "C" fn dot_product_3d(a: &Vector3D, b: &Vector3D) -> f32 {
-    a.dot(*b)
+    a.dot(b)
 }
 
 #[c_mine]
@@ -158,4 +158,34 @@ pub extern "C" fn quaternions_interpolate(a: &Quaternion, b: &Quaternion, by: f3
 #[c_mine]
 pub extern "C" fn quaternions_interpolate_and_normalize(a: &Quaternion, b: &Quaternion, by: f32, output: &mut Quaternion) {
     *output = a.linear_interpolated(*b, by)
+}
+
+#[c_mine]
+pub extern "C" fn matrix4x3_transform_normal(matrix: &Matrix4x3, normal: &Vector3D, output: &mut Vector3D) -> *mut Vector3D {
+    *output = matrix.transform_normal(normal);
+    output
+}
+
+#[c_mine]
+pub extern "C" fn matrix4x3_transform_plane(matrix: &Matrix4x3, plane: &Plane3D, output: &mut Plane3D) -> *mut Plane3D {
+    *output = matrix.transform_plane(plane);
+    output
+}
+
+#[c_mine]
+pub extern "C" fn matrix4x3_transform_point(matrix: &Matrix4x3, point: &Vector3D, output: &mut Vector3D) -> *mut Vector3D {
+    *output = matrix.transform_point(point);
+    output
+}
+
+#[c_mine]
+pub extern "C" fn matrix4x3_transform_vector(matrix: &Matrix4x3, vector: &Vector3D, output: &mut Vector3D) -> *mut Vector3D {
+    *output = matrix.transform_vector(vector);
+    output
+}
+
+#[c_mine]
+pub extern "C" fn matrix3x3_transform_vector(matrix: &Matrix3x3, vector: &Vector3D, output: &mut Vector3D) -> *mut Vector3D {
+    *output = matrix.transform_vector(vector);
+    output
 }

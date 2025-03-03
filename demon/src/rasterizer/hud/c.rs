@@ -12,7 +12,7 @@ pub unsafe extern "C" fn hud_draw_screen() {
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
 #[repr(C)]
-pub struct RenderRectangle {
+pub struct Bounds2D {
     pub left: f32,
     pub right: f32,
     pub top: f32,
@@ -23,8 +23,8 @@ pub struct RenderRectangle {
 pub extern "C" fn calculate_static_element_screen_position(
     bitmap_data: &BitmapData,
     anchor: u16,
-    rectangle: &RenderRectangle,
-    out: &mut RenderRectangle,
+    rectangle: &Bounds2D,
+    out: &mut Bounds2D,
     do_not_scale: u8
 ) {
     let do_not_scale = do_not_scale != 0;
@@ -45,55 +45,55 @@ pub extern "C" fn calculate_static_element_screen_position(
     let height = (rectangle.bottom - rectangle.top) * (dot_height as f32);
 
     *out = match anchor {
-        HUDInterfaceAnchor::TopLeft => RenderRectangle {
+        HUDInterfaceAnchor::TopLeft => Bounds2D {
             right: width,
             bottom: height,
-            ..RenderRectangle::default()
+            ..Bounds2D::default()
         },
-        HUDInterfaceAnchor::TopRight => RenderRectangle {
+        HUDInterfaceAnchor::TopRight => Bounds2D {
             left: -width,
             bottom: height,
-            ..RenderRectangle::default()
+            ..Bounds2D::default()
         },
-        HUDInterfaceAnchor::BottomLeft => RenderRectangle {
+        HUDInterfaceAnchor::BottomLeft => Bounds2D {
             right: width,
             top: -height,
-            ..RenderRectangle::default()
+            ..Bounds2D::default()
         },
-        HUDInterfaceAnchor::BottomRight => RenderRectangle {
+        HUDInterfaceAnchor::BottomRight => Bounds2D {
             left: -width,
             top: -height,
-            ..RenderRectangle::default()
+            ..Bounds2D::default()
         },
-        HUDInterfaceAnchor::Center => RenderRectangle {
+        HUDInterfaceAnchor::Center => Bounds2D {
             left: -width / 2.0,
             right: width / 2.0,
             top: -height / 2.0,
             bottom: height / 2.0
         },
-        HUDInterfaceAnchor::TopCenter => RenderRectangle {
+        HUDInterfaceAnchor::TopCenter => Bounds2D {
             left: -width / 2.0,
             right: width / 2.0,
             bottom: height,
-            ..RenderRectangle::default()
+            ..Bounds2D::default()
         },
-        HUDInterfaceAnchor::BottomCenter => RenderRectangle {
+        HUDInterfaceAnchor::BottomCenter => Bounds2D {
             left: -width / 2.0,
             right: width / 2.0,
             top: -height,
-            ..RenderRectangle::default()
+            ..Bounds2D::default()
         },
-        HUDInterfaceAnchor::LeftCenter => RenderRectangle {
+        HUDInterfaceAnchor::LeftCenter => Bounds2D {
             right: width,
             top: -height / 2.0,
             bottom: height / 2.0,
-            ..RenderRectangle::default()
+            ..Bounds2D::default()
         },
-        HUDInterfaceAnchor::RightCenter => RenderRectangle {
+        HUDInterfaceAnchor::RightCenter => Bounds2D {
             left: -width,
             top: -height / 2.0,
             bottom: height / 2.0,
-            ..RenderRectangle::default()
+            ..Bounds2D::default()
         },
     }
 }

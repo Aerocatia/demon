@@ -83,6 +83,14 @@ impl Matrix3x3 {
             }
         }
     }
+
+    pub const fn transform_vector(&self, normal: &Vector3D) -> Vector3D {
+        Vector3D {
+            x: normal.x * self.a.x + normal.y * self.b.x + normal.z * self.c.x,
+            y: normal.x * self.a.y + normal.y * self.b.y + normal.z * self.c.y,
+            z: normal.x * self.a.z + normal.y * self.b.z + normal.z * self.c.z,
+        }
+    }
 }
 
 impl Mul<Matrix3x3> for Matrix3x3 {
@@ -331,7 +339,7 @@ impl Vector3D {
     pub const fn is_valid(self) -> bool {
         !self.x.is_nan() && !self.y.is_nan() && !self.z.is_nan()
     }
-    pub const fn dot(self, other: Vector3D) -> f32 {
+    pub const fn dot(self, other: &Vector3D) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
     pub const fn scale(self, by: f32) -> Self {
@@ -456,8 +464,7 @@ pub struct Plane3D {
 }
 impl Plane3D {
     pub const fn distance_to_point(self, point: Vector3D) -> f32 {
-        let dot = point.dot(self.vector);
-        dot - self.offset
+        point.dot(&self.vector) - self.offset
     }
 }
 
@@ -504,6 +511,23 @@ impl Matrix4x3 {
             rotation_matrix: self.rotation_matrix.multiply(&by.rotation_matrix)
         }
     }
+    pub const fn transform_normal(&self, normal: &Vector3D) -> Vector3D {
+        self.rotation_matrix.transform_vector(normal)
+    }
+    pub const fn transform_plane(&self, plane: &Plane3D) -> Plane3D {
+        let vector = self.transform_normal(&plane.vector);
+        Plane3D {
+            vector,
+            offset: self.scale * plane.offset + self.position.dot(&vector)
+        }
+    }
+    pub fn transform_vector(&self, vector: &Vector3D) -> Vector3D {
+        let point_scaled = *vector * self.scale;
+        self.rotation_matrix.transform_vector(&point_scaled)
+    }
+    pub fn transform_point(&self, point: &Vector3D) -> Vector3D {
+        self.transform_vector(point) + self.position
+    }
     pub const fn from_point_and_quaternion(point: Vector3D, quaternion: Quaternion) -> Self {
         Self {
             position: point,
@@ -511,7 +535,7 @@ impl Matrix4x3 {
         }
     }
     /// Interpolate this matrix by another one by `by` amount.
-    pub fn interpolated(self, with: Matrix4x3, by: f32) -> Matrix4x3 {
+    pub fn interpolated(&self, with: &Matrix4x3, by: f32) -> Matrix4x3 {
         let by = by.clamp(0.0, 1.0);
         Self {
             scale: (1.0 - by) * self.scale + by * with.scale,
