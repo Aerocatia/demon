@@ -205,7 +205,6 @@ pub unsafe extern "C" fn game_engine_post_rasterize() {
     }
 }
 
-#[c_mine]
 pub unsafe extern "C" fn game_engine_nonplayer_post_rasterize() {
     match get_game_engine_globals_mode() {
         GameEngineGlobalsMode::Active | GameEngineGlobalsMode::PostgameDelay => {},

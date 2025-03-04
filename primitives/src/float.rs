@@ -7,8 +7,11 @@ pub trait FloatFunctions: Copy + Copy {
     fn powf(self, exponent: Self) -> Self;
     fn fabs(self) -> Self;
     fn sin(self) -> Self;
+    fn asin(self) -> Self;
     fn cos(self) -> Self;
     fn acos(self) -> Self;
+    fn tan(self) -> Self;
+    fn atan(self) -> Self;
     fn round_ties_even_to_int(self) -> i32;
     fn round_towards_zero_to_int(self) -> i32;
     fn floor_to_int(self) -> i32;
@@ -31,8 +34,11 @@ impl FloatFunctions for f32 {
         libm::fabsf(self)
     }
     fn sin(self) -> Self { libm::sinf(self) }
+    fn asin(self) -> Self { libm::asinf(self) }
     fn cos(self) -> Self { libm::cosf(self) }
     fn acos(self) -> Self { libm::acosf(self) }
+    fn tan(self) -> Self { libm::tanf(self) }
+    fn atan(self) -> Self { libm::atanf(self) }
 
     fn round_ties_even_to_int(self) -> i32 {
         let a = self.floor_to_int();

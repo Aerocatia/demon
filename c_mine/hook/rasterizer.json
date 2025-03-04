@@ -7,7 +7,7 @@
     "game_engine_nonplayer_post_rasterize": {
         "cache": "0x00403FD0",
         "tag": "0x004031D4",
-        "replacement": "crate::rasterizer::scoreboard::game_engine_nonplayer_post_rasterize"
+        "replacement": "forbid"
     },
     "game_engine_post_rasterize_post_game": {
         "cache": "0x00404089",
@@ -47,5 +47,39 @@
         "cache": "0x0040973C",
         "tag": "0x00408AB7",
         "replacement": "crate::rasterizer::c::rasterizer_text_rendering_globals_setup"
+    },
+    "profile_render_window_start": {
+        "cache": "0x00409FB6",
+        "tag": "0x004093D6"
+    },
+    "render_window_build_frustum": {
+        "cache": "0x00407FF9",
+        "tag": "0x004071D0"
+    },
+    "rasterizer_window_begin": {
+        "cache": "0x0040975A",
+        "tag": "0x00408ADF"
+    },
+    "interface_draw_fullscreen_overlays": {
+        "cache": "0x00408490",
+        "tag": "0x004076B7"
+    },
+    "rasterizer_debug_draw": {
+        "cache": "0x00404E80",
+        "tag": "0x004041FB"
+    },
+    "rasterizer_window_end": {
+        "cache": "0x00402766",
+        "tag": "0x00401C80"
+    },
+    "profile_render_window_end": {
+        "cache": "0x0040A2AE",
+        "tag": "0x00409714"
+    },
+    "render_fullscreen_overlays": {
+        "cache": "0x00837200",
+        "tag": "0x00846B20",
+        "sudo": true,
+        "replacement": "crate::rasterizer::c::render_fullscreen_overlays"
     }
 }

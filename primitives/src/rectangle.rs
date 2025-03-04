@@ -1,6 +1,6 @@
 
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 #[repr(C)]
 pub struct Rectangle {
     pub top: i16,

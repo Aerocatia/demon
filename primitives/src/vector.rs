@@ -1,3 +1,4 @@
+use core::fmt::{Debug, Display, Formatter};
 use core::ops::{Add, Mul, Neg, Sub};
 use crate::float::FloatFunctions;
 
@@ -314,7 +315,7 @@ impl From<Quaternion> for Matrix3x3 {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 #[repr(C)]
 pub struct Vector2D {
     pub x: f32,
@@ -325,6 +326,35 @@ impl Vector2D {
     pub fn is_valid(self) -> bool {
         !self.x.is_nan() && !self.y.is_nan()
     }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
+#[repr(C)]
+pub struct Cube3D {
+    pub top: f32,
+    pub left: f32,
+    pub bottom: f32,
+    pub right: f32,
+    pub front: f32,
+    pub back: f32
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
+#[repr(C)]
+pub struct Vector4D {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub w: f32
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
+#[repr(C)]
+pub struct ProjectionMatrix {
+    pub x: Vector4D,
+    pub y: Vector4D,
+    pub z: Vector4D,
+    pub w: Vector4D
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
@@ -449,14 +479,14 @@ pub struct Euler3D {
     pub roll: f32
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 #[repr(C)]
 pub struct Plane2D {
     pub offset: f32,
     pub vector: Vector2D
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 #[repr(C)]
 pub struct Plane3D {
     pub vector: Vector3D,
@@ -468,9 +498,46 @@ impl Plane3D {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Default)]
 #[repr(transparent)]
 pub struct Angle(pub f32);
+
+impl Angle {
+    pub const DEFAULT_HORIZONTAL_FOV: Angle = Angle::from_degrees(70.0);
+
+    // ~55.41 deg
+    pub const DEFAULT_VERTICAL_FOV: Angle = Angle::from_radians(0.96713803047123473857584761442933284839190937900591636936069359052097036749);
+
+    pub fn calculate_vertical_fov(horizontal: Angle, aspect_ratio: f32) -> Angle {
+        Self::from_radians(2.0 * ((horizontal.radians() / 2.0).tan() / aspect_ratio).atan())
+    }
+    pub fn calculate_horizontal_fov(vertical: Angle, aspect_ratio: f32) -> Angle {
+        Self::from_radians(2.0 * ((vertical.radians() / 2.0).tan() * aspect_ratio).atan())
+    }
+
+    pub const fn from_degrees(deg: f32) -> Self {
+        Self::from_radians(deg.to_radians())
+    }
+    pub const fn from_radians(rad: f32) -> Self {
+        Self(rad)
+    }
+    pub const fn degrees(self) -> f32 {
+        self.0.to_degrees()
+    }
+    pub const fn radians(self) -> f32 {
+        self.0
+    }
+}
+impl Display for Angle {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        f.write_fmt(format_args!("{}°", self.degrees()))
+    }
+}
+impl Debug for Angle {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        Display::fmt(self, f)
+    }
+}
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(transparent)]

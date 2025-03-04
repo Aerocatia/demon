@@ -1,10 +1,12 @@
 use num_enum::TryFromPrimitive;
+use spin::rwlock::RwLock;
 use c_mine::pointer_from_hook;
 use tag_structs::primitives::color::{ColorARGB, Pixel32};
 use tag_structs::primitives::rectangle::Rectangle;
-use tag_structs::primitives::vector::{Plane3D, Vector3D};
+use tag_structs::primitives::vector::{Angle, Cube3D, Matrix4x3, Plane3D, ProjectionMatrix, Vector2D, Vector3D};
 use tag_structs::UICanvas;
-use crate::util::{PointerProvider, VariableProvider};
+use crate::rasterizer::hud::c::Bounds2D;
+use crate::util::PointerProvider;
 
 pub mod scoreboard;
 pub mod draw_string;
@@ -14,15 +16,17 @@ pub mod font;
 pub mod hud;
 pub mod c;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, Default)]
 #[repr(C)]
 pub struct RenderCamera {
     pub position: Vector3D,
     pub forward: Vector3D,
     pub up: Vector3D,
     pub mirrored: u8,
-    pub padding: [u8; 3],
-    pub vertical_field_of_view: f32,
+    pub padding_0: u8,
+    pub padding_1: u8,
+    pub padding_2: u8,
+    pub vertical_field_of_view: Angle,
     pub viewport_bounds: Rectangle,
     pub render_bounds: Rectangle,
     pub z_near: f32,
@@ -31,18 +35,45 @@ pub struct RenderCamera {
 }
 const _: () = assert!(size_of::<RenderCamera>() == 0x54);
 
+#[derive(Copy, Clone, Debug, Default)]
+#[repr(C)]
+pub struct RenderFrustum {
+    pub frustum_bounds: Bounds2D,
+    pub world_to_view: Matrix4x3,
+    pub view_to_world: Matrix4x3,
+    pub world_planes: [Plane3D; 6],
+    pub z_near: f32,
+    pub z_far: f32,
+    pub world_vertices: [Vector3D; 5],
+    pub world_midpoint: Vector3D,
+    pub world_bounds: Cube3D,
+    pub projection_valid: u8,
+    pub _padding_0x141: [u8; 0x3],
+    pub projection_matrix: ProjectionMatrix,
+    pub projection_world_to_screen: Vector2D
+}
+const _: () = assert!(size_of::<RenderFrustum>() == 0x18C);
+
 pub static mut WIDESCREEN_TEST: u8 = 0;
 
-const RENDER_CAMERA: VariableProvider<RenderCamera> = variable! {
-    name: "render_camera",
-    cache_address: 0x00ECFE0C,
-    tag_address: 0x00F873CC
-};
+static RENDER_CAMERA: RwLock<Option<RenderCamera>> = RwLock::new(None);
 
 pub fn get_render_camera() -> RenderCamera {
-    // SAFETY: Not actually safe! This struct is copied around; we should intercept it and create a
-    //         "safe" copy that is backed by a mutex.
-    unsafe { *RENDER_CAMERA.get() }
+    RENDER_CAMERA.read().clone().unwrap_or_else(|| RenderCamera {
+        position: Vector3D::default(),
+        forward: Vector3D { x: 1.0, y: 0.0, z: 0.0 },
+        up: Vector3D { x: 0.0, y: 0.0, z: 1.0 },
+        mirrored: 0u8,
+        padding_0: 0u8,
+        padding_1: 0u8,
+        padding_2: 0u8,
+        vertical_field_of_view: Angle::DEFAULT_VERTICAL_FOV,
+        viewport_bounds: UICanvas::_640x480.get_bounds(),
+        render_bounds: UICanvas::_640x480.get_bounds(),
+        z_near: 0.005,
+        z_far: 1000.0,
+        mirror_plane: Plane3D { vector: Vector3D { x: 1.0, y: 0.0, z: 0.0 }, offset: 0.0 },
+    })
 }
 
 /// Global canvas bounds for drawing interfaces.
