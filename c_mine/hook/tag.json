@@ -42,5 +42,10 @@
         "tag": "0x0091E590",
         "sudo": true,
         "replacement": "crate::tag::c::preprocess_biped"
+    },
+    "shader_get_and_verify_type": {
+        "cache": "0x00402167",
+        "tag": "0x0040199C",
+        "replacement": "crate::tag::c::shader_get_and_verify_type"
     }
 }

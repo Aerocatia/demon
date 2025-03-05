@@ -1,7 +1,7 @@
 use core::ffi::c_char;
 use c_mine::c_mine;
 use tag_structs::primitives::data::{Data, Index, Reflexive};
-use tag_structs::{Biped, BipedFlagsFields, ModelAnimations, ModelAnimationsAnimationGraphNodeFlagsFields, Scenario};
+use tag_structs::{Biped, BipedFlagsFields, ModelAnimations, ModelAnimationsAnimationGraphNodeFlagsFields, Scenario, Shader};
 use tag_structs::primitives::float::FloatFunctions;
 use crate::model::get_model_tag_data;
 use crate::tag::{get_tag_info, get_tag_info_typed, lookup_tag, ReflexiveImpl, TagData, TagGroupUnsafe, TagID, UnknownType, GLOBAL_SCENARIO};
@@ -149,4 +149,13 @@ pub unsafe extern "C" fn preprocess_biped(tag_id: TagID, unknown: u8) -> bool {
     }
 
     success
+}
+
+#[c_mine]
+pub extern "C" fn shader_get_and_verify_type(shader: Option<&Shader>, shader_type: u16) -> *const Shader {
+    let shader = shader.expect("shader_get_and_verify_type with null shader");
+    // this value is 8-bit in this build for some reason...
+    let actual_shader_type = shader.physics.r#type & 0xFF;
+    assert_eq!(actual_shader_type, shader_type);
+    shader
 }
