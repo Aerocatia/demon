@@ -18,4 +18,12 @@ impl UICanvas {
             UICanvas::_1708x960 => Rectangle::from_width_and_height(1708, 960),
         }
     }
+    pub const fn get_aspect_ratio(self) -> f32 {
+        match self {
+            UICanvas::_640x480  => const { UICanvas::_640x480.get_bounds().get_aspect_ratio() },
+            UICanvas::_854x480  => const { UICanvas::_854x480.get_bounds().get_aspect_ratio() },
+            UICanvas::_1280x960 => const { UICanvas::_1280x960.get_bounds().get_aspect_ratio() },
+            UICanvas::_1708x960 => const { UICanvas::_1708x960.get_bounds().get_aspect_ratio() },
+        }
+    }
 }

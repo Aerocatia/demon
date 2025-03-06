@@ -1,8 +1,11 @@
 use core::mem::zeroed;
 use core::ptr::null;
 use c_mine::{c_mine, pointer_from_hook};
+use tag_structs::primitives::float::FloatFunctions;
+use tag_structs::primitives::vector::Angle;
+use tag_structs::UICanvas;
 use crate::rasterizer::draw_string::set_rasterizer_text_rendering_scaling_to_canvas;
-use crate::rasterizer::{get_global_interface_canvas_bounds, RenderCamera, RenderFrustum, RENDER_CAMERA};
+use crate::rasterizer::{get_global_interface_canvas_bounds, get_render_camera, RenderCamera, RenderFrustum, RENDER_CAMERA};
 use crate::rasterizer::scoreboard::game_engine_nonplayer_post_rasterize;
 use crate::util::{PointerProvider, VariableProvider};
 
@@ -110,3 +113,22 @@ pub unsafe extern "C" fn render_fullscreen_overlays(parameters: &mut RenderFulls
     PROFILE_RENDER_WINDOW_END.get()();
 }
 
+#[c_mine]
+pub extern "C" fn render_camera_get_adjusted_field_of_view_tangent(horizontal_fov: Angle) -> f32 {
+    // Note: The original code does tan(horizontal_fov * 0.5)*0.85, but we want to correct the result
+    // for aspect ratio.
+    //
+    // TODO: It might not be good to do it in this function, though, as the game eventually must
+    //       get vfov, and *that* should just use 4/3 instead. Then we don't have to change this
+    //       function!
+
+    // Convert to vertical FOV at 4:3
+    let vfov = Angle::calculate_vertical_fov(horizontal_fov, UICanvas::_640x480.get_aspect_ratio());
+
+    // Then convert back to horizontal FOV at your real aspect ratio.
+    let fov = Angle::calculate_horizontal_fov(vfov, get_render_camera().viewport_bounds.get_aspect_ratio());
+
+    // todo: removing the `* 0.85` makes the FoV closer to Xbox, but Xbox does `* 0.85`, too.
+    //       investigate why this is, and why it still looks "correct" on Xbox
+    (fov.radians() * 0.5).tan() * 0.85
+}

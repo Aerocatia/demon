@@ -81,5 +81,10 @@
         "tag": "0x00846B20",
         "sudo": true,
         "replacement": "crate::rasterizer::c::render_fullscreen_overlays"
+    },
+    "render_camera_get_adjusted_field_of_view_tangent": {
+        "cache": "0x00404165",
+        "tag": "0x004033A0",
+        "replacement": "crate::rasterizer::c::render_camera_get_adjusted_field_of_view_tangent"
     }
 }

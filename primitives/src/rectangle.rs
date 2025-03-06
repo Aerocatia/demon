@@ -33,4 +33,10 @@ impl Rectangle {
             right: self.right + left_offset,
         }
     }
+    pub const fn get_aspect_ratio(self) -> f32 {
+        let width = self.width();
+        let height = self.height();
+        assert!(width > 0 && height > 0);
+        (width as f32) / (height as f32)
+    }
 }

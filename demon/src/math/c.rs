@@ -189,3 +189,8 @@ pub extern "C" fn matrix3x3_transform_vector(matrix: &Matrix3x3, vector: &Vector
     *output = matrix.transform_vector(vector);
     output
 }
+
+#[c_mine]
+pub extern "C" fn tan(value: f32) -> f32 {
+    value.tan()
+}
