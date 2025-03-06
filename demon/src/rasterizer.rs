@@ -54,7 +54,7 @@ pub struct RenderFrustum {
 }
 const _: () = assert!(size_of::<RenderFrustum>() == 0x18C);
 
-pub static mut WIDESCREEN_HUD_TEST: u8 = 0;
+pub static mut WIDESCREEN_TEST: u8 = 0;
 
 static RENDER_CAMERA: RwLock<Option<RenderCamera>> = RwLock::new(None);
 
@@ -85,17 +85,17 @@ pub fn get_global_interface_canvas_bounds() -> Rectangle {
         (bounds, bounds_width, base_aspect_ratio)
     };
 
-    if unsafe { WIDESCREEN_HUD_TEST == 0 } {
+    if unsafe { WIDESCREEN_TEST == 0 } {
         return bounds
     }
 
     let new_aspect_ratio = get_render_camera().viewport_bounds.get_aspect_ratio();
-    if new_aspect_ratio <= 0 {
+    if new_aspect_ratio <= 0.0 {
         return bounds
     }
 
     Rectangle {
-        right: ((bounds_width as f64) / base_aspect_ratio * new_aspect_ratio) as i16,
+        right: ((bounds_width as f32) / base_aspect_ratio * new_aspect_ratio) as i16,
         ..bounds
     }
 }
