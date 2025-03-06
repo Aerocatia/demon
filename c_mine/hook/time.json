@@ -2,6 +2,71 @@
     "game_time_get": {
         "cache": "0x00404CC8",
         "tag": "0x00404025",
-        "replacement": "crate::timing::game_time_get"
+        "replacement": "crate::timing::c::game_time_get"
+    },
+    "system_seconds": {
+        "cache": "0x00407824",
+        "tag": "0x0040696A",
+        "replacement": "crate::timing::c::system_seconds"
+    },
+    "system_milliseconds": {
+        "cache": "0x004092AF",
+        "tag": "0x004085EE",
+        "replacement": "crate::timing::c::system_milliseconds"
+    },
+    "system_microseconds": {
+        "cache": "0x00404827",
+        "tag": "0x00403ADA",
+        "replacement": "crate::timing::c::system_microseconds"
+    },
+    "set_s_clock_frequency": {
+        "cache": "0x00402CDE",
+        "tag": "0x0040B118",
+        "replacement": "nop"
+    },
+    "qpc_get_microsecond_delta": {
+        "cache": "0x0054E810",
+        "tag": "0x00552710",
+        "replacement": "forbid",
+        "sudo": true
+    },
+    "qpc_get_millisecond_delta": {
+        "cache": "0x0054E8A0",
+        "tag": "0x005527A0",
+        "replacement": "forbid",
+        "sudo": true
+    },
+    "qpc_get_second_delta": {
+        "cache": "0x0054E930",
+        "tag": "0x00552830",
+        "replacement": "forbid",
+        "sudo": true
+    },
+    "qpc_seconds_float": {
+        "cache": "0x004038D2",
+        "tag": "0x00402A5E",
+        "replacement": "crate::timing::c::qpc_seconds_float"
+    },
+    "qpc_to_microseconds": {
+        "cache": "0x0054EB50",
+        "tag": "0x00552A50",
+        "replacement": "forbid",
+        "sudo": true
+    },
+    "qpc_to_milliseconds": {
+        "cache": "0x00408BCA",
+        "tag": "0x00407E8C",
+        "replacement": "crate::timing::c::qpc_to_milliseconds"
+    },
+    "qpc_to_seconds": {
+        "cache": "0x0054EC70",
+        "tag": "0x00552B70",
+        "replacement": "forbid",
+        "sudo": true
+    },
+    "query_performance_counter": {
+        "cache": "0x00406E1A",
+        "tag": "0x00405E6B",
+        "replacement": "crate::timing::c::query_performance_counter"
     }
 }

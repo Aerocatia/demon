@@ -1,7 +1,8 @@
+pub mod c;
+
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use windows_sys::Win32::Foundation::TRUE;
 use windows_sys::Win32::System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency};
-use c_mine::c_mine;
 use crate::util::VariableProvider;
 
 /// The base tick rate of the game's engine (before `game_speed`).
@@ -39,23 +40,35 @@ impl PerformanceCounter {
         };
 
         let counter = self_counter - when_counter;
-        PerformanceCounterDelta { counter }
+        PerformanceCounterDelta { counter: counter.unsigned_abs(), backwards: counter.is_negative() }
     }
 }
 
 #[derive(Default, Copy, Clone, Debug, PartialEq)]
-#[repr(transparent)]
 pub struct PerformanceCounterDelta {
-    pub counter: i64
+    pub backwards: bool,
+    pub counter: u64
 }
 impl PerformanceCounterDelta {
-    pub fn seconds(self) -> f64 {
+    pub fn seconds(self) -> u64 {
+        let frequency = Self::get_frequency();
+        (self.counter) / (frequency)
+    }
+    pub fn milliseconds(self) -> u64 {
+        let frequency = Self::get_frequency();
+        (self.counter * 1000) / (frequency)
+    }
+    pub fn microseconds(self) -> u64 {
+        let frequency = Self::get_frequency();
+        (self.counter * 1000000) / (frequency)
+    }
+    pub fn seconds_f64(self) -> f64 {
         let frequency = Self::get_frequency();
         (self.counter as f64) / (frequency as f64)
     }
-    pub fn from_seconds(sec: f64) -> Self {
+    pub fn from_seconds_f64(sec: f64) -> Self {
         let frequency = Self::get_frequency();
-        Self { counter: (frequency as f64 * sec) as i64 }
+        Self { counter: ((frequency as f64) * sec.abs()) as u64, backwards: sec < 0.0 }
     }
     fn get_frequency() -> u64 {
         let mut frequency = 0i64;
@@ -109,7 +122,7 @@ impl FixedTimer {
             return false
         }
 
-        let tick_length = PerformanceCounterDelta::from_seconds(self.delay);
+        let tick_length = PerformanceCounterDelta::from_seconds_f64(self.delay);
         let tick_length_counter = tick_length.counter as u64;
 
         let now = PerformanceCounter::now();
@@ -192,7 +205,7 @@ impl InterpolatedTimer {
         let start = self.start.load(Ordering::Relaxed);
         let start_counter = PerformanceCounter { counter: start };
 
-        let tick_length = PerformanceCounterDelta::from_seconds(self.get_delay());
+        let tick_length = PerformanceCounterDelta::from_seconds_f64(self.get_delay());
 
         let Some(delta) = now.counter.checked_sub(start_counter.counter) else {
             panic!("InterpolatedTimer went backwards! (now: {}, start: {})", now.counter, start_counter.counter);
@@ -228,7 +241,7 @@ impl InterpolatedTimer {
         let (ticks, fraction) = self.value();
         let start = PerformanceCounter { counter: self.start.load(Ordering::Relaxed) };
         let now = PerformanceCounter::now();
-        now.time_since(start).seconds()
+        now.time_since(start).seconds_f64()
     }
 }
 
@@ -274,11 +287,4 @@ pub unsafe fn get_game_time_fractional() -> (u32, f32) {
     let globals = GAME_TIME_GLOBALS.get().expect("get_game_time_fractional with null game_time_globals");
     assert_eq!(globals.initialized, 1, "get_game_time_fractional with uninitialized game_time_globals");
     (globals.game_time, (globals.time_since_last_tick * TICK_RATE * globals.game_speed).clamp(0.0, 1.0))
-}
-
-#[c_mine]
-pub unsafe extern "C" fn game_time_get() -> u32 {
-    let globals = GAME_TIME_GLOBALS.get().expect("game_time_get with null game_time_globals");
-    assert_eq!(globals.initialized, 1, "game_time_globals with uninitialized game_time_globals");
-    globals.game_time
 }

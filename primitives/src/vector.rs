@@ -508,11 +508,21 @@ impl Angle {
     // ~55.41 deg
     pub const DEFAULT_VERTICAL_FOV: Angle = Angle::from_radians(0.96713803047123473857584761442933284839190937900591636936069359052097036749);
 
-    pub fn calculate_vertical_fov(horizontal: Angle, aspect_ratio: f32) -> Angle {
-        Self::from_radians(2.0 * ((horizontal.radians() / 2.0).tan() / aspect_ratio).atan())
+    /// Calculate a vertical FoV from a horizontal FoV.
+    pub fn calculate_vertical_fov(self, aspect_ratio: f32) -> Angle {
+        Self::from_radians(2.0 * ((self.radians() / 2.0).tan() / aspect_ratio).atan())
     }
-    pub fn calculate_horizontal_fov(vertical: Angle, aspect_ratio: f32) -> Angle {
-        Self::from_radians(2.0 * ((vertical.radians() / 2.0).tan() * aspect_ratio).atan())
+
+    /// Calculate a horizontal FoV from a vertical FoV.
+    pub fn calculate_horizontal_fov(self, aspect_ratio: f32) -> Angle {
+        Self::from_radians(2.0 * ((self.radians() / 2.0).tan() * aspect_ratio).atan())
+    }
+
+    /// Calculate a horizontal FoV from one aspect ratio to another.
+    ///
+    /// The resulting FoV will have the same vertical FoV.
+    pub fn convert_horizontal_fov(self, from_aspect_ratio: f32, to_aspect_ratio: f32) -> Angle {
+        self.calculate_vertical_fov(from_aspect_ratio).calculate_horizontal_fov(to_aspect_ratio)
     }
 
     pub const fn from_degrees(deg: f32) -> Self {

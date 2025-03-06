@@ -122,11 +122,11 @@ pub extern "C" fn render_camera_get_adjusted_field_of_view_tangent(horizontal_fo
     //       get vfov, and *that* should just use 4/3 instead. Then we don't have to change this
     //       function!
 
-    // Convert to vertical FOV at 4:3
-    let vfov = Angle::calculate_vertical_fov(horizontal_fov, UICanvas::_640x480.get_aspect_ratio());
-
-    // Then convert back to horizontal FOV at your real aspect ratio.
-    let fov = Angle::calculate_horizontal_fov(vfov, get_render_camera().viewport_bounds.get_aspect_ratio());
+    // Correct 4:3 hFOV at 4:3 to the current aspect ratio
+    let fov = horizontal_fov.convert_horizontal_fov(
+        UICanvas::_640x480.get_aspect_ratio(),
+        get_render_camera().viewport_bounds.get_aspect_ratio()
+    );
 
     // todo: removing the `* 0.85` makes the FoV closer to Xbox, but Xbox does `* 0.85`, too.
     //       investigate why this is, and why it still looks "correct" on Xbox
