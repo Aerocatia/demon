@@ -1,0 +1,7 @@
+{
+    "load_keystone": {
+        "cache": "0x004078DD",
+        "tag": "0x00406A2D",
+        "replacement": "nop"
+    }
+}
