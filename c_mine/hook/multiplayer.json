@@ -71,5 +71,14 @@
     "decode_packet_inner": {
         "cache": "0x00732230",
         "tag": "0x0073EB10"
+    },
+    "create_multiplayer_map_list": {
+        "cache": "0x00408B5C",
+        "tag": "0x00407E14",
+        "replacement": "crate::multiplayer::c::create_multiplayer_map_list"
+    },
+    "add_map_to_mp_map_list": {
+        "cache": "0x00640490",
+        "tag": "0x00647410"
     }
 }

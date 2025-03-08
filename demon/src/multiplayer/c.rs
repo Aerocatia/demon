@@ -1,6 +1,12 @@
+use alloc::format;
+use core::ffi::CStr;
 use core::sync::atomic::Ordering;
 use crate::tag::TagID;
 use c_mine::{c_mine, pointer_from_hook};
+use tag_structs::ScenarioType;
+use crate::file::{read_partial_data_from_file, Path};
+use crate::init::{get_exe_type, ExeType};
+use crate::map::find_maps_with_prefix;
 use crate::multiplayer::{GameConnectionState, GAME_CONNECTION_STATE};
 use crate::util::{utf16_to_slice, PointerProvider, StaticStringBytes};
 
@@ -37,8 +43,100 @@ const DECODE_PACKET_INNER: PointerProvider<unsafe extern "C" fn(*mut u8, *mut u8
 pub unsafe extern "C" fn decode_packet(destination_data: *mut u8, header: *mut u8) -> u32 {
     let r = DECODE_PACKET_INNER.get()(destination_data, header);
     if *((*(header as *mut *mut u8)).add(4)) == 0xF {
-        // FIXME: There seems to be a bug with these packets in this build
+        // FIXME: There seems to be a bug with these packets in this build; the channel is off by
+        //        256?
         *(destination_data as *mut u32) += 256;
     }
     r
+}
+
+const ADD_MAP_TO_MP_MAP_LIST: PointerProvider<unsafe extern "C" fn(*const u8, usize)> = pointer_from_hook!("add_map_to_mp_map_list");
+
+#[c_mine]
+pub unsafe extern "C" fn create_multiplayer_map_list() {
+    const ALL_MP_STOCK_MAPS: [&CStr; 19] = [
+        c"levels\\test\\beavercreek\\beavercreek",
+        c"levels\\test\\sidewinder\\sidewinder",
+        c"levels\\test\\damnation\\damnation",
+        c"levels\\test\\ratrace\\ratrace",
+        c"levels\\test\\prisoner\\prisoner",
+        c"levels\\test\\hangemhigh\\hangemhigh",
+        c"levels\\test\\chillout\\chillout",
+        c"levels\\test\\carousel\\carousel",
+        c"levels\\test\\boardingaction\\boardingaction",
+        c"levels\\test\\bloodgulch\\bloodgulch",
+        c"levels\\test\\wizard\\wizard",
+        c"levels\\test\\putput\\putput",
+        c"levels\\test\\longest\\longest",
+        c"levels\\test\\icefields\\icefields",
+        c"levels\\test\\deathisland\\deathisland",
+        c"levels\\test\\dangercanyon\\dangercanyon",
+        c"levels\\test\\infinity\\infinity",
+        c"levels\\test\\timberland\\timberland",
+        c"levels\\test\\gephyrophobia\\gephyrophobia",
+    ];
+
+    for (index, string) in ALL_MP_STOCK_MAPS.iter().enumerate() {
+        let string = string.to_str().unwrap();
+        match get_exe_type() {
+            ExeType::Cache => {
+                let base_name = &string[string.rfind("\\").unwrap() + 1..string.len()-1];
+                ADD_MAP_TO_MP_MAP_LIST.get()(base_name.as_ptr(), index);
+            },
+            ExeType::Tag => {
+                ADD_MAP_TO_MP_MAP_LIST.get()(string.as_ptr(), index);
+            }
+        }
+    }
+
+    'map_load_loop: for i in find_maps_with_prefix("") {
+        for stock_map in ALL_MP_STOCK_MAPS {
+            let stock_map = stock_map.to_str().unwrap();
+            match get_exe_type() {
+                ExeType::Cache => {
+                    let base_name = &stock_map[stock_map.rfind("\\").unwrap() + 1..];
+                    if i == base_name {
+                        continue 'map_load_loop
+                    }
+                },
+                ExeType::Tag => {
+                    if i == stock_map {
+                        continue 'map_load_loop
+                    }
+                }
+            }
+        }
+
+        match get_exe_type() {
+            ExeType::Cache => {
+                // TODO: Validate header
+                let mut cache_header = [0u8; 0x800];
+                let Some(n) = read_partial_data_from_file(&Path::from(format!("maps\\{i}.map")), &mut cache_header) else {
+                    continue
+                };
+                if n.len() != 0x800 {
+                    continue
+                }
+                if u16::from_le_bytes([n[0x60], n[0x61]]) != ScenarioType::Multiplayer as u16 {
+                    continue
+                }
+            },
+            ExeType::Tag => {
+                // TODO: Validate tag
+                let mut tag_prefix = [0u8; 0x100];
+                let Some(n) = read_partial_data_from_file(&Path::from(format!("tags\\{i}.scenario")), &mut tag_prefix) else {
+                    continue
+                };
+                if n.len() != 0x100 {
+                    continue
+                }
+                if u16::from_be_bytes([n[0x7C], n[0x7D]]) != ScenarioType::Multiplayer as u16 {
+                    continue
+                }
+            }
+        }
+
+        let name = StaticStringBytes::<256>::from_str(i.as_str());
+        ADD_MAP_TO_MP_MAP_LIST.get()(name.as_bytes().as_ptr(), ALL_MP_STOCK_MAPS.len());
+    }
 }

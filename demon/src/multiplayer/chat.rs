@@ -20,5 +20,5 @@ pub unsafe fn send_chat_message(channel: MessageChannel, message: &str) {
     }
 
     let string = encode_utf16::<256>(message);
-    SEND_CHAT_MESSAGE.get()(channel as u32, 0, string.as_ptr());
+    SEND_CHAT_MESSAGE.get()(3, 0xFF, string.as_ptr());
 }

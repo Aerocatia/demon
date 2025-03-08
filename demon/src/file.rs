@@ -6,9 +6,10 @@ use core::fmt::{Display, Formatter};
 use core::iter::FusedIterator;
 use core::mem::zeroed;
 use core::ops::Div;
-use core::ptr::null_mut;
-use windows_sys::Win32::Foundation::{HANDLE, TRUE};
-use windows_sys::Win32::Storage::FileSystem::{FindClose, FindFirstFileW, FindNextFileW, WIN32_FIND_DATAW};
+use core::ptr::{null, null_mut};
+use windows_sys::Win32::Foundation::{CloseHandle, GENERIC_READ, HANDLE, INVALID_HANDLE_VALUE, TRUE};
+use windows_sys::Win32::Storage::FileSystem::{CreateFileW, FindClose, FindFirstFileW, FindNextFileW, ReadFile, FILE_ATTRIBUTE_NORMAL, OPEN_ALWAYS, WIN32_FIND_DATAW};
+use crate::util::encode_utf16;
 
 const WIN32_PATH_SEPARATOR: char = '\\';
 
@@ -118,4 +119,35 @@ impl Iterator for Win32DirectoryIterator {
 
         Some(&self.base_path / file_name.as_str())
     }
+}
+
+pub fn read_partial_data_from_file<'a>(file: &Path, into: &'a mut [u8]) -> Option<&'a mut [u8]> {
+    let path = encode_utf16::<512>(file.as_str());
+
+    let handle = unsafe { CreateFileW(
+        path.as_ptr(),
+        GENERIC_READ,
+        0,
+        null(),
+        OPEN_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        null_mut()
+    ) };
+
+    if handle == INVALID_HANDLE_VALUE {
+        return None
+    }
+
+    let mut bytes_read = 0;
+    let success = unsafe { ReadFile(
+        handle,
+        into.as_mut_ptr(),
+        into.len() as u32,
+        &mut bytes_read,
+        null_mut()
+    ) };
+
+    unsafe { CloseHandle(handle) };
+
+    (success == TRUE).then_some(&mut into[..bytes_read as usize])
 }

@@ -520,7 +520,7 @@ unsafe fn render_console() {
 }
 
 unsafe extern "C" {
-    fn printf(fmt: CStrPtr, ...) -> i32;
+    pub fn printf(fmt: CStrPtr, ...) -> i32;
 }
 
 #[unsafe(no_mangle)]

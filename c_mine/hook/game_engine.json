@@ -10,5 +10,10 @@
     "main_loop": {
         "tag": "0x00407261",
         "cache": "0x00408080"
+    },
+    "is_cache_build": {
+        "cache": "0x004063D4",
+        "tag": "0x0040537B",
+        "replacement": "crate::init::c::is_cache_build"
     }
 }

@@ -1,4 +1,5 @@
 mod hook;
+pub mod c;
 
 pub use hook::sudo_write;
 

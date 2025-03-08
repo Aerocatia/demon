@@ -615,3 +615,19 @@ pub const unsafe fn utf16_to_slice(what: *const u16) -> &'static [u16] {
 
     core::slice::from_raw_parts(what, len)
 }
+
+pub fn starts_with_ignoring_case(string: &str, with: &str) -> bool {
+    let mut string_iter = string.chars();
+    let mut with_iter = with.chars();
+
+    while let Some(n) = with_iter.next() {
+        let Some(s) = string_iter.next() else {
+            return false
+        };
+        if !s.eq_ignore_ascii_case(&n) {
+            return false
+        }
+    }
+
+    true
+}
