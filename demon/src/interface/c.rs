@@ -1,5 +1,5 @@
-use core::ffi::c_int;
 use c_mine::c_mine;
+use core::ffi::c_int;
 
 #[c_mine]
 pub extern "C" fn hud_chat_open(chat_type: c_int) {
@@ -10,3 +10,4 @@ pub extern "C" fn hud_chat_open(chat_type: c_int) {
         _ => panic!("hud_chat_open cannot open {chat_type}-type chat")
     }
 }
+

@@ -18,6 +18,19 @@
         "arguments": []
     },
     {
+        "name": "demon_send_chat_message",
+        "return_type": "Void",
+        "compile": "crate::script::c::hs_macro_function_parse_c",
+        "evaluate": "crate::multiplayer::hsc::demon_send_chat_message",
+        "description": "Send a chat message.",
+        "usage": "<type> <message>",
+        "arguments": ["Short", "String"]
+    },
+
+
+
+
+    {
         "name": "sv_map_restart",
         "return_type": "Void",
         "compile": "crate::script::c::hs_macro_function_parse_c",

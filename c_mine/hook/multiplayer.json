@@ -18,12 +18,12 @@
     "get_game_connection_state": {
         "cache": "0x004082CE",
         "tag": "0x004074E1",
-        "replacement": "crate::multiplayer::get_game_connection_state"
+        "replacement": "crate::multiplayer::c::get_game_connection_state"
     },
     "set_game_connection_state": {
         "cache": "0x00404511",
         "tag": "0x004037A1",
-        "replacement": "crate::multiplayer::set_game_connection_state"
+        "replacement": "crate::multiplayer::c::set_game_connection_state"
     },
     "get_meme_gametype_data": {
         "cache": "0x004050DD",
@@ -58,5 +58,18 @@
         "cache": "0x00403DA0",
         "tag": "0x00402F7C",
         "replacement": "crate::interface::c::hud_chat_open"
+    },
+    "send_chat_message": {
+        "cache": "0x004048AE",
+        "tag": "0x00403B75"
+    },
+    "decode_packet": {
+        "cache": "0x00408B43",
+        "tag": "0x00407DFB",
+        "replacement": "crate::multiplayer::c::decode_packet"
+    },
+    "decode_packet_inner": {
+        "cache": "0x00732230",
+        "tag": "0x0073EB10"
     }
 }

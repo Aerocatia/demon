@@ -336,12 +336,7 @@ impl<const SIZE: usize> StaticStringBytes<SIZE> {
     }
 
     pub fn as_utf16(self) -> [u16; SIZE] {
-        let string = self.as_str().encode_utf16();
-        let mut beep = [0u16; SIZE];
-        for (from, to) in string.zip(beep[..SIZE - 1].iter_mut()) {
-            *to = from;
-        }
-        beep
+        encode_utf16(self.as_str())
     }
 
     pub const fn into_bytes(self) -> [u8; SIZE] {
@@ -365,6 +360,16 @@ impl<const SIZE: usize> Display for StaticStringBytes<SIZE> {
             .expect("somehow had a non-utf8 StaticStringBytes; this is very bad and is 110% a bug");
         f.write_str(str)
     }
+}
+
+/// Encode the UTF-8 string into a null terminated UTF-16 string.
+pub fn encode_utf16<const SIZE: usize>(string: &str) -> [u16; SIZE] {
+    let encoder = string.encode_utf16();
+    let mut beep = [0u16; SIZE];
+    for (from, to) in encoder.zip(beep[..SIZE - 1].iter_mut()) {
+        *to = from;
+    }
+    beep
 }
 
 /// Write the arguments `fmt` to a byte buffer `bytes`, returning a string reference backed by `bytes`.

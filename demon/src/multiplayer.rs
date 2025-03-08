@@ -1,7 +1,7 @@
 use core::ffi::CStr;
 use core::sync::atomic::{AtomicU16, Ordering};
 use num_enum::TryFromPrimitive;
-use c_mine::{c_mine, pointer_from_hook};
+use c_mine::pointer_from_hook;
 use crate::player::{PlayerID, MAXIMUM_NUMBER_OF_PLAYERS, PLAYERS_TABLE};
 use crate::util::{PointerProvider, VariableProvider};
 
@@ -10,12 +10,10 @@ pub mod server;
 pub mod c;
 pub mod item_collection;
 pub mod hsc;
+pub mod chat;
 
 pub unsafe fn get_server_info() -> Option<&'static ServerInfo> {
-    if get_game_connection_state.get()() == GameConnectionState::None {
-        return None
-    }
-    Some(SERVER_INFO.get()())
+    get_game_connection_state().is_connected().then(|| SERVER_INFO.get()())
 }
 
 #[repr(C)]
@@ -145,7 +143,7 @@ pub unsafe fn get_player_score(player_id: PlayerID, server_info: &ServerInfo) ->
 }
 
 pub unsafe fn get_connected_ip_address() -> (u32, u16) {
-    match get_game_connection_state.get()() {
+    match get_game_connection_state() {
         GameConnectionState::NetworkClient => (*CONNECTED_SERVER_IP_ADDRESS.get(), *CONNECTED_SERVER_PORT.get()),
         _ => (*HOSTED_SERVER_IP_ADDRESS.get(), *HOSTED_SERVER_PORT.get())
     }
@@ -214,15 +212,14 @@ pub enum GameConnectionState {
     NetworkServer
 }
 
-pub static GAME_CONNECTION_STATE: AtomicU16 = AtomicU16::new(GameConnectionState::None as u16);
-
-#[c_mine]
-pub extern "C" fn set_game_connection_state(state: u16) {
-    let state = GameConnectionState::try_from(state).expect("set_game_connection_state with invalid state");
-    GAME_CONNECTION_STATE.store(state as u16, Ordering::Relaxed);
+impl GameConnectionState {
+    pub const fn is_connected(self) -> bool {
+        !matches!(self, Self::None)
+    }
 }
 
-#[c_mine]
-pub extern "C" fn get_game_connection_state() -> GameConnectionState {
+pub static GAME_CONNECTION_STATE: AtomicU16 = AtomicU16::new(GameConnectionState::None as u16);
+
+pub fn get_game_connection_state() -> GameConnectionState {
     GAME_CONNECTION_STATE.load(Ordering::Relaxed).try_into().expect("get_game_connection_state with invalid state")
 }
