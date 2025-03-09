@@ -119,8 +119,9 @@ pub fn get_map_crc32(map_name: &str) -> Result<u32, &'static str> {
     let crc_header = header.crc32;
     let crc = crc.crc();
     if header.crc32 != crc {
-        warn!("get_mp_map_crc32: map {map_name} has a mismatched CRC32 (header=0x{crc_header:08X}, calculated=0x{crc:08X})");
-        warn!("...this will be a hard error on a future version");
+        warn!("get_mp_map_crc32: map {map_name} has a mismatched CRC32 (likely modified)");
+        warn!("   HEADER: 0x{crc_header:08X}; CALCULATED: 0x{crc:08X}");
+        warn!("   This will be a hard error on a future version!");
     }
 
     Ok(crc)
