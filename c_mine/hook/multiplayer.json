@@ -79,6 +79,17 @@
     },
     "add_map_to_mp_map_list": {
         "cache": "0x00640490",
-        "tag": "0x00647410"
+        "tag": "0x00647410",
+        "replacement": "forbid",
+        "sudo": true
+    },
+    "free_mp_map_list": {
+        "cache": "0x00403FF3",
+        "tag": "0x00403201",
+        "replacement": "nop"
+    },
+    "get_mp_map_crc32": {
+        "cache": "0x00403341",
+        "replacement": "crate::multiplayer::map_list::c::get_mp_map_crc32"
     }
 }

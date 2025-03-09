@@ -507,6 +507,10 @@ impl CStrPtr {
     pub const fn is_null(&self) -> bool {
         self.0.is_null()
     }
+
+    pub const fn as_byte_ptr(&self) -> *const u8 {
+        self.0 as *const u8
+    }
 }
 
 /// Object that can be used to display a string lossy without performing any heap allocations.

@@ -11,6 +11,7 @@ pub mod c;
 pub mod item_collection;
 pub mod hsc;
 pub mod chat;
+pub mod map_list;
 
 pub unsafe fn get_server_info() -> Option<&'static ServerInfo> {
     get_game_connection_state().is_connected().then(|| SERVER_INFO.get()())

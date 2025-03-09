@@ -7,6 +7,7 @@ use alloc::borrow::ToOwned;
 use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
+use tag_structs::CacheFileHeader;
 
 const SHOULD_LOAD_MAIN_MENU: VariableProvider<u8> = variable! {
     name: "should_load_main_menu",
@@ -69,4 +70,14 @@ pub fn find_maps_with_prefix(prefix: &str) -> Vec<String> {
     }
 
     suggestions
+}
+
+pub fn verify_map_header(name: &str, header: &CacheFileHeader) -> Result<(), &'static str> {
+    (header.head_fourcc == 0x68656164).then_some(()).ok_or("map head fourcc is incorrect")?;
+    (header.foot_fourcc == 0x666F6F74).then_some(()).ok_or("map foot fourcc is incorrect")?;
+    header.map_type.try_get().map_err(|_| "invalid map type")?;
+    (header.cache_version == 609).then_some(()).ok_or("incorrect cache version")?;
+    (header.name.to_str() == name).then_some(()).ok_or("incorrect cache file name")?;
+
+    Ok(())
 }

@@ -1,13 +1,11 @@
-use alloc::format;
 use core::ffi::CStr;
 use core::sync::atomic::Ordering;
 use crate::tag::TagID;
 use c_mine::{c_mine, pointer_from_hook};
-use tag_structs::ScenarioType;
-use crate::file::{read_partial_data_from_file, Path};
 use crate::init::{get_exe_type, ExeType};
 use crate::map::find_maps_with_prefix;
 use crate::multiplayer::{GameConnectionState, GAME_CONNECTION_STATE};
+use crate::multiplayer::map_list::{add_mp_map, all_mp_maps};
 use crate::util::{utf16_to_slice, PointerProvider, StaticStringBytes};
 
 #[c_mine]
@@ -80,63 +78,20 @@ pub unsafe extern "C" fn create_multiplayer_map_list() {
         let string = string.to_str().unwrap();
         match get_exe_type() {
             ExeType::Cache => {
-                let base_name = &string[string.rfind("\\").unwrap() + 1..string.len()-1];
-                ADD_MAP_TO_MP_MAP_LIST.get()(base_name.as_ptr(), index);
+                let base_name = &string[string.rfind("\\").unwrap() + 1..string.len()];
+                add_mp_map(base_name, Some(index as u32));
             },
             ExeType::Tag => {
-                ADD_MAP_TO_MP_MAP_LIST.get()(string.as_ptr(), index);
+                add_mp_map(string, Some(index as u32));
             }
         }
     }
 
-    'map_load_loop: for i in find_maps_with_prefix("") {
-        for stock_map in ALL_MP_STOCK_MAPS {
-            let stock_map = stock_map.to_str().unwrap();
-            match get_exe_type() {
-                ExeType::Cache => {
-                    let base_name = &stock_map[stock_map.rfind("\\").unwrap() + 1..];
-                    if i == base_name {
-                        continue 'map_load_loop
-                    }
-                },
-                ExeType::Tag => {
-                    if i == stock_map {
-                        continue 'map_load_loop
-                    }
-                }
-            }
-        }
+    for i in find_maps_with_prefix("") {
+        add_mp_map(i.as_str(), None);
+    }
 
-        match get_exe_type() {
-            ExeType::Cache => {
-                // TODO: Validate header
-                let mut cache_header = [0u8; 0x800];
-                let Some(n) = read_partial_data_from_file(&Path::from(format!("maps\\{i}.map")), &mut cache_header) else {
-                    continue
-                };
-                if n.len() != 0x800 {
-                    continue
-                }
-                if u16::from_le_bytes([n[0x60], n[0x61]]) != ScenarioType::Multiplayer as u16 {
-                    continue
-                }
-            },
-            ExeType::Tag => {
-                // TODO: Validate tag
-                let mut tag_prefix = [0u8; 0x100];
-                let Some(n) = read_partial_data_from_file(&Path::from(format!("tags\\{i}.scenario")), &mut tag_prefix) else {
-                    continue
-                };
-                if n.len() != 0x100 {
-                    continue
-                }
-                if u16::from_be_bytes([n[0x7C], n[0x7D]]) != ScenarioType::Multiplayer as u16 {
-                    continue
-                }
-            }
-        }
-
-        let name = StaticStringBytes::<256>::from_str(i.as_str());
-        ADD_MAP_TO_MP_MAP_LIST.get()(name.as_bytes().as_ptr(), ALL_MP_STOCK_MAPS.len());
+    if all_mp_maps().is_empty() {
+        panic!("No multiplayer maps found!");
     }
 }
