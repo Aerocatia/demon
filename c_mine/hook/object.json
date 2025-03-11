@@ -43,5 +43,10 @@
         "cache": "0x00403670",
         "tag": "0x004027B1",
         "replacement": "crate::random::c::seed_random_direction3d"
+    },
+    "weapon_get_zoom_magnification": {
+        "cache": "0x00404D31",
+        "tag": "0x0040409D",
+        "replacement": "crate::object::weapon::c::weapon_get_zoom_magnification"
     }
 }

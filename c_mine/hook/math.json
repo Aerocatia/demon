@@ -70,6 +70,11 @@
         "tag": "0x004071F8",
         "replacement": "forbid"
     },
+    "pow_with_even_more_steps": {
+        "cache": "0x00406BB8",
+        "tag": "0x00405BDC",
+        "replacement": "forbid"
+    },
     "pow_with_extra_steps": {
         "cache": "0x00406307",
         "tag": "0x004052AE",
