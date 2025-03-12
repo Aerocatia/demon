@@ -1,9 +1,10 @@
 use core::ffi::CStr;
+use core::net::{Ipv4Addr, SocketAddrV4};
 use core::sync::atomic::{AtomicU16, Ordering};
 use num_enum::TryFromPrimitive;
 use c_mine::pointer_from_hook;
 use crate::player::{PlayerID, MAXIMUM_NUMBER_OF_PLAYERS, PLAYERS_TABLE};
-use crate::util::{PointerProvider, VariableProvider};
+use crate::util::{PointerProvider, StaticStringBytes, VariableProvider};
 
 pub mod game_engine;
 pub mod server;
@@ -148,6 +149,11 @@ pub unsafe fn get_connected_ip_address() -> (u32, u16) {
         GameConnectionState::NetworkClient => (*CONNECTED_SERVER_IP_ADDRESS.get(), *CONNECTED_SERVER_PORT.get()),
         _ => (*HOSTED_SERVER_IP_ADDRESS.get(), *HOSTED_SERVER_PORT.get())
     }
+}
+
+pub unsafe fn get_connected_ip_address_formatted() -> StaticStringBytes<66> {
+    let (ip, port) = get_connected_ip_address();
+    StaticStringBytes::from_display(SocketAddrV4::new(Ipv4Addr::from_bits(ip), port))
 }
 
 #[repr(C)]

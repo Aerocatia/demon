@@ -1,17 +1,17 @@
-use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use crate::memory::table::DataTable;
-use crate::multiplayer::{get_connected_ip_address, Gametype, ServerInfo};
+use crate::multiplayer::{get_connected_ip_address_formatted, Gametype, ServerInfo};
 use crate::player::{Player, PlayerID, MAXIMUM_LIVES, PLAYERS_TABLE};
-use crate::rasterizer::{draw_box, get_fallback_ui_bounds, get_global_interface_canvas_bounds, Rectangle};
 use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter, DEFAULT_WHITE};
 use crate::rasterizer::font::get_font_tag_height;
 use crate::rasterizer::scoreboard::color::{get_scoreboard_color, HEADER_COLOR, HEADING_COLOR, HIGHLIGHT_BOOST};
-use crate::rasterizer::scoreboard::{format_score, SHOW_SERVER_INFO};
 use crate::rasterizer::scoreboard::heading::fmt_scoreboard_heading;
 use crate::rasterizer::scoreboard::sortable_score::SortableScore;
 use crate::rasterizer::scoreboard::strings::ScoreboardScreenText;
+use crate::rasterizer::scoreboard::{format_score, SHOW_SERVER_INFO};
+use crate::rasterizer::{draw_box, get_fallback_ui_bounds, get_global_interface_canvas_bounds, Rectangle};
 use crate::tag::TagID;
 use crate::util::StaticStringBytes;
+use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 
 const SCOREBOARD_BOUNDS: Rectangle = Rectangle {
     top: 60,
@@ -214,22 +214,8 @@ unsafe fn draw_server_info(opacity: f32, scoreboard_text: &ScoreboardScreenText,
     let mut next_footer_line = |line_height: i16| { footer_offset += line_height; Rectangle { top: footer_offset - large_line_height, left: 8, right: canvas_bounds.right - 5, bottom: canvas_bounds.bottom.min(footer_offset) }};
 
     let server_name = StaticStringBytes::<66>::from_utf16(&server_info.server_name);
-    let server_ip = format_connected_server_ip();
+    let server_ip = get_connected_ip_address_formatted();
 
     footer_writer.draw(format_args!("{server_name}"), next_footer_line(large_line_height)).unwrap();
     footer_writer.draw(format_args!("{}{server_ip}", scoreboard_text.server_ip_address), next_footer_line(large_line_height)).unwrap();
-}
-
-unsafe fn format_connected_server_ip() -> StaticStringBytes<66> {
-    let (ip,port) = get_connected_ip_address();
-    StaticStringBytes::from_fmt(
-        format_args!(
-            "{}.{}.{}.{}:{}",
-            (ip >> 24) & 0xFF,
-            (ip >> 16) & 0xFF,
-            (ip >> 08) & 0xFF,
-            (ip >> 00) & 0xFF,
-            port
-        )
-    ).unwrap()
 }
