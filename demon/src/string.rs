@@ -1,7 +1,7 @@
+pub mod c;
+
 use crate::tag::{get_tag_info_typed, ReflexiveImpl, TagData, TagID};
-use c_mine::c_mine;
 use tag_structs::UnicodeStringList;
-use utf16_lit::utf16_null;
 
 pub unsafe fn get_unicode_string_list_string(tag_id: TagID, index: u16) -> Option<&'static [u16]> {
     let index = index as usize;
@@ -24,8 +24,3 @@ pub unsafe fn get_unicode_string_list_string(tag_id: TagID, index: u16) -> Optio
     Some(u16)
 }
 
-#[c_mine]
-pub unsafe extern "C" fn unicode_string_list_get_string(tag_id: TagID, index: u16) -> *const u16 {
-    const MISSING_STRING: &[u16] = &utf16_null!("<missing string>");
-    get_unicode_string_list_string(tag_id, index).unwrap_or(MISSING_STRING).as_ptr()
-}

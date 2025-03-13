@@ -2,6 +2,21 @@
     "unicode_string_list_get_string": {
         "cache": "0x00403198",
         "tag": "0x00402275",
-        "replacement": "crate::string::unicode_string_list_get_string"
+        "replacement": "crate::string::c::unicode_string_list_get_string"
+    },
+    "strcmp": {
+        "cache": "0x00409840",
+        "tag": "0x00408BD4",
+        "replacement": "crate::string::c::strcmp"
+    },
+    "strlen": {
+        "cache": "0x004078A1",
+        "tag": "0x004069F1",
+        "replacement": "crate::string::c::strlen"
+    },
+    "strcpy": {
+        "cache": "0x004023DD",
+        "tag": "0x0040AC04",
+        "replacement": "crate::string::c::strcpy"
     }
 }
