@@ -1,6 +1,7 @@
 use c_mine::c_mine;
 use tag_structs::{ObjectType, Weapon};
 use tag_structs::primitives::float::FloatFunctions;
+use tag_structs::primitives::vector::Vector3D;
 use crate::object::c::object_get_and_verify_type;
 use crate::object::ObjectID;
 use crate::tag::{get_tag_info_typed, TagID};
@@ -31,4 +32,32 @@ pub unsafe extern "C" fn weapon_get_zoom_magnification(object: ObjectID, zoom_le
     let high = max_zoom_magnification.upper_bound.max(1.0);
 
     (high / low).powf(ratio) * low
+}
+
+#[c_mine]
+pub unsafe extern "C" fn projectile_aim_linear(
+    param_1: f32,
+    param_2: &Vector3D,
+    param_3: &Vector3D,
+    result_aim_vector: &mut Vector3D,
+    param_5: Option<&mut f32>,
+    param_6: Option<&mut f32>,
+    param_7: Option<&mut f32>
+) {
+    let vector = *param_3 - *param_2;
+    let magnitude = vector.magnitude();
+    *result_aim_vector = vector.normalized().unwrap_or(vector);
+
+    // ???
+    if let Some(param_5) = param_5 {
+        *param_5 = param_1;
+    }
+
+    if let Some(param_6) = param_6 {
+        *param_6 = if param_1 <= 0.0 { 0.0 } else { magnitude / param_1 };
+    }
+
+    if let Some(param_7) = param_7 {
+        *param_7 = magnitude;
+    }
 }

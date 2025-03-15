@@ -48,5 +48,10 @@
         "cache": "0x00404D31",
         "tag": "0x0040409D",
         "replacement": "crate::object::weapon::c::weapon_get_zoom_magnification"
+    },
+    "projectile_aim_linear": {
+        "cache": "0x00404C9B",
+        "tag": "0x00403FF8",
+        "replacement": "crate::object::weapon::c::projectile_aim_linear"
     }
 }

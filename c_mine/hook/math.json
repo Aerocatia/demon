@@ -218,5 +218,10 @@
         "cache": "0x004047EB",
         "tag": "0x00403A99",
         "replacement": "forbid"
+    },
+    "flipped_subtract_vectors_3d": {
+        "cache": "0x004025E0",
+        "tag": "0x0040AD35",
+        "replacement": "crate::math::c::flipped_subtract_vectors_3d"
     }
 }

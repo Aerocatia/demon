@@ -194,3 +194,9 @@ pub extern "C" fn matrix3x3_transform_vector(matrix: &Matrix3x3, vector: &Vector
 pub extern "C" fn tan(value: f32) -> f32 {
     value.tan()
 }
+
+#[c_mine]
+pub extern "C" fn flipped_subtract_vectors_3d(a: &Vector3D, b: &Vector3D, out: &mut Vector3D) -> *mut Vector3D {
+    *out = *b - *a;
+    out
+}
