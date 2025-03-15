@@ -96,6 +96,8 @@ impl Console {
     }
 
     fn put_message(&mut self, color: impl AsRef<ColorARGB>, what: impl Display) {
+
+
         let color = color.as_ref();
         assert!(color.is_valid(), "Console::put with invalid color!");
 

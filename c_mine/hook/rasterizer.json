@@ -86,5 +86,29 @@
         "cache": "0x00404165",
         "tag": "0x004033A0",
         "replacement": "crate::rasterizer::c::render_camera_get_adjusted_field_of_view_tangent"
+    },
+    "D3D9DeviceEx_SetTexture": {
+        "cache": "0x00402171",
+        "replacement": "crate::rasterizer::d3d9::c::D3D9DeviceEx_SetTexture"
+    },
+    "D3D9DeviceEx_SetPixelShader": {
+        "cache": "0x004071B2",
+        "replacement": "crate::rasterizer::d3d9::c::D3D9DeviceEx_SetPixelShader"
+    },
+    "D3D9DeviceEx_SetVertexShader": {
+        "cache": "0x00406F0F",
+        "replacement": "crate::rasterizer::d3d9::c::D3D9DeviceEx_SetVertexShader"
+    },
+    "D3D9DeviceEx_SetRenderState": {
+        "cache": "0x004075E0",
+        "replacement": "crate::rasterizer::d3d9::c::D3D9DeviceEx_SetRenderState"
+    },
+    "D3D9DeviceEx_SetTextureStageState": {
+        "cache": "0x004051E6",
+        "replacement": "crate::rasterizer::d3d9::c::D3D9DeviceEx_SetTextureStageState"
+    },
+    "D3D9DeviceEx_SetSamplerState": {
+        "cache": "0x004039E0",
+        "replacement": "crate::rasterizer::d3d9::c::D3D9DeviceEx_SetSamplerState"
     }
 }

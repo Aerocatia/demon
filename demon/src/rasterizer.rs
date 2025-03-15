@@ -15,6 +15,7 @@ pub mod player_colors;
 pub mod font;
 pub mod hud;
 pub mod c;
+pub mod d3d9;
 
 #[derive(Copy, Clone, Debug, Default)]
 #[repr(C)]
