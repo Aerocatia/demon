@@ -53,5 +53,10 @@
         "cache": "0x00404C9B",
         "tag": "0x00403FF8",
         "replacement": "crate::object::weapon::c::projectile_aim_linear"
+    },
+    "object_placement_data_new": {
+        "cache": "0x004078E2",
+        "tag": "0x00406A32",
+        "replacement": "crate::object::c::object_placement_data_new"
     }
 }

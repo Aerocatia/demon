@@ -1,7 +1,9 @@
+use core::mem::MaybeUninit;
 use core::ptr::null_mut;
 use c_mine::{c_mine, get_hs_global};
 use tag_structs::ObjectType;
-use crate::object::{ObjectID, ObjectTypes, OBJECT_TABLE};
+use crate::object::{ObjectID, ObjectPlacementData, ObjectTypes, OBJECT_TABLE};
+use crate::tag::TagID;
 
 #[c_mine]
 pub unsafe extern "C" fn object_try_and_get_verify_type(object_id: ObjectID, object_types: ObjectTypes) -> *mut [u8; 0] {
@@ -56,4 +58,9 @@ pub unsafe extern "C" fn get_weapon_age(object_id: ObjectID) -> f32 {
 #[c_mine]
 pub unsafe extern "C" fn get_cheat_infinite_ammo() -> bool {
     *get_hs_global!("cheat_infinite_ammo") != 0
+}
+
+#[c_mine]
+pub unsafe extern "C" fn object_placement_data_new(data: &mut MaybeUninit<ObjectPlacementData>, tag_id: TagID, parent_object: ObjectID) {
+    data.write(ObjectPlacementData::new(tag_id, parent_object));
 }

@@ -70,6 +70,7 @@ impl PerformanceCounterDelta {
         let frequency = Self::get_frequency();
         Self { counter: ((frequency as f64) * sec.abs()) as u64, backwards: sec < 0.0 }
     }
+    #[inline(always)]
     fn get_frequency() -> u64 {
         let mut frequency = 0i64;
 

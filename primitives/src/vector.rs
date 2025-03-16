@@ -6,6 +6,17 @@ pub const MIN_MAGNITUDE: f32 = 0.0001;
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
 #[repr(C)]
+pub struct Matrix2x3 {
+    pub forward: Vector3D,
+    pub up: Vector3D
+}
+
+impl Matrix2x3 {
+    pub const IDENTITY: Matrix2x3 = Matrix2x3 { forward: Vector3D { x: 1.0, y: 0.0, z: 0.0 }, up: Vector3D { x: 0.0, y: 0.0, z: 1.0 } };
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
+#[repr(C)]
 pub struct Matrix3x3 {
     pub a: Vector3D,
     pub b: Vector3D,
@@ -357,7 +368,7 @@ pub struct ProjectionMatrix {
     pub w: Vector4D
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Default)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct Vector3D {
     pub x: f32,
@@ -366,6 +377,7 @@ pub struct Vector3D {
 }
 
 impl Vector3D {
+    pub const ZEROED: Self = Vector3D { x: 0.0, y: 0.0, z: 0.0 };
     pub const fn is_valid(self) -> bool {
         !self.x.is_nan() && !self.y.is_nan() && !self.z.is_nan()
     }
@@ -410,6 +422,12 @@ impl Vector3D {
             y: -self.y,
             z: -self.z
         }
+    }
+}
+
+impl Default for Vector3D {
+    fn default() -> Self {
+        Self::ZEROED
     }
 }
 

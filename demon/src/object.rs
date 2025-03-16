@@ -1,8 +1,11 @@
 use core::fmt::{Debug, Formatter};
 use tag_structs::{ModelMarkerInstance, ObjectType};
-use tag_structs::primitives::vector::{Matrix4x3, Vector3D};
+use tag_structs::primitives::color::ColorRGB;
+use tag_structs::primitives::vector::{Matrix2x3, Matrix4x3, Vector3D};
 use crate::id::ID;
 use crate::memory::table::DataTable;
+use crate::object::c::object_try_and_get_verify_type;
+use crate::player::PlayerID;
 use crate::tag::TagID;
 use crate::util::VariableProvider;
 
@@ -10,6 +13,7 @@ pub mod weapon;
 pub mod c;
 
 const OBJECT_SALT: u16 = 0x626F;
+pub const CHANGE_COLORS_COUNT: usize = 4;
 
 pub type ObjectID = ID<OBJECT_SALT>;
 
@@ -79,6 +83,7 @@ impl ObjectMarker {
 #[repr(transparent)]
 pub struct ObjectTypes(u32);
 impl ObjectTypes {
+    pub const ANY: ObjectTypes = ObjectTypes(u32::MAX);
     pub const fn from_slice(object_types: &[ObjectType]) -> Self {
         let mut index = 0usize;
         let mut value = 0u32;
@@ -152,6 +157,67 @@ pub const GLOBAL_OBJECT_MARKER: VariableProvider<u32> = variable! {
     cache_address: 0x00DED5B4,
     tag_address: 0x00EA4B74
 };
+
+#[repr(C)]
+pub struct ObjectPlacementData {
+    pub tag_id: TagID,
+    pub flags: u32,
+    pub player: PlayerID,
+    pub parent_object: ObjectID,
+    pub parent_tag: TagID,
+    pub team: u16,
+    pub region_permutation: u16,
+    pub position: Vector3D,
+    pub nido: f32, // unknown
+    pub velocity: Vector3D,
+    pub rotation: Matrix2x3,
+    pub angular_velocity: Vector3D,
+    pub change_colors: [ColorRGB; CHANGE_COLORS_COUNT]
+}
+
+const _: () = assert!(size_of::<ObjectPlacementData>() == 0x88);
+
+impl ObjectPlacementData {
+    pub unsafe fn new(tag_id: TagID, parent_object: ObjectID) -> Self {
+        let mut data = Self::new_default();
+
+        data.tag_id = tag_id;
+
+        let parent_object_data = object_try_and_get_verify_type.get()(parent_object, ObjectTypes::ANY) as *mut u8;
+        if !parent_object_data.is_null() {
+            // TODO: Fill out the object struct for this...
+            data.player = *(parent_object_data.wrapping_add(0x7C) as *const PlayerID);
+            data.team = *(parent_object_data.wrapping_add(0x74) as *const u16);
+            data.parent_object = parent_object;
+        }
+
+        data
+    }
+
+    pub const fn new_default() -> Self {
+        ObjectPlacementData {
+            tag_id: TagID::NULL,
+            flags: 0,
+            player: PlayerID::NULL,
+            parent_object: ObjectID::NULL,
+            parent_tag: TagID::NULL,
+            team: u16::MAX,
+            region_permutation: 0,
+            position: Vector3D::ZEROED,
+            nido: 0.0,
+            velocity: Vector3D::ZEROED,
+            rotation: Matrix2x3::IDENTITY,
+            angular_velocity: Vector3D::ZEROED,
+            change_colors: [ColorRGB::WHITE; CHANGE_COLORS_COUNT]
+        }
+    }
+}
+
+impl Default for ObjectPlacementData {
+    fn default() -> Self {
+        Self::new_default()
+    }
+}
 
 #[repr(C)]
 pub struct BaseObject {
