@@ -9,8 +9,11 @@ use crate::player::PlayerID;
 use crate::tag::TagID;
 use crate::util::VariableProvider;
 
+pub const MAXIMUM_NUMBER_OF_HELD_WEAPONS: usize = 4;
+
 pub mod weapon;
 pub mod c;
+pub mod hsc;
 
 const OBJECT_SALT: u16 = 0x626F;
 pub const CHANGE_COLORS_COUNT: usize = 4;
@@ -84,6 +87,10 @@ impl ObjectMarker {
 pub struct ObjectTypes(u32);
 impl ObjectTypes {
     pub const ANY: ObjectTypes = ObjectTypes(u32::MAX);
+    pub const UNIT: ObjectTypes = ObjectTypes::from_slice(&[ObjectType::Biped, ObjectType::Vehicle]);
+    pub const ITEM: ObjectTypes = ObjectTypes::from_slice(&[ObjectType::Weapon, ObjectType::Equipment, ObjectType::Garbage]);
+    pub const DEVICE: ObjectTypes = ObjectTypes::from_slice(&[ObjectType::DeviceControl, ObjectType::DeviceMachine, ObjectType::DeviceLightFixture]);
+
     pub const fn from_slice(object_types: &[ObjectType]) -> Self {
         let mut index = 0usize;
         let mut value = 0u32;
@@ -183,11 +190,9 @@ impl ObjectPlacementData {
 
         data.tag_id = tag_id;
 
-        let parent_object_data = object_try_and_get_verify_type.get()(parent_object, ObjectTypes::ANY) as *mut u8;
-        if !parent_object_data.is_null() {
-            // TODO: Fill out the object struct for this...
-            data.player = *(parent_object_data.wrapping_add(0x7C) as *const PlayerID);
-            data.team = *(parent_object_data.wrapping_add(0x74) as *const u16);
+        if let Ok(parent_object_data) = get_dynamic_object::<BaseObject>(parent_object) {
+            data.player = parent_object_data.player;
+            data.team = parent_object_data.team;
             data.parent_object = parent_object;
         }
 
@@ -232,5 +237,72 @@ pub struct BaseObject {
     pub global_object_marker: u32,
 
     pub position: Vector3D,
-    pub velocity: Vector3D
+    pub velocity: Vector3D,
+    pub rotation: Matrix2x3,
+
+    pub _unknown_0x48: u32,
+    pub _unknown_0x4c: u32,
+    pub _unknown_0x50: u32,
+    pub _unknown_0x54: u32,
+    pub _unknown_0x58: u32,
+
+    /// This is used for determining where an object is for activating trigger volumes, teleporters,
+    /// and other things.
+    pub center: Vector3D,
+    pub _unknown_0x68: f32,
+    pub _unknown_0x6c: u32,
+    pub _unknown_0x70: u32,
+    pub team: u16,
+    pub _unknown_0x76: u16,
+    pub _unknown_0x7c: u32,
+    pub player: PlayerID,
+    pub _unknown_0x80: u32,
+    pub _unknown_0x84: u32,
+    pub _unknown_0x88: TagID,
+    pub _unknown_0x8c: u32,
+    pub _unknown_0x90: u16,
+    pub _unknown_0x92: u16,
+
+    /// This is the base hitpoint value of the object's body vitality.
+    ///
+    /// Damage is divided by this when the object's health is being damaged.
+    pub base_health: f32,
+
+    /// This is the base hitpoint value of the object's shield vitality.
+    ///
+    /// Damage is divided by this when the object's shield is being damaged.
+    pub base_shield: f32,
+
+    /// This is the raw body vitality of the object, scaled from 0.0 to 1.0.
+    ///
+    /// The object 'dies' if it takes damage and this value falls below 0.
+    pub health: f32,
+
+    /// This is the raw shield vitality of the object, scaled from 0.0 (empty) to 1.0 (full) and up
+    /// to 4.0 (OS).
+    pub shield: f32
+}
+
+const _: () = assert!(size_of::<BaseObject>() == 0xA4);
+
+pub trait DynamicObject {
+    const OBJECT_TYPES: ObjectTypes;
+}
+
+impl DynamicObject for BaseObject {
+    const OBJECT_TYPES: ObjectTypes = ObjectTypes::ANY;
+}
+
+pub unsafe fn get_dynamic_object<T: DynamicObject>(object_id: ObjectID) -> Result<&'static mut T, &'static str> {
+    let object = object_try_and_get_verify_type.get()(object_id, T::OBJECT_TYPES);
+    if object.is_null() {
+        if object_try_and_get_verify_type.get()(object_id, ObjectTypes::ANY).is_null() {
+            return Err("cannot get object; ID does not correspond to an object")
+        }
+        else {
+            return Err("cannot get object; type mismatch")
+        }
+    }
+    let object = object as *mut T;
+    Ok(&mut *object)
 }
