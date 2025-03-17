@@ -337,6 +337,9 @@ impl Vector2D {
     pub fn is_valid(self) -> bool {
         !self.x.is_nan() && !self.y.is_nan()
     }
+    pub const fn dot(self, other: Self) -> f32 {
+        self.x * other.x + self.y * other.y
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]

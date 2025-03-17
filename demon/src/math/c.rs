@@ -200,3 +200,15 @@ pub extern "C" fn flipped_subtract_vectors_3d(a: &Vector3D, b: &Vector3D, out: &
     *out = *b - *a;
     out
 }
+
+#[c_mine]
+pub extern "C" fn valid_realcmp(a: f32, b: f32) -> bool {
+    let difference = a - b;
+    !difference.is_nan() && difference.abs() < 0.001
+}
+
+#[c_mine]
+pub extern "C" fn valid_real_normal2d(a: &Vector2D) -> bool {
+    let difference = a.dot(*a) - 1.0;
+    !difference.is_nan() && difference.abs() < 0.001
+}
