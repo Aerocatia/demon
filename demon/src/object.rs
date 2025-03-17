@@ -279,7 +279,7 @@ pub struct BaseObject {
     pub health: f32,
 
     /// This is the raw shield vitality of the object, scaled from 0.0 (empty) to 1.0 (full) and up
-    /// to 4.0 (OS).
+    /// to 3.0 (OS).
     pub shield: f32
 }
 

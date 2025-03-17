@@ -6,7 +6,7 @@ use crate::tag::{get_tag_data_from_info, lookup_tag, ReflexiveImpl};
 use tag_structs::primitives::tag_group::TagGroup;
 use tag_structs::Globals;
 
-pub unsafe extern "C" fn demon_cheat_max_ammo_eval(a: u16, b: u32, c: u8) {
+pub unsafe extern "C" fn cheat_max_ammo_eval(a: u16, b: u32, c: u8) {
     let table = PLAYERS_TABLE.get_copied().unwrap();
     for i in table.iter() {
         // TODO: Convert to BaseUnit to get weapons of unit

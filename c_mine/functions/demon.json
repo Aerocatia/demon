@@ -1,61 +1,64 @@
 [
     {
-        "name": "demon_console_set_color",
+        "name": "cheat_healthpack",
         "return_type": "Void",
         "compile": "crate::script::c::hs_macro_function_parse_c",
-        "evaluate": "crate::console::hsc::demon_console_set_color_eval",
-        "description": "Set the console color. Colors are between 0.0 and 1.0 (inclusive) and will be clamped.",
-        "usage": "<red> <green> <blue>",
-        "arguments": ["Real", "Real", "Real"]
-    },
-    {
-        "name": "demon_exit_to_menu",
-        "return_type": "Void",
-        "compile": "crate::script::c::hs_macro_function_parse_c",
-        "evaluate": "crate::map::hsc::demon_exit_to_menu_eval",
-        "description": "Return to the main menu.",
-        "usage": "",
-        "arguments": []
-    },
-    {
-        "name": "demon_send_chat_message",
-        "return_type": "Void",
-        "compile": "crate::script::c::hs_macro_function_parse_c",
-        "evaluate": "crate::multiplayer::hsc::demon_send_chat_message_eval",
-        "description": "Send a chat message.",
-        "usage": "<type> <message>",
-        "arguments": ["Short", "String"]
-    },
-    {
-        "name": "demon_cheat_healthpack",
-        "return_type": "Void",
-        "compile": "crate::script::c::hs_macro_function_parse_c",
-        "evaluate": "crate::object::hsc::demon_cheat_healthpack::demon_cheat_healthpack_eval",
+        "evaluate": "crate::object::hsc::cheat_healthpack::cheat_healthpack_eval",
         "description": "Restore all players' health to full.",
         "usage": "",
-        "arguments": []
+        "arguments": [],
+        "comment": "Introduced by the Demon project"
     },
     {
-        "name": "demon_cheat_max_ammo",
+        "name": "cheat_max_ammo",
         "return_type": "Void",
         "compile": "crate::script::c::hs_macro_function_parse_c",
-        "evaluate": "crate::object::hsc::demon_cheat_max_ammo::demon_cheat_max_ammo_eval",
+        "evaluate": "crate::object::hsc::cheat_max_ammo::cheat_max_ammo_eval",
         "description": "Refill all players' ammo.",
         "usage": "",
-        "arguments": []
+        "arguments": [],
+        "comment": "Introduced by the Demon project"
     },
     {
-        "name": "demon_debug_player_address",
+        "name": "console_set_color",
         "return_type": "Void",
         "compile": "crate::script::c::hs_macro_function_parse_c",
-        "evaluate": "crate::object::hsc::demon_debug_player_address::demon_debug_player_address_eval",
+        "evaluate": "crate::console::hsc::console_set_color_eval",
+        "description": "Set the console color. Colors are between 0.0 and 1.0 (inclusive) and will be clamped.",
+        "usage": "<red> <green> <blue>",
+        "arguments": ["Real", "Real", "Real"],
+        "comment": "Introduced by the Demon project"
+    },
+    {
+        "name": "exit_to_menu",
+        "return_type": "Void",
+        "compile": "crate::script::c::hs_macro_function_parse_c",
+        "evaluate": "crate::map::hsc::exit_to_menu_eval",
+        "description": "Return to the main menu.",
+        "usage": "",
+        "arguments": [],
+        "comment": "Introduced by the Demon project"
+    },
+    {
+        "name": "send_chat_message",
+        "return_type": "Void",
+        "compile": "crate::script::c::hs_macro_function_parse_c",
+        "evaluate": "crate::multiplayer::hsc::send_chat_message_eval",
+        "description": "Send a chat message.",
+        "usage": "<type> <message>",
+        "arguments": ["Short", "String"],
+        "comment": "Introduced by the Demon project"
+    },
+    {
+        "name": "debug_player_address",
+        "return_type": "Void",
+        "compile": "crate::script::c::hs_macro_function_parse_c",
+        "evaluate": "crate::object::hsc::debug_player_address::debug_player_address_eval",
         "description": "Get the addresses of all players' objects.",
         "usage": "",
-        "arguments": []
+        "arguments": [],
+        "comment": "Introduced by the Demon project"
     },
-
-
-
 
     {
         "name": "sv_map_restart",
@@ -64,6 +67,7 @@
         "evaluate": "crate::multiplayer::hsc::sv_map_restart_eval",
         "description": "Restart the current game.",
         "usage": "",
-        "arguments": []
+        "arguments": [],
+        "comment": "Originally in Halo PC 1.00-1.02; removed in 1.03"
     }
 ]

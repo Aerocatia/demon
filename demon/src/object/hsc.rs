@@ -1,3 +1,3 @@
-pub mod demon_cheat_healthpack;
-pub mod demon_cheat_max_ammo;
-pub mod demon_debug_player_address;
+pub mod cheat_healthpack;
+pub mod cheat_max_ammo;
+pub mod debug_player_address;

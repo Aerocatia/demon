@@ -12,7 +12,7 @@ pub unsafe extern "C" fn sv_map_restart_eval(a: u32, b: u32, c: u32) {
     HS_RETURN.get()(b, 0);
 }
 
-pub unsafe extern "C" fn demon_send_chat_message_eval(a: u16, b: u32, c: u8) {
+pub unsafe extern "C" fn send_chat_message_eval(a: u16, b: u32, c: u8) {
     #[repr(C)]
     struct DemonChatMessageStruct {
         channel: u16,
