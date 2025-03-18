@@ -110,10 +110,15 @@
         "tag": "0x004077A7",
         "replacement": "forbid"
     },
-    "normalize_3d": {
+    "normalize3d": {
         "cache": "0x004012C1",
         "tag": "0x0040A2E0",
-        "replacement": "crate::math::c::normalize_3d"
+        "replacement": "crate::math::c::normalize3d"
+    },
+    "normalize2d": {
+        "cache": "0x0040113B",
+        "tag": "0x0040A1FA",
+        "replacement": "crate::math::c::normalize2d"
     },
     "pixel32_to_real_argb_color": {
         "cache": "0x004095B1",
@@ -219,10 +224,10 @@
         "tag": "0x00403A99",
         "replacement": "forbid"
     },
-    "flipped_subtract_vectors_3d": {
+    "flipped_subtract_vectors3d": {
         "cache": "0x004025E0",
         "tag": "0x0040AD35",
-        "replacement": "crate::math::c::flipped_subtract_vectors_3d"
+        "replacement": "crate::math::c::flipped_subtract_vectors3d"
     },
     "valid_realcmp": {
         "cache": "0x00402496",
@@ -233,5 +238,20 @@
         "cache": "0x00402F59",
         "tag": "0x004020E5",
         "replacement": "crate::math::c::valid_real_normal2d"
+    },
+    "magnitude_squared2d": {
+        "cache": "0x004065DC",
+        "tag": "0x004055B0",
+        "replacement": "crate::math::c::magnitude_squared2d"
+    },
+    "magnitude2d": {
+        "cache": "0x00403AAD",
+        "tag": "0x00402C6B",
+        "replacement": "crate::math::c::magnitude2d"
+    },
+    "cross_product3d": {
+        "cache": "0x00407BF3",
+        "tag": "0x00406D84",
+        "replacement": "crate::math::c::cross_product3d"
     }
 }

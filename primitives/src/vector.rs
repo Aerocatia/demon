@@ -337,8 +337,34 @@ impl Vector2D {
     pub fn is_valid(self) -> bool {
         !self.x.is_nan() && !self.y.is_nan()
     }
-    pub const fn dot(self, other: Self) -> f32 {
+    pub const fn dot(self, other: &Self) -> f32 {
         self.x * other.x + self.y * other.y
+    }
+    pub const fn magnitude_squared(self) -> f32 {
+        self.dot(&self)
+    }
+    pub fn magnitude(self) -> f32 {
+        self.dot(&self).sqrt()
+    }
+    pub const fn scaled(self, amount: f32) -> Self {
+        Self {
+            x: self.x * amount,
+            y: self.y * amount
+        }
+    }
+    pub fn normalized(self) -> Option<Self> {
+        let magnitude = self.magnitude();
+        if magnitude < MIN_MAGNITUDE {
+            None
+        }
+        else {
+            // Bad for floating point precision, but needed to be accurate to the original...
+            Some(self.scaled(1.0 / magnitude))
+        }
+    }
+    pub const fn cross_product(self, other: Self) -> f32 {
+        // Only calculates a scalar, as you need a third dimension to get a vector...
+        self.x * other.y - self.y * other.x
     }
 }
 
@@ -387,7 +413,7 @@ impl Vector3D {
     pub const fn dot(self, other: &Vector3D) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
-    pub const fn scale(self, by: f32) -> Self {
+    pub const fn scaled(self, by: f32) -> Self {
         Self {
             x: self.x * by,
             y: self.y * by,
@@ -395,7 +421,7 @@ impl Vector3D {
         }
     }
     pub const fn magnitude_squared(self) -> f32 {
-        self.x * self.x + self.y * self.y + self.z * self.z
+        self.dot(&self)
     }
 
     /// Interpolate this vector with another one by `by` amount.
@@ -416,7 +442,7 @@ impl Vector3D {
         }
         else {
             // Bad for floating point precision, but needed to be accurate to the original...
-            Some(self.scale(1.0 / magnitude))
+            Some(self.scaled(1.0 / magnitude))
         }
     }
     pub const fn negated(self) -> Self {
@@ -424,6 +450,13 @@ impl Vector3D {
             x: -self.x,
             y: -self.y,
             z: -self.z
+        }
+    }
+    pub const fn cross_product(self, other: Self) -> Self {
+        Self {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x
         }
     }
 }

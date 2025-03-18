@@ -51,8 +51,18 @@ pub extern "C" fn dot_product_3d(a: &Vector3D, b: &Vector3D) -> f32 {
 
 #[c_mine]
 pub extern "C" fn scale_vector_3d(from: &Vector3D, by: f32, to: &mut Vector3D) -> *mut Vector3D {
-    *to = from.scale(by);
+    *to = from.scaled(by);
     to
+}
+
+#[c_mine]
+pub extern "C" fn magnitude2d(vector: &Vector2D) -> f32 {
+    vector.magnitude()
+}
+
+#[c_mine]
+pub extern "C" fn magnitude_squared2d(vector: &Vector2D) -> f32 {
+    vector.magnitude_squared()
 }
 
 #[c_mine]
@@ -91,7 +101,20 @@ pub extern "C" fn fabs(float: f32) -> f32 {
 }
 
 #[c_mine]
-pub extern "C" fn normalize_3d(vector: &mut Vector3D) -> f32 {
+pub extern "C" fn normalize3d(vector: &mut Vector3D) -> f32 {
+    let magnitude = vector.magnitude();
+    if let Some(normalized) = vector.normalized() {
+        *vector = normalized;
+        magnitude
+    }
+    else {
+        // ...don't actually normalize the vector, and then hope that the game doesn't explode!
+        0.0
+    }
+}
+
+#[c_mine]
+pub extern "C" fn normalize2d(vector: &mut Vector2D) -> f32 {
     let magnitude = vector.magnitude();
     if let Some(normalized) = vector.normalized() {
         *vector = normalized;
@@ -196,7 +219,7 @@ pub extern "C" fn tan(value: f32) -> f32 {
 }
 
 #[c_mine]
-pub extern "C" fn flipped_subtract_vectors_3d(a: &Vector3D, b: &Vector3D, out: &mut Vector3D) -> *mut Vector3D {
+pub extern "C" fn flipped_subtract_vectors3d(a: &Vector3D, b: &Vector3D, out: &mut Vector3D) -> *mut Vector3D {
     *out = *b - *a;
     out
 }
@@ -209,6 +232,12 @@ pub extern "C" fn valid_realcmp(a: f32, b: f32) -> bool {
 
 #[c_mine]
 pub extern "C" fn valid_real_normal2d(a: &Vector2D) -> bool {
-    let difference = a.dot(*a) - 1.0;
+    let difference = a.dot(a) - 1.0;
     !difference.is_nan() && difference.abs() < 0.001
+}
+
+#[c_mine]
+pub extern "C" fn cross_product3d(a: &Vector3D, b: &Vector3D, to: &mut Vector3D) -> *mut Vector3D {
+    *to = a.cross_product(*b);
+    to
 }
