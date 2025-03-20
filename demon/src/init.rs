@@ -8,7 +8,7 @@ use crate::util::get_exe_path;
 use core::ffi::c_void;
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use min32::dllmain;
-use min32::panic::set_hook;
+use min32::set_hook;
 use windows_sys::Win32::Foundation::HINSTANCE;
 use windows_sys::Win32::System::Diagnostics::Debug::{MapFileAndCheckSumA, CHECKSUM_SUCCESS};
 use windows_sys::Win32::System::SystemServices;
