@@ -7,10 +7,13 @@ use crate::init::hook::init_hooks;
 use crate::util::get_exe_path;
 use core::ffi::c_void;
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use min32::dllmain;
+use min32::panic::set_hook;
 use windows_sys::Win32::Foundation::HINSTANCE;
 use windows_sys::Win32::System::Diagnostics::Debug::{MapFileAndCheckSumA, CHECKSUM_SUCCESS};
 use windows_sys::Win32::System::SystemServices;
 use windows_sys::Win32::System::Threading::{SetProcessDEPPolicy, PROCESS_DEP_ENABLE};
+use crate::panic::on_panic;
 
 #[repr(u32)]
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -35,12 +38,13 @@ impl ExeType {
     }
 }
 
-#[unsafe(no_mangle)]
-unsafe extern "system" fn DllMain(_hinstance: HINSTANCE, reason: u32, _reserved: *mut c_void) {
+#[dllmain]
+unsafe fn main(_hinstance: HINSTANCE, reason: u32, _reserved: *mut c_void) -> bool {
     match reason {
         SystemServices::DLL_PROCESS_ATTACH => attach_if_not_attached(),
         _ => ()
     }
+    true
 }
 
 static ATTACHED: AtomicBool = AtomicBool::new(false);
@@ -68,6 +72,8 @@ unsafe fn attach_if_not_attached() {
     if ATTACHED.swap(true, Ordering::Relaxed) {
         return
     }
+
+    set_hook(Some(on_panic));
 
     // 2b
     SetProcessDEPPolicy(PROCESS_DEP_ENABLE);

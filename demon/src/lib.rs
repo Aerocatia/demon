@@ -25,6 +25,7 @@
 #[cfg(not(all(target_pointer_width = "32", windows)))]
 compile_error!("This crate can only be compiled for i686-pc-windows-* targets!");
 
+extern crate min32;
 extern crate alloc;
 
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
@@ -89,7 +90,6 @@ mod error_log;
 mod console;
 mod input;
 
-mod allocator;
 mod panic;
 mod init;
 mod tag;

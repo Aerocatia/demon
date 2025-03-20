@@ -15,6 +15,7 @@ spin = { version = "0.9.8", features = ["mutex", "spin_mutex"] }
 utf16_lit = "2.0.2"
 num_enum = { version = "0.7.3", default-features = false }
 tag_structs = { path = "../tag_structs" }
+min32 = { git = "https://github.com/FishAndRips/min32.git", rev = "96ce99ce1cd0f878662ae1581ffde481257d17ff" }
 
 [build-dependencies]
 embed-resource = "3.0.1"

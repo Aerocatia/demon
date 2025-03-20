@@ -41,6 +41,7 @@ dependencies = [
  "c_mine",
  "cc",
  "embed-resource",
+ "min32",
  "num_enum",
  "spin",
  "tag_structs",
@@ -117,6 +118,26 @@ name = "memchr"
 version = "2.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
+
+[[package]]
+name = "min32"
+version = "0.1.0"
+source = "git+https://github.com/FishAndRips/min32.git?rev=96ce99ce1cd0f878662ae1581ffde481257d17ff#96ce99ce1cd0f878662ae1581ffde481257d17ff"
+dependencies = [
+ "min32-proc",
+ "spin",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "min32-proc"
+version = "0.1.0"
+source = "git+https://github.com/FishAndRips/min32.git?rev=96ce99ce1cd0f878662ae1581ffde481257d17ff#96ce99ce1cd0f878662ae1581ffde481257d17ff"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "num_enum"

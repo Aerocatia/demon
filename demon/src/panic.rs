@@ -21,8 +21,7 @@ use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess, Term
 use windows_sys::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK};
 
 #[cfg(not(test))]
-#[panic_handler]
-unsafe fn on_panic(panic_info: &PanicInfo) -> ! {
+pub unsafe fn on_panic(panic_info: &PanicInfo) {
     let displayed_output = generate_panic_message(panic_info);
     let msg = displayed_output
         .as_ref()
@@ -34,7 +33,6 @@ unsafe fn on_panic(panic_info: &PanicInfo) -> ! {
         s!("Panic!"),
         MB_ICONERROR | MB_OK
     );
-    crash_process();
 }
 
 pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> {
@@ -277,7 +275,3 @@ pub fn crash_process() -> ! {
         ExitProcess(197);
     }
 }
-
-#[cfg(not(test))]
-#[unsafe(no_mangle)]
-fn rust_eh_personality() {}
