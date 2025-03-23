@@ -143,11 +143,11 @@ pub unsafe extern "C" fn run_console_command(command: CStrPtr) {
 }
 
 #[c_mine]
-pub unsafe extern "C" fn run_exec_txt(path: CStrPtr) {
+pub unsafe extern "C" fn run_exec_txt(path: CStrPtr) -> bool {
     let Some(file) = read_all_data_from_file(
         &Path::from(path.to_str_lossless().expect("run_exec_txt non-utf8 path").to_owned())
     ) else {
-        return
+        return false
     };
 
     let data = String::from_utf8(file).expect("run_exec_txt on non-utf8 text file");
@@ -165,5 +165,36 @@ pub unsafe extern "C" fn run_exec_txt(path: CStrPtr) {
         *HS_DISABLE_FORCE_LOWERCASE.get_mut() = 1;
         HS_COMPILE_AND_EVALUATE.get()(CStrPtr::from_bytes(cmd.as_slice()));
         *HS_DISABLE_FORCE_LOWERCASE.get_mut() = 0;
+    }
+
+    true
+}
+
+pub const D3DSPY: VariableProvider<u32> = variable! {
+    name: "-d3dspy",
+    cache_address: 0x00DFC0AC,
+    tag_address: 0x00EB366C
+};
+
+pub const GET_COMMAND_LINE_ARGUMENTS: PointerProvider<unsafe extern "C" fn(CStrPtr, &mut Option<&mut CStrPtr>) -> bool> = pointer_from_hook!("get_command_line_arg");
+
+#[c_mine]
+pub unsafe extern "C" fn console_startup() {
+    let mut exec_arg = None;
+    let exec_set = GET_COMMAND_LINE_ARGUMENTS.get()(CStrPtr::from_cstr(c"-exec"), &mut exec_arg);
+
+    let thing_to_exec;
+    if exec_set && !exec_arg.is_none() {
+        thing_to_exec = exec_arg.unwrap() as &CStrPtr;
+    }
+    else {
+        thing_to_exec = &const { CStrPtr::from_cstr(c"init.txt") };
+    }
+
+    let success = run_exec_txt.get()(*thing_to_exec);
+
+    // why
+    if !success && D3DSPY.get_copied() != 0 {
+        run_console_command.get()(CStrPtr::from_cstr(c"map_name b30"));
     }
 }

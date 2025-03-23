@@ -8,7 +8,7 @@ use core::mem::zeroed;
 use core::ops::Div;
 use core::ptr::{null, null_mut};
 use windows_sys::Win32::Foundation::{CloseHandle, FALSE, GENERIC_READ, HANDLE, INVALID_HANDLE_VALUE, TRUE};
-use windows_sys::Win32::Storage::FileSystem::{CreateFileW, FindClose, FindFirstFileW, FindNextFileW, ReadFile, SetFilePointer, FILE_ATTRIBUTE_NORMAL, FILE_BEGIN, FILE_SHARE_READ, OPEN_ALWAYS, WIN32_FIND_DATAW};
+use windows_sys::Win32::Storage::FileSystem::{CreateFileW, FindClose, FindFirstFileW, FindNextFileW, ReadFile, SetFilePointer, FILE_ATTRIBUTE_NORMAL, FILE_BEGIN, FILE_SHARE_READ, OPEN_ALWAYS, OPEN_EXISTING, WIN32_FIND_DATAW};
 use crate::util::encode_utf16;
 
 const WIN32_PATH_SEPARATOR: char = '\\';
@@ -165,7 +165,7 @@ pub fn read_all_data_from_file<'a>(file: &Path) -> Option<Vec<u8>> {
         GENERIC_READ,
         FILE_SHARE_READ,
         null(),
-        OPEN_ALWAYS,
+        OPEN_EXISTING,
         FILE_ATTRIBUTE_NORMAL,
         null_mut()
     ) };
