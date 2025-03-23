@@ -121,9 +121,9 @@ checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
 name = "min32"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a212e753b644676d11c1e7b6b2df535c2720d07c63f40b759c7763126f95e20d"
+checksum = "358157cc975d734d91c0bdd4035822294389708137884576388b98d6110242b2"
 dependencies = [
  "min32-proc",
  "spin",
@@ -132,9 +132,9 @@ dependencies = [
 
 [[package]]
 name = "min32-proc"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2e772c33a01522bccc03c8a7106a621dd2e1e662792a58ad1bbbeef2a02aa38"
+checksum = "04d70646dc109a5e761cc7ab61afcf67ad919c804ee50cec1418bb3fe77f56d2"
 dependencies = [
  "proc-macro2",
  "quote",
