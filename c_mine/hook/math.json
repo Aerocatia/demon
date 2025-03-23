@@ -231,7 +231,7 @@
     },
     "valid_realcmp": {
         "cache": "0x00402496",
-        "tag": "0x004507D0",
+        "tag": "0x0040AC63",
         "replacement": "crate::math::c::valid_realcmp"
     },
     "valid_real_normal2d": {

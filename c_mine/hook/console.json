@@ -50,5 +50,10 @@
     "console_update": {
         "cache": "0x004018C0",
         "tag": "0x004014D3"
+    },
+    "run_exec_txt": {
+        "cache": "0x00401AC3",
+        "tag": "0x0040A6CD",
+        "replacement": "crate::console::c::run_exec_txt"
     }
 }

@@ -1,6 +1,10 @@
+use alloc::borrow::ToOwned;
+use alloc::string::String;
+use alloc::vec::Vec;
 use c_mine::{c_mine, pointer_from_hook};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use crate::console::{CONSOLE_IS_ACTIVE_HALO, CONSOLE_BUFFER, CONSOLE_INPUT_TEXT, CONSOLE_CURSOR_POSITION, console_put_args};
+use crate::file::{read_all_data_from_file, Path};
 use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 
 
@@ -136,4 +140,30 @@ pub unsafe extern "C" fn run_console_command(command: CStrPtr) {
     *HS_DISABLE_FORCE_LOWERCASE.get_mut() = 1;
     HS_COMPILE_AND_EVALUATE.get()(command);
     *HS_DISABLE_FORCE_LOWERCASE.get_mut() = 0;
+}
+
+#[c_mine]
+pub unsafe extern "C" fn run_exec_txt(path: CStrPtr) {
+    let Some(file) = read_all_data_from_file(
+        &Path::from(path.to_str_lossless().expect("run_exec_txt non-utf8 path").to_owned())
+    ) else {
+        return
+    };
+
+    let data = String::from_utf8(file).expect("run_exec_txt on non-utf8 text file");
+    let mut cmd = Vec::new();
+    for i in data.lines() {
+        if i.is_empty() {
+            continue
+        }
+        cmd.clear();
+        cmd.reserve(i.len() + 1);
+        cmd.extend_from_slice(i.as_bytes());
+        cmd.push(0);
+
+        // execute it directly to avoid putting it in history
+        *HS_DISABLE_FORCE_LOWERCASE.get_mut() = 1;
+        HS_COMPILE_AND_EVALUATE.get()(CStrPtr::from_bytes(cmd.as_slice()));
+        *HS_DISABLE_FORCE_LOWERCASE.get_mut() = 0;
+    }
 }
