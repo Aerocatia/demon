@@ -20,3 +20,17 @@ pub unsafe fn refill_weapon(object_id: ObjectID) {
     *unloaded = (*unloaded).max(m.rounds_reserved_maximum as u16);
     *loaded = (*loaded).max(m.rounds_loaded_maximum as u16);
 }
+
+pub unsafe fn empty_weapon(object_id: ObjectID) {
+    // TODO: Convert to DynamicWeapon to get weapon
+    let Ok(weapon) = get_dynamic_object::<BaseObject>(object_id) else { return };
+
+    // TODO: multiple magazines
+    let unloaded = &mut *((weapon as *mut _ as *mut u8).wrapping_add(0x26E) as *mut u16);
+    let loaded = &mut *((weapon as *mut _ as *mut u8).wrapping_add(0x270) as *mut u16);
+    let age = (weapon as *mut _ as *mut u8).wrapping_add(0x200) as *mut f32;
+
+    *age = 1.0;
+    *unloaded = 0;
+    *loaded = 0;
+}

@@ -20,6 +20,16 @@
         "comment": "Introduced by the Demon project"
     },
     {
+        "name": "cheat_empty_ammo",
+        "return_type": "Void",
+        "compile": "crate::script::c::hs_macro_function_parse_c",
+        "evaluate": "crate::object::hsc::cheat_empty_ammo::cheat_empty_ammo_eval",
+        "description": "Delete all players' ammo.",
+        "usage": "",
+        "arguments": [],
+        "comment": "Introduced by the Demon project"
+    },
+    {
         "name": "console_set_color",
         "return_type": "Void",
         "compile": "crate::script::c::hs_macro_function_parse_c",
@@ -59,7 +69,6 @@
         "arguments": [],
         "comment": "Introduced by the Demon project"
     },
-
     {
         "name": "sv_map_restart",
         "return_type": "Void",
