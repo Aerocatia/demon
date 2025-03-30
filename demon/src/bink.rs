@@ -1,3 +1,5 @@
+pub mod hsc;
+
 use c_mine::c_mine;
 
 #[c_mine]

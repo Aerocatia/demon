@@ -78,5 +78,15 @@
         "usage": "",
         "arguments": [],
         "comment": "Originally in Halo PC 1.00-1.02; removed in 1.03"
+    },
+    {
+        "name": "play_bink",
+        "return_type": "Void",
+        "compile": "crate::script::c::hs_macro_function_parse_c",
+        "evaluate": "crate::bink::hsc::play_bink_eval",
+        "description": "Play the bink at the given file path.",
+        "usage": "<path>",
+        "arguments": ["String"],
+        "comment": "Introduced by the Demon project"
     }
 ]

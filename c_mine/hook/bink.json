@@ -3,5 +3,9 @@
         "cache": "0x00401267",
         "tag": "0x00401131",
         "replacement": "crate::bink::bink_playback_active"
+    },
+    "play_bink": {
+        "cache": "0x00408125",
+        "tag": "0x00407315"
     }
 }
