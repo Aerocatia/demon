@@ -1,9 +1,10 @@
 use alloc::borrow::ToOwned;
 use alloc::string::String;
 use alloc::vec::Vec;
+use core::ffi::c_char;
 use c_mine::{c_mine, pointer_from_hook};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
-use crate::console::{CONSOLE_IS_ACTIVE_HALO, CONSOLE_BUFFER, CONSOLE_INPUT_TEXT, CONSOLE_CURSOR_POSITION, console_put_args};
+use crate::console::{CONSOLE_IS_ACTIVE_HALO, CONSOLE_BUFFER, CONSOLE_INPUT_TEXT, CONSOLE_CURSOR_POSITION, console_put_args, get_command_line_argument_value};
 use crate::file::{read_all_data_from_file, Path};
 use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 
@@ -176,22 +177,12 @@ pub const D3DSPY: VariableProvider<u32> = variable! {
     tag_address: 0x00EB366C
 };
 
-pub const GET_COMMAND_LINE_ARGUMENTS: PointerProvider<unsafe extern "C" fn(CStrPtr, &mut Option<&mut CStrPtr>) -> bool> = pointer_from_hook!("get_command_line_arg");
+pub const GET_COMMAND_LINE_ARGUMENTS: PointerProvider<unsafe extern "C" fn(CStrPtr, *mut *const c_char) -> bool> = pointer_from_hook!("get_command_line_arg");
 
 #[c_mine]
 pub unsafe extern "C" fn console_startup() {
-    let mut exec_arg = None;
-    let exec_set = GET_COMMAND_LINE_ARGUMENTS.get()(CStrPtr::from_cstr(c"-exec"), &mut exec_arg);
-
-    let thing_to_exec;
-    if exec_set && !exec_arg.is_none() {
-        thing_to_exec = exec_arg.unwrap() as &CStrPtr;
-    }
-    else {
-        thing_to_exec = &const { CStrPtr::from_cstr(c"init.txt") };
-    }
-
-    let success = run_exec_txt.get()(*thing_to_exec);
+    let exec_arg = get_command_line_argument_value("-exec").unwrap_or(CStrPtr::from_cstr(c"init.txt"));
+    let success = run_exec_txt.get()(exec_arg);
 
     // why
     if !success && D3DSPY.get_copied() != 0 {

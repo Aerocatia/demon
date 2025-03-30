@@ -5,14 +5,16 @@ pub mod hsc;
 use alloc::string::{String, ToString};
 use alloc::sync::Arc;
 use alloc::vec::Vec;
+use core::ffi::CStr;
 use core::fmt::Display;
+use core::ptr::null;
 use spin::RwLock;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetKeyState, VIRTUAL_KEY};
 use windows_sys::Win32::UI::WindowsAndMessaging::{WM_CHAR, WM_KEYDOWN};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use tag_structs::primitives::rectangle::Rectangle;
-use crate::console::c::run_console_command;
+use crate::console::c::{run_console_command, GET_COMMAND_LINE_ARGUMENTS};
 use crate::globals::get_interface_fonts;
 use crate::rasterizer::draw_string::{DrawStringJustification, DrawStringWriter};
 use crate::rasterizer::font::get_font_tag_height;
@@ -700,4 +702,14 @@ pub(crate) unsafe fn handle_win32_window_message(message: u32, parameter: u32) -
 
 pub fn set_console_color(color: ColorRGB) {
     *CONSOLE_COLOR.write() = color.into()
+}
+
+pub unsafe fn get_command_line_argument_value(argument: &str) -> Option<CStrPtr> {
+    let as_cstr = StaticStringBytes::<256>::from_str(argument);
+
+    let mut arg_val = null();
+    if !GET_COMMAND_LINE_ARGUMENTS.get()(CStrPtr::from_bytes(as_cstr.as_bytes_with_null()), &mut arg_val) || arg_val.is_null() {
+        return None
+    }
+    Some(CStrPtr::from_cstr(CStr::from_ptr(arg_val)))
 }

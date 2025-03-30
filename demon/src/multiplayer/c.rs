@@ -2,11 +2,12 @@ use core::ffi::CStr;
 use core::sync::atomic::Ordering;
 use crate::tag::TagID;
 use c_mine::{c_mine, pointer_from_hook};
+use crate::console::get_command_line_argument_value;
 use crate::init::{get_exe_type, ExeType};
 use crate::map::find_maps_with_prefix;
 use crate::multiplayer::{GameConnectionState, GAME_CONNECTION_STATE};
 use crate::multiplayer::map_list::{add_mp_map, all_mp_maps};
-use crate::util::{utf16_to_slice, PointerProvider, StaticStringBytes};
+use crate::util::{utf16_to_slice, CStrPtr, PointerProvider, StaticStringBytes};
 
 #[c_mine]
 pub unsafe extern "C" fn choose_item_collection_item(item_collection: TagID) -> TagID {
@@ -94,4 +95,14 @@ pub unsafe extern "C" fn create_multiplayer_map_list() {
     if all_mp_maps().is_empty() {
         panic!("No multiplayer maps found!");
     }
+}
+
+#[c_mine]
+pub unsafe extern "C" fn handle_connect_cli_arg() {
+    const MAIN_CONNECT: PointerProvider<unsafe extern "C" fn(CStrPtr, CStrPtr)> = pointer_from_hook!("main_connect");
+
+    let Some(ip_arg) = get_command_line_argument_value("-connect") else { return };
+    let password_arg = get_command_line_argument_value("-password").unwrap_or(CStrPtr::from_cstr(c""));
+
+    MAIN_CONNECT.get()(ip_arg, password_arg);
 }

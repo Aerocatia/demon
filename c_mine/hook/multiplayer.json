@@ -91,5 +91,14 @@
     "get_mp_map_crc32": {
         "cache": "0x00403341",
         "replacement": "crate::multiplayer::map_list::c::get_mp_map_crc32"
+    },
+    "handle_connect_cli_arg": {
+        "cache": "0x0040125D",
+        "tag": "0x0040A29F",
+        "replacement": "crate::multiplayer::c::handle_connect_cli_arg"
+    },
+    "main_connect": {
+        "cache": "0x00403E13",
+        "tag": "0x00402FEF"
     }
 }
