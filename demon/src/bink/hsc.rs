@@ -1,5 +1,5 @@
 use core::ffi::{c_char, CStr};
-use core::intrinsics::transmute;
+use core::mem::transmute;
 use c_mine::pointer_from_hook;
 use crate::multiplayer::{get_game_connection_state, GameConnectionState};
 use crate::script::{HS_MACRO_FUNCTION_EVALUATE, HS_RETURN};

@@ -1,4 +1,4 @@
-use core::intrinsics::transmute;
+use core::mem::transmute;
 use tag_structs::primitives::color::ColorRGB;
 use crate::script::{HS_MACRO_FUNCTION_EVALUATE, HS_RETURN};
 

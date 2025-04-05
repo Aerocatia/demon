@@ -1,4 +1,4 @@
-use core::intrinsics::transmute;
+use core::mem::transmute;
 use c_mine::pointer_from_hook;
 use crate::multiplayer::chat::{send_chat_message, MessageChannel};
 use crate::script::{HS_MACRO_FUNCTION_EVALUATE, HS_RETURN};

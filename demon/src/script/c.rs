@@ -1,5 +1,5 @@
 use alloc::string::String;
-use core::intrinsics::transmute;
+use core::mem::transmute;
 use c_mine::{c_mine, pointer_from_hook};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use tag_structs::ScenarioScriptValueType;
