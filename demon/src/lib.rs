@@ -85,6 +85,8 @@ macro_rules! debug_log {
 }
 
 #[macro_use]
+mod ini;
+#[macro_use]
 mod util;
 mod error_log;
 mod console;

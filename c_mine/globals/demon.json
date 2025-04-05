@@ -4,14 +4,14 @@
     { "name": "scoreboard_style", "type": "Short", "address": "crate::rasterizer::scoreboard::SCOREBOARD_STYLE", "comment": "Introduced by the Demon project" },
     { "name": "scoreboard_use_terminal_font", "type": "Boolean", "address": "crate::rasterizer::scoreboard::USE_TERMINAL_FONT", "comment": "Introduced by the Demon project" },
     { "name": "scoreboard_use_player_colors", "type": "Boolean", "address": "crate::rasterizer::scoreboard::USE_PLAYER_COLORS", "comment": "Introduced by the Demon project" },
-    { "name": "console_print_when_closed", "type": "Boolean", "address": "crate::console::PRINT_WHEN_CLOSED", "comment": "Introduced by the Demon project" },
-    { "name": "console_high_contrast", "type": "Boolean", "address": "crate::console::HIGH_CONTRAST", "comment": "Introduced by the Demon project" },
-    { "name": "sound_unfocused_gain", "type": "Real", "address": "crate::window::UNFOCUSED_GAIN", "comment": "Introduced by the Demon project" },
     { "name": "hud_safe_zone_top", "type": "Real", "address": "crate::rasterizer::hud::HUD_SAFE_ZONE_TOP", "comment": "Introduced by the Demon project" },
     { "name": "hud_safe_zone_left", "type": "Real", "address": "crate::rasterizer::hud::HUD_SAFE_ZONE_LEFT", "comment": "Introduced by the Demon project" },
     { "name": "hud_safe_zone_bottom", "type": "Real", "address": "crate::rasterizer::hud::HUD_SAFE_ZONE_BOTTOM", "comment": "Introduced by the Demon project" },
     { "name": "hud_safe_zone_right", "type": "Real", "address": "crate::rasterizer::hud::HUD_SAFE_ZONE_RIGHT", "comment": "Introduced by the Demon project" },
     { "name": "show_fps", "type": "Boolean", "address": "crate::rasterizer::hud::SHOW_FPS", "comment": "Introduced by the Demon project" },
+    { "name": "console_print_when_closed", "type": "Boolean", "address": "crate::console::PRINT_WHEN_CLOSED", "comment": "Introduced by the Demon project" },
+    { "name": "console_high_contrast", "type": "Boolean", "address": "crate::console::HIGH_CONTRAST", "comment": "Introduced by the Demon project" },
+    { "name": "sound_unfocused_gain", "type": "Real", "address": "crate::window::UNFOCUSED_GAIN", "comment": "Introduced by the Demon project" },
 
     { "name": "rasterizer_widescreen_test", "type": "Boolean", "address": "crate::rasterizer::WIDESCREEN_TEST", "comment": "Introduced by the Demon project" }
 ]

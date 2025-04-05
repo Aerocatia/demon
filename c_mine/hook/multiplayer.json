@@ -100,5 +100,23 @@
     "main_connect": {
         "cache": "0x00403E13",
         "tag": "0x00402FEF"
+    },
+    "dump_to_network_log_a": {
+        "cache": "0x00407D88",
+        "tag": "0x00406F37",
+        "replacement": "crate::multiplayer::c::dump_to_network_log_a"
+    },
+    "dump_to_network_log_a_inner": {
+        "cache": "0x005519F0",
+        "tag": "0x005558F0"
+    },
+    "dump_to_network_log_b": {
+        "cache": "0x00405A6F",
+        "tag": "0x00404CD7",
+        "replacement": "crate::multiplayer::c::dump_to_network_log_b"
+    },
+    "dump_to_network_log_b_inner": {
+        "cache": "0x00906A80",
+        "tag": "0x00956E20"
     }
 }

@@ -4,6 +4,7 @@ pub mod c;
 pub use hook::sudo_write;
 
 use crate::init::hook::init_hooks;
+use crate::panic::on_panic;
 use crate::util::get_exe_path;
 use core::ffi::c_void;
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
@@ -13,7 +14,6 @@ use windows_sys::Win32::Foundation::HINSTANCE;
 use windows_sys::Win32::System::Diagnostics::Debug::{MapFileAndCheckSumA, CHECKSUM_SUCCESS};
 use windows_sys::Win32::System::SystemServices;
 use windows_sys::Win32::System::Threading::{SetProcessDEPPolicy, PROCESS_DEP_ENABLE};
-use crate::panic::on_panic;
 
 #[repr(u32)]
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -96,4 +96,6 @@ unsafe fn attach_if_not_attached() {
     EXE_TYPE.swap(exe_type as u32, Ordering::Relaxed);
 
     init_hooks();
+
+    crate::ini::INI.try_load();
 }

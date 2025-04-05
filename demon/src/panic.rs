@@ -1,6 +1,6 @@
 pub mod c;
 use crate::init::{get_exe_type_if_available, ExeType};
-use crate::util::{get_exe_dir, write_to_file};
+use crate::util::write_to_file;
 use alloc::borrow::Cow;
 use alloc::format;
 use alloc::string::String;
@@ -104,25 +104,27 @@ pub unsafe fn generate_panic_message(panic_info: &PanicInfo) -> Option<Vec<u8>> 
         fmt::write(&mut output_full, format_args!("...no module data\n")).ok();
     }
 
-    let error_path = format!(
-        "{exe_dir}\\demon-panic-{year:04}-{month:02}-{day:02}T{hour:02}-{minute:02}-{second:02}.txt",
-        exe_dir = get_exe_dir(),
-        year = system_time.wYear,
-        month = system_time.wMonth,
-        day = system_time.wDay,
-        hour = system_time.wHour,
-        minute = system_time.wMinute % 60,
-        second = system_time.wSecond
-    );
+    if let Some(panic_dir) = ini!("log", "panic_dir") {
+        // FIXME: Make this relative to the exe dir
+        let error_path = format!(
+            "{panic_dir}\\demon-panic-{year:04}-{month:02}-{day:02}T{hour:02}-{minute:02}-{second:02}.txt",
+            year = system_time.wYear,
+            month = system_time.wMonth,
+            day = system_time.wDay,
+            hour = system_time.wHour,
+            minute = system_time.wMinute % 60,
+            second = system_time.wSecond
+        );
 
-    match write_to_file(&error_path, output_full.as_bytes()) {
-        Ok(_) => {
-            output_brief.extend_from_slice(b"\n\nAn error report was saved to:\n");
-            output_brief.extend_from_slice(error_path.as_bytes());
-        }
-        Err(e) => {
-            output_brief.extend_from_slice(format!("\n\nCould not write an error report to {error_path}:\n").as_bytes());
-            output_brief.extend_from_slice(e.as_bytes());
+        match write_to_file(&error_path, output_full.as_bytes()) {
+            Ok(_) => {
+                output_brief.extend_from_slice(b"\n\nAn error report was saved to:\n");
+                output_brief.extend_from_slice(error_path.as_bytes());
+            }
+            Err(e) => {
+                output_brief.extend_from_slice(format!("\n\nCould not write an error report to {error_path}:\n").as_bytes());
+                output_brief.extend_from_slice(e.as_bytes());
+            }
         }
     }
 

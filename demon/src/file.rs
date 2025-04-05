@@ -197,6 +197,8 @@ pub fn read_all_data_from_file<'a>(file: &Path) -> Option<Vec<u8>> {
             return None
         }
 
+        data.truncate(old_len + bytes_read as usize);
+
         if bytes_read == 0 {
             break
         }

@@ -1,5 +1,6 @@
 use core::ffi::CStr;
 use core::sync::atomic::Ordering;
+use spin::Lazy;
 use crate::tag::TagID;
 use c_mine::{c_mine, pointer_from_hook};
 use crate::console::get_command_line_argument_value;
@@ -105,4 +106,22 @@ pub unsafe extern "C" fn handle_connect_cli_arg() {
     let password_arg = get_command_line_argument_value("-password").unwrap_or(CStrPtr::from_cstr(c""));
 
     MAIN_CONNECT.get()(ip_arg, password_arg);
+}
+
+static NETWORK_LOGGING: Lazy<bool> = Lazy::new(|| ini!("log", "network_logging") == Some("true"));
+
+#[c_mine]
+pub unsafe extern "C" fn dump_to_network_log_a(a: u32) {
+    const FN: PointerProvider<unsafe extern "C" fn(u32)> = pointer_from_hook!("dump_to_network_log_a_inner");
+    if *NETWORK_LOGGING {
+        FN.get()(a)
+    }
+}
+
+#[c_mine]
+pub unsafe extern "C" fn dump_to_network_log_b(a: u32, b: u32) {
+    const FN: PointerProvider<unsafe extern "C" fn(u32, u32)> = pointer_from_hook!("dump_to_network_log_b_inner");
+    if *NETWORK_LOGGING {
+        FN.get()(a,b)
+    }
 }

@@ -11,11 +11,12 @@ path = "src/lib.rs"
 [dependencies]
 windows-sys = { version = "0.59", default-features = false, features = ["Wdk_Foundation", "Win32_System", "Win32_System_SystemServices", "Win32_UI", "Win32_UI_WindowsAndMessaging", "Win32_System_Threading", "Win32_System_Memory", "Win32_Storage", "Win32_Storage_FileSystem", "Win32_System_LibraryLoader", "Win32_UI_Shell", "Win32_Security", "Win32_System_IO", "Win32_System_Diagnostics", "Win32_System_Diagnostics_Debug", "Win32_System_Performance", "Win32_System_Kernel", "Win32_System_ProcessStatus", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse", "Win32_Globalization"] }
 c_mine = { path = "../c_mine" }
-spin = { version = "0.9.8", features = ["mutex", "spin_mutex"] }
+spin = { version = "0.10.0", features = ["mutex", "spin_mutex"] }
 utf16_lit = "2.0.2"
 num_enum = { version = "0.7.3", default-features = false }
 tag_structs = { path = "../tag_structs" }
 min32 = "0.1.2"
+gerbil-ini = "0.1.4"
 
 [build-dependencies]
 embed-resource = "3.0.1"

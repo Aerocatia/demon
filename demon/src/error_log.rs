@@ -1,5 +1,6 @@
 use core::fmt::Display;
 use num_enum::TryFromPrimitive;
+use spin::Lazy;
 use c_mine::pointer_from_hook;
 use tag_structs::primitives::color::ColorRGB;
 use crate::util::{CStrPtr, PointerProvider, StaticStringBytes, VariableProvider};
@@ -40,6 +41,8 @@ pub fn error_put_args(priority: ErrorPriority, fmt: core::fmt::Arguments) {
     unsafe { log_error_message(priority, err); }
 }
 
+static DEBUG_LOGGING: Lazy<bool> = Lazy::new(|| ini!("log", "debug_logging") == Some("true"));
+
 unsafe extern "C" fn log_error_message(priority: ErrorPriority, message: impl Display) {
     let message = StaticStringBytes::<MAX_LOG_LEN>::from_display(message);
 
@@ -60,7 +63,9 @@ unsafe extern "C" fn log_error_message(priority: ErrorPriority, message: impl Di
             .expect("an error occurred while loading the previous error")
     };
 
-    WRITE_TO_ERROR_FILE.get()(message_to_log.as_bytes().as_ptr(), true);
+    if *DEBUG_LOGGING {
+        WRITE_TO_ERROR_FILE.get()(message_to_log.as_bytes().as_ptr(), true);
+    }
 
     if priority == ErrorPriority::Death {
         panic!("Fatal error (ErrorPriority::Death): {message}")
