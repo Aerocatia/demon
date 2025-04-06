@@ -18,6 +18,7 @@ pub fn complete(what: &str) -> Option<(String, Vec<String>)> {
         None => ""
     };
 
+    let mut expect_multiple_args = true;
     let mut suggestions = Vec::new();
     if words.len() > 1 || words.len() == 1 && what.ends_with( " ") {
         // TODO: command suggestions
@@ -34,6 +35,7 @@ pub fn complete(what: &str) -> Option<(String, Vec<String>)> {
             for i in get_functions() {
                 let command_name = i.name.expect_str();
                 if starts_with_ignoring_case(command_name, first_command) {
+                    expect_multiple_args = i.argument_count > 0;
                     suggestions.push(format!("{} ", command_name));
                 }
             }
@@ -66,7 +68,7 @@ pub fn complete(what: &str) -> Option<(String, Vec<String>)> {
     incomplete_last_argument_may_have_spaces = incomplete_last_argument_may_have_spaces && suggestions.len() > 1;
 
     let mut new_suggestion = add_quotes_as_needed(CommandParser::new(suggestion.as_str()), incomplete_last_argument_may_have_spaces);
-    if suggestions.len() == 1 && suggestion.ends_with(" ") {
+    if suggestions.len() == 1 && suggestion.ends_with(" ") && expect_multiple_args {
         new_suggestion += " ";
     }
 
