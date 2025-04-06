@@ -60,3 +60,15 @@ macro_rules! ini {
         crate::ini::INI.get($section, $key)
     };
 }
+
+#[macro_export]
+macro_rules! ini_bool {
+    ($section:literal, $key:literal) => {{
+        match crate::ini::INI.get($section, $key) {
+            Some("1" | "true" | "TRUE") => Some(true),
+            Some("0" | "false" | "FALSE") => Some(false),
+            None => None,
+            Some(n) => panic!("Expected true/false or 0/1 from ini value {}.{}, got `{n}`", $section, $key)
+        }
+    }};
+}

@@ -41,7 +41,7 @@ pub fn error_put_args(priority: ErrorPriority, fmt: core::fmt::Arguments) {
     unsafe { log_error_message(priority, err); }
 }
 
-static DEBUG_LOGGING: Lazy<bool> = Lazy::new(|| ini!("log", "debug_logging") == Some("true"));
+static DEBUG_LOGGING: Lazy<bool> = Lazy::new(|| ini_bool!("log", "debug_logging").unwrap_or(false));
 
 unsafe extern "C" fn log_error_message(priority: ErrorPriority, message: impl Display) {
     let message = StaticStringBytes::<MAX_LOG_LEN>::from_display(message);

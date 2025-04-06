@@ -713,3 +713,8 @@ pub unsafe fn get_command_line_argument_value(argument: &str) -> Option<CStrPtr>
     }
     Some(CStrPtr::from_cstr(CStr::from_ptr(arg_val)))
 }
+
+pub unsafe fn has_command_line_argument_value(argument: &str) -> bool {
+    let as_cstr = StaticStringBytes::<256>::from_str(argument);
+    GET_COMMAND_LINE_ARGUMENTS.get()(CStrPtr::from_bytes(as_cstr.as_bytes_with_null()), &mut null())
+}

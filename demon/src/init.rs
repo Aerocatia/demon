@@ -1,19 +1,22 @@
 mod hook;
 pub mod c;
 
+use alloc::string::String;
 pub use hook::sudo_write;
 
 use crate::init::hook::init_hooks;
 use crate::panic::on_panic;
-use crate::util::get_exe_path;
+use crate::util::{get_exe_path, StaticStringBytes};
 use core::ffi::c_void;
+use core::ptr::null_mut;
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use min32::dllmain;
 use min32::set_hook;
 use windows_sys::Win32::Foundation::HINSTANCE;
 use windows_sys::Win32::System::Diagnostics::Debug::{MapFileAndCheckSumA, CHECKSUM_SUCCESS};
 use windows_sys::Win32::System::SystemServices;
-use windows_sys::Win32::System::Threading::{SetProcessDEPPolicy, PROCESS_DEP_ENABLE};
+use windows_sys::Win32::System::Threading::{ExitProcess, GetCurrentProcess, SetProcessDEPPolicy, TerminateProcess, PROCESS_DEP_ENABLE};
+use windows_sys::Win32::UI::WindowsAndMessaging::{MessageBoxA, IDCANCEL, MB_ICONEXCLAMATION, MB_OKCANCEL};
 
 #[repr(u32)]
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -98,4 +101,26 @@ unsafe fn attach_if_not_attached() {
     init_hooks();
 
     crate::ini::INI.try_load();
+
+    if ini_bool!("debug", "messagebox") == Some(true) {
+        let mut stats = String::new();
+
+        stats += StaticStringBytes::<256>::from_fmt(format_args!("EXE type: {:?}\n", get_exe_type())).unwrap().as_str();
+        stats += StaticStringBytes::<256>::from_fmt(format_args!("EXE checksum: 0x{actual_checksum:08X}\n")).unwrap().as_str();
+
+        let mut stats = stats.into_bytes();
+        stats.push(0u8);
+
+        let result = MessageBoxA(
+            null_mut(),
+            stats.as_ptr(),
+            c"debug.messagebox".as_ptr() as *const u8,
+            MB_OKCANCEL | MB_ICONEXCLAMATION
+        );
+
+        if result == IDCANCEL {
+            TerminateProcess(GetCurrentProcess(), 135);
+            ExitProcess(135);
+        }
+    }
 }

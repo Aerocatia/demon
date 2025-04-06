@@ -110,5 +110,16 @@
     "D3D9DeviceEx_SetSamplerState": {
         "cache": "0x004039E0",
         "replacement": "crate::rasterizer::d3d9::c::D3D9DeviceEx_SetSamplerState"
+    },
+    "vidmode_settings": {
+        "cache": "0x0040A290",
+        "tag": "0x004096F6",
+        "replacement": "crate::rasterizer::c::vidmode_settings"
+    },
+    "set_present_parameters": {
+        "cache": "0x007C8B00",
+        "tag": "0x007D8420",
+        "replacement": "crate::rasterizer::c::set_present_parameters",
+        "sudo": true
     }
 }

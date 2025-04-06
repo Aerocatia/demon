@@ -108,7 +108,7 @@ pub unsafe extern "C" fn handle_connect_cli_arg() {
     MAIN_CONNECT.get()(ip_arg, password_arg);
 }
 
-static NETWORK_LOGGING: Lazy<bool> = Lazy::new(|| ini!("log", "network_logging") == Some("true"));
+static NETWORK_LOGGING: Lazy<bool> = Lazy::new(|| ini_bool!("log", "network_logging").unwrap_or(false));
 
 #[c_mine]
 pub unsafe extern "C" fn dump_to_network_log_a(a: u32) {
