@@ -152,7 +152,7 @@ dependencies = [
 [[package]]
 name = "minxp"
 version = "0.1.0"
-source = "git+https://github.com/FishAndRips/minxp?rev=b1b92053964403708e108afd60bf139cafc5493f#b1b92053964403708e108afd60bf139cafc5493f"
+source = "git+https://github.com/FishAndRips/minxp?rev=5e72263c713527e1cbcf394f3d0d01e3172acb89#5e72263c713527e1cbcf394f3d0d01e3172acb89"
 dependencies = [
  "spin 0.10.0",
  "windows-sys 0.59.0",
