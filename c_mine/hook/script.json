@@ -82,6 +82,10 @@
         "cache": "0x004038CD",
         "tag": "0x00402A59"
     },
+    "hs_set_or_display": {
+        "cache": "0x0040A498",
+        "tag": "0x00409917"
+    },
     "hs_macro_function_evaluate": {
         "cache": "0x00409FCA",
         "tag": "0x004093EF"
