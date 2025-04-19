@@ -118,5 +118,4 @@ mod collision;
 mod window;
 mod map;
 mod bitmap;
-mod file;
 mod interface;

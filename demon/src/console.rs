@@ -8,6 +8,7 @@ use alloc::vec::Vec;
 use core::ffi::CStr;
 use core::fmt::Display;
 use core::ptr::null;
+use minxp::println;
 use spin::RwLock;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetKeyState, VIRTUAL_KEY};
@@ -98,8 +99,6 @@ impl Console {
     }
 
     fn put_message(&mut self, color: impl AsRef<ColorARGB>, what: impl Display) {
-
-
         let color = color.as_ref();
         assert!(color.is_valid(), "Console::put with invalid color!");
 
@@ -120,10 +119,7 @@ impl Console {
             ..ConsoleEntry::new()
         };
 
-        // SAFETY: Safe; StaticStringBytes is always null-terminated
-        unsafe {
-            printf(CStrPtr::from_cstr(c"[CONSOLE] %s\n"), CStrPtr::from_bytes(latest_line.text.as_bytes_with_null()));
-        }
+        println!("[CONSOLE] {}", latest_line.text.as_str());
     }
 
     fn insert_input_char(&mut self, character: char) {
@@ -521,10 +517,6 @@ unsafe fn render_console() {
             break
         }
     }
-}
-
-unsafe extern "C" {
-    pub fn printf(fmt: CStrPtr, ...) -> i32;
 }
 
 #[unsafe(no_mangle)]

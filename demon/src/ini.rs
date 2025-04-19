@@ -1,11 +1,10 @@
 use alloc::string::String;
-use alloc::vec::Vec;
 use core::cell::UnsafeCell;
 use core::mem::MaybeUninit;
 use core::sync::atomic::{AtomicBool, Ordering};
 use gerbil_ini::{Ini, IniMode};
-use crate::file::{read_all_data_from_file, Path};
-use crate::util::get_exe_dir;
+use minxp::env::current_exe;
+use minxp::fs::read;
 
 pub static INI: IniData = IniData { ini: UnsafeCell::new(MaybeUninit::uninit()), initialized: AtomicBool::new(false), initialization_attempted: AtomicBool::new(false) };
 
@@ -42,8 +41,8 @@ impl IniData {
             panic!("initialization attempted already; do not call this more than once")
         }
 
-        let ini_path = get_exe_dir() + "\\demon.ini";
-        let data = read_all_data_from_file(&Path::from(ini_path)).unwrap_or(Vec::new());
+        let ini_path = current_exe().unwrap().parent().unwrap().join("demon.ini");
+        let data = read(&ini_path).unwrap_or_default();
         let string = String::from_utf8(data).expect("demon.ini is not UTF-8");
         let ini = Ini::parse(&string, IniMode::SimpleTrimmed).expect("cannot parse demon.ini");
 

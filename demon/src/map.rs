@@ -1,12 +1,14 @@
 pub mod hsc;
 
-use crate::file::Win32DirectoryIterator;
 use crate::init::{get_exe_type, ExeType};
 use crate::util::{starts_with_ignoring_case, VariableProvider};
 use alloc::borrow::ToOwned;
 use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
+use minxp::ffi::OsStr;
+use minxp::fs::read_dir;
+use minxp::path::Path;
 use tag_structs::CacheFileHeader;
 
 const SHOULD_LOAD_MAIN_MENU: VariableProvider<u8> = variable! {
@@ -25,14 +27,22 @@ pub fn find_maps_with_prefix(prefix: &str) -> Vec<String> {
 
     match get_exe_type() {
         ExeType::Cache => {
-            let Some(iterator) = Win32DirectoryIterator::new("maps") else {
+            let Ok(iterator) = read_dir("maps") else {
                 return Vec::new()
             };
+
             for i in iterator {
-                if i.extension() != Some("map") {
+                let Ok(i) = i else { continue };
+                let path = i.path();
+
+                let Some((basename, extension)) = path.file_stem().and_then(|s| Some((s.to_str()?, path.extension().and_then(OsStr::to_str)?))) else {
+                    continue
+                };
+
+                if extension != "map" {
                     continue
                 }
-                let basename = i.basename();
+
                 if basename.eq_ignore_ascii_case("bitmaps") || basename.eq_ignore_ascii_case("sounds") || basename.eq_ignore_ascii_case("loc") {
                     continue
                 }
@@ -45,27 +55,35 @@ pub fn find_maps_with_prefix(prefix: &str) -> Vec<String> {
         ExeType::Tag => {
             let scenario_test = format!("tags\\{prefix}");
 
-            fn iteratafy(needle: &str, dir: &str, results: &mut Vec<String>, recursion: usize) {
+            fn iteratafy(needle: &str, dir: &Path, results: &mut Vec<String>, recursion: usize) {
                 if recursion == 100 {
                     return
                 }
-                let Some(iterator) = Win32DirectoryIterator::new(dir) else {
-                    return
-                };
+                let Ok(iterator) = read_dir(dir) else { return };
                 for i in iterator {
-                    if !i.as_str().starts_with(needle) && !needle.starts_with(i.as_str()) {
+                    let Ok(i) = i else { continue };
+                    let path = i.path();
+
+                    let Some((basename, extension)) = path.file_stem().and_then(|s| Some((s.to_str()?, path.extension().and_then(OsStr::to_str)))) else {
+                        continue
+                    };
+
+                    let path_str = path.to_str().unwrap();
+                    if !path_str.starts_with(needle) && !needle.starts_with(path_str) {
                         continue
                     }
-                    if i.extension() == Some("scenario") {
-                        let path_str = i.as_str();
+
+                    if extension == Some("scenario") {
                         let path = &path_str[5..path_str.rfind(".").unwrap()];
                         results.push(path.to_owned());
+                        continue
                     }
-                    iteratafy(needle, i.as_str(), results, recursion + 1);
+
+                    iteratafy(needle, path.as_ref(), results, recursion + 1);
                 }
             }
 
-            iteratafy(&scenario_test, "tags", &mut suggestions, 0);
+            iteratafy(&scenario_test, "tags".as_ref(), &mut suggestions, 0);
         }
     }
 

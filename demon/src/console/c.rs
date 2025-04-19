@@ -1,11 +1,10 @@
-use alloc::borrow::ToOwned;
 use alloc::string::String;
 use alloc::vec::Vec;
 use core::ffi::c_char;
+use minxp::fs::read;
 use c_mine::{c_mine, pointer_from_hook};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
 use crate::console::{CONSOLE_IS_ACTIVE_HALO, CONSOLE_BUFFER, CONSOLE_INPUT_TEXT, CONSOLE_CURSOR_POSITION, console_put_args, get_command_line_argument_value};
-use crate::file::{read_all_data_from_file, Path};
 use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 
 
@@ -145,9 +144,7 @@ pub unsafe extern "C" fn run_console_command(command: CStrPtr) {
 
 #[c_mine]
 pub unsafe extern "C" fn run_exec_txt(path: CStrPtr) -> bool {
-    let Some(file) = read_all_data_from_file(
-        &Path::from(path.to_str_lossless().expect("run_exec_txt non-utf8 path").to_owned())
-    ) else {
+    let Ok(file) = read(path.expect_str()) else {
         return false
     };
 

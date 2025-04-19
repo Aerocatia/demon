@@ -43,6 +43,7 @@ dependencies = [
  "embed-resource",
  "gerbil-ini",
  "min32",
+ "minxp",
  "num_enum",
  "spin 0.10.0",
  "tag_structs",
@@ -146,6 +147,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "minxp"
+version = "0.1.0"
+source = "git+https://github.com/FishAndRips/minxp?rev=b1b92053964403708e108afd60bf139cafc5493f#b1b92053964403708e108afd60bf139cafc5493f"
+dependencies = [
+ "spin 0.10.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

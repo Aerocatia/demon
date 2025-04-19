@@ -17,6 +17,7 @@ num_enum = { version = "0.7.3", default-features = false }
 tag_structs = { path = "../tag_structs" }
 min32 = "0.1.2"
 gerbil-ini = "0.1.4"
+minxp = { git = "https://github.com/FishAndRips/minxp", rev = "b1b92053964403708e108afd60bf139cafc5493f" }
 
 [build-dependencies]
 embed-resource = "3.0.1"

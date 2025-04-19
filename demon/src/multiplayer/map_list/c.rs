@@ -1,10 +1,12 @@
 use crate::crc32::CRC32;
-use crate::file::{read_partial_data_from_file, Path};
 use crate::init::{get_exe_type, ExeType};
 use crate::multiplayer::map_list::{get_mp_map_data_by_index, header_from_cache};
 use alloc::format;
 use alloc::vec::Vec;
 use c_mine::c_mine;
+use minxp::fs::File;
+use minxp::io::{Read, Seek, SeekFrom};
+use minxp::path::PathBuf;
 use tag_structs::{CacheFileTag, CacheFileTagDataHeader, CacheFileTagDataHeaderExternalModels, Scenario, ScenarioBSP};
 
 #[c_mine]
@@ -35,7 +37,6 @@ pub fn get_map_crc32(map_name: &str) -> Result<u32, &'static str> {
         return Ok(u32::MAX)
     };
 
-    let path = Path::from(format!("maps\\{map_name}.map"));
     let mut crc = CRC32::new();
     let header = header_from_cache(map_name)?;
 
@@ -47,12 +48,18 @@ pub fn get_map_crc32(map_name: &str) -> Result<u32, &'static str> {
     tag_data.try_reserve_exact(expected_tag_data_size).expect("Not enough RAM to check CRC32 (tag data)");
     tag_data.resize(expected_tag_data_size, 0);
 
-    let Some(tag_data) = read_partial_data_from_file(&path, tag_data.as_mut_slice(), header.tag_data_offset as usize) else {
-        return Err("Can't read tag data")
-    };
-    if tag_data.len() != expected_tag_data_size {
-        return Err("Can't read tag data")
+    let path = PathBuf::from(format!("maps\\{map_name}.map"));
+    let Ok(mut file) = File::open(path) else { return Err("cannot read map") };
+
+    fn read_at(file: &mut File, at: usize, to: &mut [u8]) -> Result<(), &'static str> {
+        (|| -> minxp::io::Result<()> {
+            assert_eq!(at, file.seek(SeekFrom::Start(at as u64))? as usize);
+            file.read_exact(to)?;
+            Ok(())
+        })().map_err(|_| "failed to read tag data")
     }
+
+    read_at(&mut file, header.tag_data_offset as usize, tag_data.as_mut_slice())?;
 
     let base_memory_address = 0x40440000;
 
@@ -65,23 +72,25 @@ pub fn get_map_crc32(map_name: &str) -> Result<u32, &'static str> {
         unsafe { Some(core::slice::from_raw_parts(data.as_ptr() as *const T, count)) }
     }
 
-    let Some([tag_data_header_e]) = translate_ptr::<CacheFileTagDataHeaderExternalModels>(tag_data, base_memory_address, 1) else {
+    let Some([tag_data_header_e]) = translate_ptr::<CacheFileTagDataHeaderExternalModels>(tag_data.as_slice(), base_memory_address, 1) else {
         return Err("Can't read tag data header")
     };
     let tag_data_header = tag_data_header_e.cache_file_tag_data_header;
     let tag_count = tag_data_header.tag_count as usize;
     let scenario_tag_index = (tag_data_header.scenario_tag.0 & 0xFFFF) as usize;
-    let Some(tag_array) = translate_ptr::<CacheFileTag>(tag_data, tag_data_header.tag_array_address.0, tag_count) else {
+    let q = tag_data_header.tag_array_address;
+
+    let Some(tag_array) = translate_ptr::<CacheFileTag>(tag_data.as_slice(), tag_data_header.tag_array_address.0, tag_count) else {
         return Err("Can't read tag entries")
     };
     let Some(scenario_tag) = tag_array.get(scenario_tag_index) else {
         return Err("Can't get scenario tag")
     };
-    let Some([scenario_tag_data]) = translate_ptr::<Scenario>(tag_data, scenario_tag.data.0, 1) else {
+    let Some([scenario_tag_data]) = translate_ptr::<Scenario>(tag_data.as_slice(), scenario_tag.data.0, 1) else {
         return Err("Can't read scenario tag");
     };
     let bsp_reflexive = scenario_tag_data.structure_bsps;
-    let Some(bsps) = translate_ptr::<ScenarioBSP>(tag_data, bsp_reflexive.address.0, bsp_reflexive.count as usize) else {
+    let Some(bsps) = translate_ptr::<ScenarioBSP>(tag_data.as_slice(), bsp_reflexive.address.0, bsp_reflexive.count as usize) else {
         return Err("Can't read BSP reflexive")
     };
 
@@ -93,28 +102,18 @@ pub fn get_map_crc32(map_name: &str) -> Result<u32, &'static str> {
             return Err("Not enough RAM to check BSPs")
         };
         work_data.resize(bsp_size, 0);
-        let Some(bsp_data) = read_partial_data_from_file(&path, &mut work_data, i.bsp_start as usize) else {
-            return Err("Failed to read BSP data");
-        };
-        if bsp_data.len() != bsp_size {
-            return Err("Failed to read full BSP data");
-        }
-        crc.update(bsp_data);
+        read_at(&mut file, i.bsp_start as usize, work_data.as_mut_slice())?;
+        crc.update(work_data.as_slice());
     }
     work_data.clear();
 
     let model_size = tag_data_header_e.model_data_size as usize;
     let model_offset = tag_data_header_e.model_data_file_offset as usize;
     work_data.resize(model_size, 0);
-    let Some(model_data) = read_partial_data_from_file(&path, &mut work_data, model_offset) else {
-        return Err("Failed to read model data");
-    };
-    if model_data.len() != model_size {
-        return Err("Failed to read full model data");
-    }
+    read_at(&mut file, model_offset, work_data.as_mut_slice())?;
 
-    crc.update(model_data);
-    crc.update(tag_data);
+    crc.update(work_data.as_slice());
+    crc.update(tag_data.as_slice());
 
     let crc_header = header.crc32;
     let crc = crc.crc();

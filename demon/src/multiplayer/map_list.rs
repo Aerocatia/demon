@@ -6,9 +6,11 @@ use alloc::{format, vec};
 use alloc::vec::Vec;
 use core::ffi::{c_char, CStr};
 use core::mem::transmute;
+use minxp::fs::File;
+use minxp::io::Read;
+use minxp::path::PathBuf;
 use spin::Mutex;
 use tag_structs::{CacheFileHeader, ScenarioType};
-use crate::file::{read_partial_data_from_file, Path};
 use crate::init::{get_exe_type, ExeType};
 use crate::map::verify_map_header;
 use crate::util::{CStrPtr, VariableProvider};
@@ -98,13 +100,10 @@ pub unsafe fn add_mp_map(name: &str, map_index: Option<u32>) -> bool {
         }
         ExeType::Tag => {
             let mut tag_prefix = [0u8; 0x100];
-            let Some(n) = read_partial_data_from_file(&Path::from(format!("tags\\{name}.scenario")), &mut tag_prefix, 0) else {
-                return false
-            };
-            if n.len() != 0x100 {
+            if File::open(&format!("tags\\{name}.scenario")).and_then(|mut f| f.read_exact(tag_prefix.as_mut_slice())).is_err() {
                 return false
             }
-            if u16::from_be_bytes([n[0x7C], n[0x7D]]) != ScenarioType::Multiplayer as u16 {
+            if u16::from_be_bytes([tag_prefix[0x7C], tag_prefix[0x7D]]) != ScenarioType::Multiplayer as u16 {
                 return false
             }
         }
@@ -123,13 +122,16 @@ pub unsafe fn add_mp_map(name: &str, map_index: Option<u32>) -> bool {
 fn header_from_cache(name: &str) -> Result<CacheFileHeader, &'static str> {
     match get_exe_type() {
         ExeType::Cache => {
-            let mut cache_header = [0u8; 0x800];
-            let Some(n) = read_partial_data_from_file(&Path::from(format!("maps\\{name}.map")), &mut cache_header, 0) else {
-                return Err("cannot open map file");
+            let path = PathBuf::from(format!("maps\\{name}.map"));
+            let Ok(mut file) = File::open(&path) else {
+                return Err("cannot open map")
             };
-            if n.len() != cache_header.len() {
-                return Err("cannot read entire header");
-            }
+
+            let mut cache_header = [0u8; 0x800];
+            if file.read_exact(&mut cache_header).is_err() {
+                return Err("cannot read map file")
+            };
+
             let header: CacheFileHeader = unsafe { transmute(cache_header) };
             verify_map_header(name, &header).map(|_| header)
         }

@@ -34,8 +34,9 @@ impl ExeType {
             0x0066D124 => Some(ExeType::Cache),
             0x00720EBD => Some(ExeType::Tag),
 
-            // Cache build patched to be a command-line executable
+            // Patched to be a command-line executable
             0x0066D125 => Some(ExeType::Cache),
+            0x00720EBE => Some(ExeType::Tag),
             _ => None
         }
     }
