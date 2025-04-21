@@ -6,7 +6,7 @@ use c_mine::{c_mine, pointer_from_hook};
 use tag_structs::primitives::float::FloatFunctions;
 use tag_structs::primitives::vector::Angle;
 use tag_structs::UICanvas;
-use crate::console::{get_command_line_argument_value, has_command_line_argument_value};
+use crate::init::{get_command_line_argument_value, has_command_line_argument_value};
 use crate::rasterizer::draw_string::set_rasterizer_text_rendering_scaling_to_canvas;
 use crate::rasterizer::{get_global_interface_canvas_bounds, get_render_camera, RenderCamera, RenderFrustum, RENDER_CAMERA};
 use crate::rasterizer::scoreboard::game_engine_nonplayer_post_rasterize;

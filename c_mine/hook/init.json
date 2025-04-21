@@ -1,0 +1,17 @@
+{
+    "run_exec_txt": {
+        "cache": "0x00401AC3",
+        "tag": "0x0040A6CD",
+        "replacement": "forbid"
+    },
+    "get_command_line_arg": {
+        "cache": "0x004026BC",
+        "tag": "0x00401C21",
+        "replacement": "crate::init::c::get_command_line_arg"
+    },
+    "is_cache_build": {
+        "cache": "0x004063D4",
+        "tag": "0x0040537B",
+        "replacement": "crate::init::c::is_cache_build"
+    }
+}

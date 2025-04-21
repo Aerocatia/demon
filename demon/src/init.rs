@@ -2,16 +2,19 @@ mod hook;
 pub mod c;
 
 use alloc::string::String;
+use alloc::vec::Vec;
 pub use hook::sudo_write;
 
 use crate::init::hook::init_hooks;
 use crate::panic::on_panic;
-use crate::util::{get_exe_path, StaticStringBytes};
+use crate::util::{get_exe_path, CStrPtr, StaticStringBytes};
 use core::ffi::c_void;
 use core::ptr::null_mut;
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use min32::dllmain;
 use min32::set_hook;
+use minxp::env::args;
+use spin::Lazy;
 use windows_sys::Win32::Foundation::HINSTANCE;
 use windows_sys::Win32::System::Diagnostics::Debug::{MapFileAndCheckSumA, CHECKSUM_SUCCESS};
 use windows_sys::Win32::System::SystemServices;
@@ -72,12 +75,41 @@ pub fn get_exe_type_if_available() -> Option<ExeType> {
     }
 }
 
+static COMMAND_LINE_ARGS: Lazy<Vec<CommandLineArg>> = Lazy::new(|| {
+    args()
+        .skip(1)
+        .map(CommandLineArg::new)
+        .collect()
+});
+
+struct CommandLineArg {
+    cstrptr: CStrPtr,
+    str: &'static str
+}
+
+impl CommandLineArg {
+    fn new(v: String) -> Self {
+        let mut buffer = v.into_bytes();
+        buffer.push(0); // null terminated
+
+        let bytes: &'static [u8] = buffer.leak();
+        Self {
+            cstrptr: CStrPtr::from_bytes(bytes),
+            str: core::str::from_utf8(&bytes[..bytes.len()-1]).unwrap() // remove null terminator from string
+        }
+    }
+}
+
+unsafe impl Send for CommandLineArg {}
+unsafe impl Sync for CommandLineArg {}
+
 unsafe fn attach_if_not_attached() {
     if ATTACHED.swap(true, Ordering::Relaxed) {
         return
     }
 
     set_hook(Some(on_panic));
+
 
     // 2b
     SetProcessDEPPolicy(PROCESS_DEP_ENABLE);
@@ -124,4 +156,17 @@ unsafe fn attach_if_not_attached() {
             ExitProcess(135);
         }
     }
+}
+
+pub unsafe fn get_command_line_argument_value(argument: &str) -> Option<CStrPtr> {
+    COMMAND_LINE_ARGS
+        .iter()
+        .skip_while(|i| i.str != argument)
+        .skip(1)
+        .map(|i| i.cstrptr)
+        .next()
+}
+
+pub unsafe fn has_command_line_argument_value(argument: &str) -> bool {
+    COMMAND_LINE_ARGS.iter().any(|i| i.str == argument)
 }

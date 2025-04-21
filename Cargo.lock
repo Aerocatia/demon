@@ -152,7 +152,8 @@ dependencies = [
 [[package]]
 name = "minxp"
 version = "0.1.0"
-source = "git+https://github.com/FishAndRips/minxp?rev=5e72263c713527e1cbcf394f3d0d01e3172acb89#5e72263c713527e1cbcf394f3d0d01e3172acb89"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea19f4dca619649c33a87faef45750093007c33725fb9cbefa62dfcf48113f31"
 dependencies = [
  "spin 0.10.0",
  "windows-sys 0.59.0",

@@ -4,7 +4,8 @@ use core::ffi::c_char;
 use minxp::fs::read;
 use c_mine::{c_mine, pointer_from_hook};
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
-use crate::console::{CONSOLE_IS_ACTIVE_HALO, CONSOLE_BUFFER, CONSOLE_INPUT_TEXT, CONSOLE_CURSOR_POSITION, console_put_args, get_command_line_argument_value};
+use crate::console::{CONSOLE_IS_ACTIVE_HALO, CONSOLE_BUFFER, CONSOLE_INPUT_TEXT, CONSOLE_CURSOR_POSITION, console_put_args};
+use crate::init::get_command_line_argument_value;
 use crate::util::{CStrPtr, PointerProvider, VariableProvider};
 
 
