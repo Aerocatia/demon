@@ -2,10 +2,15 @@
     "bink_playback_active": {
         "cache": "0x00401267",
         "tag": "0x00401131",
-        "replacement": "crate::bink::bink_playback_active"
+        "replacement": "crate::bink::c::bink_playback_active"
     },
     "play_bink": {
         "cache": "0x00408125",
         "tag": "0x00407315"
+    },
+    "game_end_credits_start": {
+        "cache": "0x004046F6",
+        "tag": "0x0040399F",
+        "replacement": "crate::bink::c::game_end_credits_start"
     }
 }
