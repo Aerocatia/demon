@@ -1,5 +1,7 @@
 use core::ffi::CStr;
 use core::fmt::{Debug, Display, Formatter};
+use core::marker::PhantomData;
+use tag_structs::primitives::data::Reflexive;
 use tag_structs::primitives::named_tag_struct::NamedTagStruct;
 use tag_structs::primitives::tag_group::{TagGroup, TagGroupStruct, TagGroupUnsafe};
 use tag_structs::Scenario;
@@ -68,9 +70,26 @@ pub unsafe trait ReflexiveImpl<T: Sized + 'static>: Copy + Clone {
     unsafe fn as_mut_slice(self) -> &'static mut [T];
     unsafe fn get(self, index: usize) -> Option<&'static T>;
     unsafe fn get_mut(self, index: usize) -> Option<&'static mut T>;
+
+    unsafe fn iter(self) -> ReflexiveIterator<T, Self> {
+        ReflexiveIterator {
+            front: 0,
+            back: self.len(),
+            reflexive: self,
+            _phantom: PhantomData
+        }
+    }
+    unsafe fn iter_mut(self) -> ReflexiveIteratorMut<T, Self> {
+        ReflexiveIteratorMut {
+            front: 0,
+            back: self.len(),
+            reflexive: self,
+            _phantom: PhantomData
+        }
+    }
 }
 
-unsafe impl<T: Sized + Copy + Clone + Debug + 'static + NamedTagStruct> ReflexiveImpl<T> for tag_structs::primitives::data::Reflexive<T> {
+unsafe impl<T: Sized + Copy + Clone + Debug + 'static + NamedTagStruct> ReflexiveImpl<T> for Reflexive<T> {
     fn len(self) -> usize {
         self.count as usize
     }
@@ -107,6 +126,82 @@ unsafe impl<T: Sized + Copy + Clone + Debug + 'static + NamedTagStruct> Reflexiv
 
     unsafe fn get_mut(self, index: usize) -> Option<&'static mut T> {
         self.as_mut_slice().get_mut(index)
+    }
+}
+
+pub struct ReflexiveIterator<T: Sized + 'static, R: ReflexiveImpl<T>> {
+    reflexive: R,
+    front: usize,
+    back: usize,
+    _phantom: PhantomData<T>
+}
+
+impl<T: Sized + 'static, R: ReflexiveImpl<T>> Iterator for ReflexiveIterator<T, R> {
+    type Item = &'static T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.front >= self.reflexive.len() {
+            None
+        }
+        else {
+            unsafe {
+                let result = self.reflexive.get(self.front);
+                self.front += 1;
+                result
+            }
+        }
+    }
+}
+
+impl<T: Sized + 'static, R: ReflexiveImpl<T>> DoubleEndedIterator for ReflexiveIterator<T, R> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.back == 0 {
+            None
+        }
+        else {
+            unsafe {
+                self.back -= 1;
+                let result = self.reflexive.get(self.back);
+                result
+            }
+        }
+    }
+}
+
+pub struct ReflexiveIteratorMut<T: Sized + 'static, R: ReflexiveImpl<T>> {
+    reflexive: R,
+    front: usize,
+    back: usize,
+    _phantom: PhantomData<T>
+}
+
+impl<T: Sized + 'static, R: ReflexiveImpl<T>> Iterator for ReflexiveIteratorMut<T, R> {
+    type Item = &'static mut T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.front >= self.reflexive.len() {
+            None
+        }
+        else {
+            unsafe {
+                let result = self.reflexive.get_mut(self.front);
+                self.front += 1;
+                result
+            }
+        }
+    }
+}
+
+impl<T: Sized + 'static, R: ReflexiveImpl<T>> DoubleEndedIterator for ReflexiveIteratorMut<T, R> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.back == 0 {
+            None
+        }
+        else {
+            unsafe {
+                self.back -= 1;
+                let result = self.reflexive.get_mut(self.back);
+                result
+            }
+        }
     }
 }
 

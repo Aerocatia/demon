@@ -1,0 +1,11 @@
+{
+    "scenario_get_encounter_by_name": {
+        "cache": "0x004099BC",
+        "tag": "0x00402487"
+    },
+    "ai_index_from_string": {
+        "cache": "0x004030A8",
+        "tag": "0x004021A8",
+        "replacement": "crate::scenario::c::ai_index_from_string"
+    }
+}

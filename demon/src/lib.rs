@@ -119,3 +119,4 @@ mod window;
 mod map;
 mod bitmap;
 mod interface;
+mod scenario;
