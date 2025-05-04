@@ -7,5 +7,9 @@
         "cache": "0x004030A8",
         "tag": "0x004021A8",
         "replacement": "crate::scenario::c::ai_index_from_string"
+    },
+    "preprocess_encounter_indices_and_squad_memes": {
+        "tag": "0x00408378",
+        "replacement": "crate::scenario::c::preprocess_encounter_indices_and_squad_memes"
     }
 }
