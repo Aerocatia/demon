@@ -3,7 +3,7 @@ use core::ptr::null;
 use core::sync::atomic::{AtomicBool, Ordering};
 use spin::Lazy;
 use c_mine::{c_mine, pointer_from_hook};
-use tag_structs::primitives::float::FloatFunctions;
+use tag_structs::primitives::float::FloatOps;
 use tag_structs::primitives::vector::Angle;
 use tag_structs::UICanvas;
 use crate::init::{get_command_line_argument_value, has_command_line_argument_value};
@@ -133,7 +133,7 @@ pub extern "C" fn render_camera_get_adjusted_field_of_view_tangent(horizontal_fo
 
     // todo: removing the `* 0.85` makes the FoV closer to Xbox, but Xbox does `* 0.85`, too.
     //       investigate why this is, and why it still looks "correct" on Xbox
-    (fov.radians() * 0.5).tan() * 0.85
+    (fov.radians() * 0.5).fw_tan() * 0.85
 }
 
 #[derive(Copy, Clone)]

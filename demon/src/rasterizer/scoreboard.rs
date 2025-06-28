@@ -20,7 +20,7 @@ pub use color::USE_PLAYER_COLORS;
 use crate::rasterizer::scoreboard::sortable_score::SortableScore;
 use crate::rasterizer::scoreboard::verbose::draw_verbose_scoreboard;
 use strings::ScoreboardScreenText;
-use tag_structs::primitives::float::FloatFunctions;
+use tag_structs::primitives::float::FloatOps;
 
 const GAME_ENGINE: VariableProvider<Option<&mut [u8; 0]>> = variable! {
     name: "game_engine",
@@ -116,10 +116,10 @@ unsafe fn game_engine_post_rasterize_scoreboard() {
     // These screens are mutually exclusive and should not be drawn together
     // Note that 1.9 is a magic number from the game...
     if scoreboard_fade > 0.0 {
-        draw_scoreboard_screen(local_player_id, scoreboard_fade.powf(1.9))
+        draw_scoreboard_screen(local_player_id, scoreboard_fade.fw_powf(1.9))
     }
     else if game_rules_fade > 0.0 {
-        DRAW_GAME_RULES_SCREEN.get()(game_rules_fade.powf(1.9))
+        DRAW_GAME_RULES_SCREEN.get()(game_rules_fade.fw_powf(1.9))
     }
 }
 

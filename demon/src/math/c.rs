@@ -1,6 +1,6 @@
 use c_mine::c_mine;
 use tag_structs::primitives::color::{ColorARGB, ColorRGB};
-use tag_structs::primitives::float::FloatFunctions;
+use tag_structs::primitives::float::FloatOps;
 use tag_structs::primitives::vector::{Matrix3x3, Matrix4x3, Plane3D, Quaternion, Vector2D, Vector3D};
 
 /// 1 world unit = 10 feet = 3.048 meters
@@ -77,12 +77,12 @@ pub extern "C" fn magnitude_squared3d(vector: &Vector3D) -> f32 {
 
 #[c_mine]
 pub extern "C" fn sqrt(value: f32) -> f32 {
-    value.sqrt()
+    value.fw_sqrt()
 }
 
 #[c_mine]
 pub extern "C" fn powf(base: f32, exponent: f32) -> f32 {
-    base.powf(exponent)
+    base.fw_powf(exponent)
 }
 
 #[c_mine]
@@ -92,12 +92,12 @@ pub extern "C" fn fmod(base: f32, modulo: f32) -> f32 {
 
 #[c_mine]
 pub extern "C" fn powi(base: f32, exponent: i32) -> f32 {
-    base.powi(exponent)
+    base.fw_powi(exponent)
 }
 
 #[c_mine]
 pub extern "C" fn fabs(float: f32) -> f32 {
-    float.fabs()
+    float.fw_fabs()
 }
 
 #[c_mine]
@@ -160,12 +160,12 @@ pub extern "C" fn plane3d_distance_to_point(plane: &Plane3D, point: &Vector3D) -
 #[c_mine]
 pub extern "C" fn round(what: f32) -> i32 {
     // If rounding is not done exactly this way, it leads to death!
-    what.round_ties_even_to_int()
+    what.fw_round_ties_even_to_int()
 }
 
 #[c_mine]
 pub extern "C" fn inverse_square_root(what: f32) -> f32 {
-    what.inverse_sqrt()
+    what.fw_inverse_sqrt()
 }
 
 #[c_mine]
@@ -215,7 +215,7 @@ pub extern "C" fn matrix3x3_transform_vector(matrix: &Matrix3x3, vector: &Vector
 
 #[c_mine]
 pub extern "C" fn tan(value: f32) -> f32 {
-    value.tan()
+    value.fw_tan()
 }
 
 #[c_mine]

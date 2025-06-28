@@ -1,6 +1,6 @@
 use c_mine::c_mine;
 use tag_structs::{BitmapData, HUDInterfaceAnchor};
-use tag_structs::primitives::float::FloatFunctions;
+use tag_structs::primitives::float::FloatOps;
 use tag_structs::primitives::vector::Vector2DInt;
 use crate::rasterizer::get_global_interface_canvas_bounds;
 use crate::rasterizer::hud::{draw_hud, HUD_BASE_SCALE, HUD_SAFE_ZONE_BOTTOM, HUD_SAFE_ZONE_LEFT, HUD_SAFE_ZONE_RIGHT, HUD_SAFE_ZONE_TOP};
@@ -142,8 +142,8 @@ pub unsafe extern "C" fn hud_calculate_point(
         },
     };
 
-    output.x = x.round_ties_even_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
-    output.y = y.round_ties_even_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
+    output.x = x.fw_round_ties_even_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
+    output.y = y.fw_round_ties_even_to_int().clamp(i16::MIN as i32, i16::MAX as i32) as i16;
 }
 
 #[c_mine]

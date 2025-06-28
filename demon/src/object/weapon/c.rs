@@ -1,6 +1,6 @@
 use c_mine::c_mine;
 use tag_structs::{ObjectType, Weapon};
-use tag_structs::primitives::float::FloatFunctions;
+use tag_structs::primitives::float::FloatOps;
 use tag_structs::primitives::vector::Vector3D;
 use crate::object::c::object_get_and_verify_type;
 use crate::object::ObjectID;
@@ -31,7 +31,7 @@ pub unsafe extern "C" fn weapon_get_zoom_magnification(object: ObjectID, zoom_le
     let low = max_zoom_magnification.lower_bound.max(1.0);
     let high = max_zoom_magnification.upper_bound.max(1.0);
 
-    (high / low).powf(ratio) * low
+    (high / low).fw_powf(ratio) * low
 }
 
 #[c_mine]

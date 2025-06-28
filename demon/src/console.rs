@@ -349,7 +349,7 @@ unsafe fn render_console() {
     );
 
     let interface_bounds = get_global_interface_canvas_bounds();
-    let interface_width = interface_bounds.width();
+    let interface_width = interface_bounds.width() as i16;
     let mut bounds = interface_bounds;
     bounds.left += CONSOLE_DISPLAY_PADDING;
     bounds.top += CONSOLE_DISPLAY_PADDING;

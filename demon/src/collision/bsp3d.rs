@@ -1,41 +1,84 @@
-use tag_structs::ModelCollisionGeometryBSP;
-use tag_structs::primitives::vector::Vector3D;
 use crate::tag::ReflexiveImpl;
+use tag_structs::primitives::collision_bsp::{BSP2DNodeReference, CollisionBSP2DNode, CollisionBSP2DNodeIndex, CollisionBSP3DNode, CollisionBSP3DNodeIndex, CollisionBSPLeaf, CollisionBSPSurface};
+use tag_structs::primitives::vector::Plane3D;
+use tag_structs::{primitives, ModelCollisionGeometryBSP, ModelCollisionGeometryBSPLeafFlagsFields};
 
-pub unsafe trait BSP3DFunctions {
-    /// Get the leaf the point resides in.
-    ///
-    /// Returns `None` if the point is outside of the BSP.
-    unsafe fn test_point(&self, point: Vector3D) -> Option<usize>;
+#[repr(transparent)]
+pub struct ModelCollisionGeometryBSPImpl<'a> {
+    bsp: &'a ModelCollisionGeometryBSP
 }
 
-unsafe impl BSP3DFunctions for ModelCollisionGeometryBSP {
-    unsafe fn test_point(&self, point: Vector3D) -> Option<usize> {
-        let nodes = self.bsp3d_nodes.as_slice();
-        let node_count = nodes.len();
-        let mut attempts = 0;
-        let mut current_node = 0usize;
-        while current_node < 0x80000000 {
-            // These should ideally be caught on map load.
-            let Some(node) = nodes.get(current_node) else {
-                panic!("Tried to access node index {current_node} / {node_count}");
-            };
-            let Some(plane) = self.planes.get(node.plane as usize) else {
-                panic!("Node {current_node} points to an invalid plane");
-            };
-            attempts += 1;
-            if attempts > node_count {
-                panic!("Infinite BSP3D loop detected! (current_node={current_node})");
-            }
+impl<'a> ModelCollisionGeometryBSPImpl<'a> {
+    #[inline(always)]
+    pub unsafe fn wrap(bsp: &'a ModelCollisionGeometryBSP) -> Self {
+        Self { bsp }
+    }
+}
 
-            current_node = if plane.plane.distance_to_point(point) >= 0.0 { node.front_child } else { node.back_child } as usize;
-        }
+impl<'a> primitives::collision_bsp::CollisionBSPFunctions for ModelCollisionGeometryBSPImpl<'a> {
+    fn get_3d_node(&self, node: usize) -> Option<CollisionBSP3DNode> {
+        unsafe { self.bsp.bsp3d_nodes.get(node) }.map(|n| CollisionBSP3DNode {
+            front_child: CollisionBSP3DNodeIndex(n.front_child),
+            back_child: CollisionBSP3DNodeIndex(n.back_child),
+            plane_index: n.plane as usize
+        })
+    }
 
-        if current_node != u32::MAX as usize {
-            Some(current_node & 0x7FFFFFFF)
-        }
-        else {
-            None
-        }
+    fn get_3d_node_count(&self) -> usize {
+        self.bsp.bsp3d_nodes.len()
+    }
+
+    fn get_plane(&self, plane: usize) -> Option<Plane3D> {
+        unsafe { self.bsp.planes.get(plane) }.map(|n| n.plane)
+    }
+
+    fn get_plane_count(&self) -> usize {
+        self.bsp.planes.len()
+    }
+
+    fn get_leaf(&self, leaf: usize) -> Option<CollisionBSPLeaf> {
+        unsafe { self.bsp.leaves.get(leaf) }.map(|n| CollisionBSPLeaf {
+            contains_double_sided_surfaces: n.flags.is_set(ModelCollisionGeometryBSPLeafFlagsFields::ContainsDoubleSidedSurfaces),
+            bsp_2d_node_reference_start: n.first_bsp2d_reference as usize,
+            bsp_2d_node_reference_count: n.bsp2d_reference_count as usize,
+        })
+    }
+
+    fn get_leaf_count(&self) -> usize {
+        self.bsp.leaves.len()
+    }
+
+    fn get_2d_node_reference(&self, node: usize) -> Option<BSP2DNodeReference> {
+        unsafe { self.bsp.bsp2d_references.get(node) }.map(|n| BSP2DNodeReference {
+            plane: n.plane as usize,
+            node: CollisionBSP2DNodeIndex(n.bsp2d_node)
+        })
+    }
+
+    fn get_2d_node_reference_count(&self) -> usize {
+        self.bsp.bsp2d_references.len()
+    }
+
+    fn get_2d_node(&self, node: usize) -> Option<CollisionBSP2DNode> {
+        unsafe { self.bsp.bsp2d_nodes.get(node) }.map(|n| CollisionBSP2DNode {
+            plane: n.plane,
+            left_child: CollisionBSP2DNodeIndex(n.left_child),
+            right_child: CollisionBSP2DNodeIndex(n.right_child),
+        })
+    }
+
+    fn get_2d_node_count(&self) -> usize {
+        self.bsp.bsp2d_nodes.len()
+    }
+
+    fn get_surface(&self, surface: usize) -> Option<CollisionBSPSurface> {
+        unsafe { self.bsp.surfaces.get(surface) }.map(|n| CollisionBSPSurface {
+            plane: n.plane as usize,
+            material: n.material.0
+        })
+    }
+
+    fn get_surface_count(&self) -> usize {
+        self.bsp.surfaces.len()
     }
 }

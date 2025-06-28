@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 num_enum = { version = "0.7.3", default-features = false }
-libm = "0.2.11"
+funnel-web = { git = "https://github.com/FishAndRips/funnel-web", rev = "bd7a8778a3b9e516102642b4bdd4a519bd223cf4" }
