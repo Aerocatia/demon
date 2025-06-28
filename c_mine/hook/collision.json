@@ -3,5 +3,15 @@
         "cache": "0x00404C41",
         "tag": "0x00403F8F",
         "replacement": "crate::collision::c::bsp3d_test_point"
+    },
+    "scenario_leaf_index_from_point": {
+        "cache": "0x00403887",
+        "tag": "0x00402A0E",
+        "replacement": "crate::collision::c::scenario_leaf_index_from_point"
+    },
+    "global_bsp3d": {
+        "cache": "0x004035CB",
+        "tag": "0x004026F8",
+        "replacement": "crate::collision::c::global_bsp3d"
     }
 }

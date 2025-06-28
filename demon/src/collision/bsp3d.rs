@@ -2,6 +2,11 @@ use crate::tag::ReflexiveImpl;
 use tag_structs::primitives::collision_bsp::{BSP2DNodeReference, CollisionBSP2DNode, CollisionBSP2DNodeIndex, CollisionBSP3DNode, CollisionBSP3DNodeIndex, CollisionBSPLeaf, CollisionBSPSurface};
 use tag_structs::primitives::vector::Plane3D;
 use tag_structs::{primitives, ModelCollisionGeometryBSP, ModelCollisionGeometryBSPLeafFlagsFields};
+use crate::collision::GLOBAL_BSP3D;
+
+pub unsafe fn get_global_collision_bsp() -> ModelCollisionGeometryBSPImpl<'static> {
+    ModelCollisionGeometryBSPImpl::wrap(&**GLOBAL_BSP3D.get())
+}
 
 #[repr(transparent)]
 pub struct ModelCollisionGeometryBSPImpl<'a> {
