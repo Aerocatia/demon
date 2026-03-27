@@ -1,0 +1,40 @@
+[package]
+name = "scythunk"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+blake3 = {
+    version = "1.8.3",
+    default-features = false
+}
+min32 = "0.1.2"
+serde_json = {
+    version = "1.0.149",
+    default-features = false,
+    features = ["alloc"]
+}
+serde = {
+    version = "1.0.228",
+    default-features = false,
+    features = ["derive"]
+}
+windows-sys = {
+    version = "0.61.2",
+    features = [
+        "Win32_System_SystemServices",
+        "Win32_System_Threading",
+        "Win32_UI_WindowsAndMessaging",
+        "Win32_System_LibraryLoader",
+        "Win32_System_Memory"
+    ]
+}
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
