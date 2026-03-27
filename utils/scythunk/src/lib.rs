@@ -37,12 +37,30 @@ pub unsafe fn main(
 
 #[expect(dangerous_implicit_autorefs)]
 unsafe fn attach() {
-    let start = 0x00401000 as *mut [u8; 5];
+    let target_dll = LoadLibraryA(c"demon.dll".as_ptr() as *const u8);
+    if target_dll.is_null() {
+        messagebox("Failed to load", "Missing the demon (demon.dll)");
+        terminate();
+    }
+
+    let Some(expected_checksum_addr) = GetProcAddress(target_dll, c"demon_thunk_checksum".as_ptr() as *const u8) else {
+        messagebox("Failed to load", "Missing demon_thunk_checksum in the demon");
+        terminate();
+    };
+
+    let expected_checksum = *(expected_checksum_addr as *const [u8; 0x20]);
+
+    let Some(thunk_address) = GetProcAddress(target_dll, c"demon_thunk_address".as_ptr() as *const u8) else {
+        messagebox("Failed to load", "Missing demon_thunk_address in the demon");
+        terminate();
+    };
+
+    let start = *(thunk_address as *mut *mut [u8; 5]);
 
     if *start != [0xCC; 5] {
         messagebox(
             "No thunks",
-            &alloc::format!("Failed to find the interrupt block at {start:#?}")
+            &alloc::format!("Mismatched DLL! Failed to find the interrupt block at {start:#?}")
         );
         terminate();
     }
@@ -71,7 +89,7 @@ unsafe fn attach() {
     if thunks.is_empty() {
         messagebox(
             "No thunks",
-            &alloc::format!("No thunks follow at {current_thunk:#?}")
+            &alloc::format!("No thunks follow at {current_thunk:#?} (mismatched DLL?)")
         );
         terminate();
     }
@@ -79,30 +97,20 @@ unsafe fn attach() {
     let thunk_data = core::slice::from_raw_parts(start as *const u8, (current_thunk as usize).wrapping_sub(start as usize));
     let thunk_checksum = *blake3::hash(thunk_data).as_bytes();
 
-    let expected_checksum = [
-        0xE2, 0xD6, 0x45, 0x65, 0xA8, 0xAF, 0x40, 0x7E,
-        0xF3, 0xAD, 0x12, 0xD6, 0x1E, 0xA0, 0x71, 0x80,
-        0xE7, 0xD6, 0x02, 0xDB, 0x6B, 0xA8, 0x90, 0x38,
-        0x67, 0x61, 0xA3, 0x73, 0x8F, 0x00, 0x17, 0x40
-    ];
-
     if expected_checksum != thunk_checksum {
-        messagebox("Incorrect EXE", "This needs to be run on the cache build (thunk table checksum mismatch!)");
+        let expected = GetProcAddress(target_dll, c"demon_target_exe_name".as_ptr() as *const u8)
+            .map(|i| CStr::from_ptr(i as *const c_char).to_str().expect("demon_target_exe_name UTF-8"))
+            .unwrap_or("???");
+        messagebox("Incorrect EXE", &alloc::format!("Mismatched DLL! This DLL targets {expected} (thunk table checksum mismatch!)"));
         terminate();
     }
 
-    let demon = LoadLibraryA(c"demon.dll".as_ptr() as *const u8);
-    if demon.is_null() {
-        messagebox("Failed to load", "Missing demon.dll");
-        terminate();
-    }
-
-    let Some(demon_replacements_json) = GetProcAddress(demon, c"demon_replacements_json".as_ptr() as *const u8) else {
-        messagebox("Failed to load", "Missing demon_get_all_functions() in demon.dll");
+    let Some(demon_replacements_json) = GetProcAddress(target_dll, c"demon_replacements_json".as_ptr() as *const u8) else {
+        messagebox("Failed to load", "Missing demon_replacements_json in the demon");
         terminate();
     };
 
-    let all_functions = CStr::from_ptr(transmute(demon_replacements_json));
+    let all_functions = CStr::from_ptr(transmute(demon_replacements_json as *const c_char));
     let Ok(all_functions) = all_functions.to_str() else {
         messagebox("Failed to load", "demon_get_all_functions() was not UTF-8, or it wasn't null terminated.");
         terminate();
@@ -196,8 +204,8 @@ unsafe fn attach() {
                 nop_function as *const () as usize
             },
             None => {
-                let Some(proc_addr) = GetProcAddress(demon, function_name_cstr.as_ptr() as *const u8) else {
-                    messagebox("Failed to load", &alloc::format!("Function {function_name} has does not exist in demon.dll."));
+                let Some(proc_addr) = GetProcAddress(target_dll, function_name_cstr.as_ptr() as *const u8) else {
+                    messagebox("Failed to load", &alloc::format!("Function {function_name} has does not exist in the demon."));
                     terminate();
                 };
                 proc_addr as usize
@@ -229,7 +237,7 @@ unsafe fn attach() {
         );
     }
 
-    if let Some(f) = GetProcAddress(demon, c"demon_count_thunks".as_ptr() as *const u8) {
+    if let Some(f) = GetProcAddress(target_dll, c"demon_count_thunks".as_ptr() as *const u8) {
         if *(f as *const u8) == 1 {
             messagebox("Success", &alloc::format!("Found {} thunks! ({} are no-ops in this build)", thunks.len(), no_op_thunks.len()));
         }
