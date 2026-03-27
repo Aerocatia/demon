@@ -11,9 +11,11 @@ add_library(demon SHARED
     source/main/main.c
 )
 
+target_compile_definitions(demon PUBLIC -DTARGET="halo")
+
 option(DEMON_COUNT_THUNKS "Count thunks on DLL load" OFF)
 if(${DEMON_COUNT_THUNKS})
-    add_definitions(-DDEMON_COUNT_THUNKS)
+    target_compile_definitions(demon PUBLIC DEMON_COUNT_THUNKS)
 endif()
 
 set_target_properties(demon PROPERTIES PREFIX "")

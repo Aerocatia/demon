@@ -1,3 +1,4 @@
 {
-    "main_crash": { "address": "0x00403C29" }
+    "main_crash": { "address": "0x00403C29" },
+    "main_print_version": { "address": "0x004076DF" }
 }
