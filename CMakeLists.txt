@@ -7,11 +7,15 @@ project(Demon
 )
 
 add_library(demon SHARED
+    source/cseries/errors.c
     source/main/demon.c
     source/main/main.c
 )
 
-target_compile_definitions(demon PUBLIC -DTARGET="halo")
+target_compile_definitions(demon PUBLIC
+    TARGET="halo"
+    REQUIRE_CACHE_FILE
+)
 
 option(DEMON_COUNT_THUNKS "Count thunks on DLL load" OFF)
 if(${DEMON_COUNT_THUNKS})
