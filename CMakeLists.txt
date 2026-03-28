@@ -10,6 +10,7 @@ add_library(demon SHARED
     source/cseries/errors.c
     source/main/demon.c
     source/main/main.c
+    source/memory/crc.c
 )
 
 target_compile_definitions(demon PUBLIC
