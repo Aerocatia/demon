@@ -5,6 +5,8 @@
 bool demon_count_thunks = true;
 #endif
 
+#ifdef REQUIRE_CACHE_FILE
+// Cache build (halo_cache_symbols.exe)
 const char demon_replacements_json[] = {
     #embed "../../replacements.json"
     , 0
@@ -20,3 +22,7 @@ const uint8_t demon_thunk_checksum[] = {
 
 const void *demon_thunk_address = (void *)0x00401000;
 const char demon_target_exe_name[] = BUILD_NUMBER " cache build";
+#else
+// Tag build (halo_tag_symbols.exe), maybe in the future
+#error "The demon can only target the cache build at this time"
+#endif
