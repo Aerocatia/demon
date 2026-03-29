@@ -11,6 +11,7 @@ add_library(demon SHARED
     source/main/demon.c
     source/main/main.c
     source/memory/crc.c
+    source/text/unicode.c
 )
 
 target_compile_definitions(demon PUBLIC

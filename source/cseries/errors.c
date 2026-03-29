@@ -48,9 +48,9 @@ void write_to_error_file(char *string, bool date) {
         time_structure = localtime(&time_value);
         if(time_structure) {
             fprintf(stream, "%02d.%02d.%02d %02d:%02d:%02d  ",
-                time_structure->tm_mon+1,
+                time_structure->tm_mon + 1,
                 time_structure->tm_mday,
-                time_structure->tm_year%100,
+                time_structure->tm_year % 100,
                 time_structure->tm_hour,
                 time_structure->tm_min,
                 time_structure->tm_sec);
