@@ -41,8 +41,8 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
 
+#include "../cseries/cseries.h"
 #include "crc.h"
 
 enum {
@@ -96,10 +96,12 @@ static uint32_t crc_table[] = {
 };
 
 void crc_new(uint32_t *crc_reference) {
+    assert(crc_reference);
     *crc_reference = CRC_NEW;
 }
 
 void crc_checksum_buffer(uint32_t *crc_reference, const void *buffer, int32_t buffer_size) {
+    assert(crc_reference && buffer);
     assert(buffer_size >= 0);
     const uint8_t *p = buffer;
     uint32_t crc = *crc_reference;

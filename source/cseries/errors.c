@@ -16,6 +16,8 @@
 #define CACHE_STRING ""
 #endif
 
+void (*error)(int16_t priority, const char *format, ...) = (void *)0x005512E0;
+
 void write_to_error_file(char *string, bool date) {
     static bool first_line = true;
     if(first_line) {

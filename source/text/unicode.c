@@ -1,6 +1,6 @@
 #include <string.h>
 #include <uchar.h>
-#include <assert.h>
+
 #include "../cseries/cseries.h"
 
 #include "unicode.h"

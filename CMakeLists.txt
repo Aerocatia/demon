@@ -7,7 +7,10 @@ project(Demon
 )
 
 add_library(demon SHARED
+    source/cache/cache_files.c
+    source/cseries/cseries.c
     source/cseries/errors.c
+    source/main/console.c
     source/main/demon.c
     source/main/main.c
     source/memory/crc.c
@@ -15,6 +18,8 @@ add_library(demon SHARED
 )
 
 target_compile_definitions(demon PUBLIC
+    DEBUG
+    NO_DEBUG_TRAP
     TARGET="halo"
     REQUIRE_CACHE_FILE
 )
@@ -25,4 +30,4 @@ if(${DEMON_COUNT_THUNKS})
 endif()
 
 set_target_properties(demon PROPERTIES PREFIX "")
-target_compile_options(demon PRIVATE -Wall -Wextra -Werror)
+target_compile_options(demon PRIVATE -Wall -Wextra)

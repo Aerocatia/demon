@@ -1,7 +1,9 @@
 {
     "ascii_to_wide": { "address": "0x0040952F" },
+    "cache_file_header_verify": { "address": "0x00405ED9" },
     "crc_checksum_buffer": { "address": "0x00408567" },
     "crc_new": { "address": "0x00409534" },
+    "display_assert": { "address": "0x00406C85" },
     "main_crash": { "address": "0x00403C29" },
     "main_print_version": { "address": "0x004076DF" },
     "wide_to_ascii": { "address": "0x004022ED" },
