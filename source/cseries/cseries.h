@@ -10,6 +10,8 @@
 #define MEG (KILO * KILO)
 #define GIG (KILO * MEG)
 
+typedef uint32_t tag;
+
 #ifdef assert
 #undef assert
 #endif
