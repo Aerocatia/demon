@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+/* ---------- header */
+
 #define CACHE_FILE_HEADER_SIGNATURE 0x68656164 // head
 #define CACHE_FILE_FOOTER_SIGNATURE 0x666F6F74 // foot
 #define CACHE_FILE_VERSION_RETAIL 7
@@ -35,6 +37,8 @@ struct cache_file_header {
     int32_t footer_signature;
 };
 static_assert(sizeof(struct cache_file_header) == 2048);
+
+/* ---------- tags */
 
 struct cache_file_tag_instance {
     tag group_tag;
@@ -69,6 +73,8 @@ struct cache_file_tags_header {
 };
 static_assert(sizeof(struct cache_file_tags_header) == 40);
 
+/* ---------- structure bsp */
+
 #define CACHE_FILE_STRUCTURE_BSP_HEADER_SIGNATURE 0x73627370 // sbsp
 
 struct cache_file_structure_bsp_header {
@@ -83,6 +89,12 @@ struct cache_file_structure_bsp_header {
     tag signature;
 };
 static_assert(sizeof(struct cache_file_structure_bsp_header) == 24);
+
+/* ---------- globals */
+
+/* ---------- constants */
+
+/* ---------- prototypes */
 
 uint32_t cache_files_get_checksum();
 

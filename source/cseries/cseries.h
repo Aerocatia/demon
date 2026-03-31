@@ -4,11 +4,17 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+/* ---------- constants */
+
 #define NONE -1
 
 #define KILO 1024
 #define MEG (KILO * KILO)
 #define GIG (KILO * MEG)
+
+/* ---------- macros */
+
+/* ---------- types */
 
 typedef uint32_t tag;
 
@@ -36,6 +42,10 @@ enum {
     CHAR_BITS = 8,
     CHAR_BITS_BITS = 3
 };
+
+/* ---------- structures */
+
+/* ---------- asserts */
 
 #ifdef assert
 #undef assert
@@ -83,9 +93,16 @@ enum {
     // #define unreachable() ((void)0) - Use C23 macro
 #endif
 
+/* ---------- globals */
+
 #if DEBUG
 extern char temporary[256];
 #endif
+
+/* ---------- prototypes */
+
+tag string_to_tag(const char *s);
+char *tag_to_string(tag t, char *s);
 
 void system_exit(int code);
 

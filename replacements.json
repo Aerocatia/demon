@@ -19,6 +19,9 @@
     "display_assert": { "address": "0x00406C85" },
     "main_crash": { "address": "0x00403C29" },
     "main_print_version": { "address": "0x004076DF" },
+    "tag_get": { "address": "0x0040A0DD"},
+    "tag_get_name": { "address": "0x0040499E" },
+    "tag_get_group_tag": { "address": "0x00406915" },
     "tag_loaded": { "address": "0x0040769E" },
     "wide_to_ascii": { "address": "0x004022ED" },
     "write_to_error_file": { "address": "0x00409B1A" }

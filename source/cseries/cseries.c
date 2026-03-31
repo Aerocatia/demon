@@ -3,12 +3,33 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "../memory/byte_swapping.h"
+
 #include "cseries.h"
 #include "errors.h"
+
+/* ---------- globals */
 
 #if DEBUG
 char temporary[256];
 #endif
+
+/* ---------- code */
+
+tag string_to_tag(const char *s) {
+    tag t = NONE;
+    t = *((tag *)s);
+
+    return SWAP4_BE(t);
+}
+
+char *tag_to_string(tag t, char *s) {
+    t = SWAP4_BE(t);
+    *((tag *)s) = t;
+    s[sizeof(tag)] = '\0';
+
+    return s;
+}
 
 //#ifdef DEBUG
 char *csprintf(char *buffer, char *format, ...) {
