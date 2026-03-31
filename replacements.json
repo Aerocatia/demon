@@ -2,6 +2,7 @@
     "ascii_to_wide": { "address": "0x0040952F" },
     "cache_file_header_verify": { "address": "0x00405ED9" },
     "cache_files_get_checksum": { "address": "0x0040770C" },
+    "cache_files_map_directory": { "address": "0x004081AC" },
     "crc_checksum_buffer": { "address": "0x00408567" },
     "crc_new": { "address": "0x00409534" },
     "csmemcmp": { "address": "0x00401EFB" },
@@ -18,6 +19,7 @@
     "display_assert": { "address": "0x00406C85" },
     "main_crash": { "address": "0x00403C29" },
     "main_print_version": { "address": "0x004076DF" },
+    "tag_loaded": { "address": "0x0040769E" },
     "wide_to_ascii": { "address": "0x004022ED" },
     "write_to_error_file": { "address": "0x00409B1A" }
 }

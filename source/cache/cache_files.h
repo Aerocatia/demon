@@ -37,8 +37,8 @@ struct cache_file_header {
 static_assert(sizeof(struct cache_file_header) == 2048);
 
 struct cache_file_tag_instance {
-    int32_t group_tag;
-    int32_t parent_group_tags[MAXIMUM_PARENT_GROUP_TYPES_PER_TAG];
+    tag group_tag;
+    tag parent_group_tags[MAXIMUM_PARENT_GROUP_TYPES_PER_TAG];
 
     int32_t tag_index;
 
