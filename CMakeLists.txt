@@ -32,4 +32,4 @@ if(${DEMON_COUNT_THUNKS})
 endif()
 
 set_target_properties(demon PROPERTIES PREFIX "")
-target_compile_options(demon PRIVATE -Wall -Wextra)
+target_compile_options(demon PRIVATE -Wall -Wextra -mfpmath=sse)
