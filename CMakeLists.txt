@@ -13,6 +13,8 @@ add_library(demon SHARED
     source/main/console.c
     source/main/demon.c
     source/main/main.c
+    source/math/real_math.c
+    source/math/real_math_debug_inlines.c
     source/memory/crc.c
     source/text/unicode.c
 )

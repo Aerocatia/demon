@@ -17,6 +17,7 @@
 /* ---------- types */
 
 typedef uint32_t tag;
+typedef float real;
 
 #undef LONG_MAX
 #undef LONG_MIN
@@ -44,6 +45,226 @@ enum {
 };
 
 /* ---------- structures */
+
+typedef union {
+    uint8_t n[6];
+    struct {
+        uint8_t x0, x1;
+        uint8_t y0, y1;
+        uint8_t z0, z1;
+    };
+} byte_rectangle3d;
+
+typedef union {
+    int16_t n[2];
+    struct {
+        int16_t x, y;
+    };
+} point2d;
+
+typedef union {
+    int16_t n[4];
+    struct {
+        int16_t y0, x0, y1, x1;
+    };
+} rectangle2d;
+
+typedef union {
+    uint16_t n[3];
+    struct {
+        uint16_t red, green, blue;
+    };
+} rgb_color;
+
+typedef union {
+    uint16_t n[4];
+    struct {
+        uint16_t alpha;
+        union {
+            rgb_color rgb;
+            struct {
+                uint16_t red, green, blue;
+            };
+        };
+    };
+} argb_color;
+
+typedef union {
+    uint16_t n[3];
+    struct {
+        uint16_t hue, saturation, value;
+    };
+} hsv_color;
+
+typedef union {
+    uint16_t n[4];
+    struct {
+        uint16_t alpha;
+        union {
+            hsv_color hsv;
+            struct {
+                uint16_t hue, saturation, value;
+            };
+        };
+    };
+} ahsv_color;
+
+typedef union {
+    real n[3];
+    struct {
+        real red, green, blue;
+    };
+} real_rgb_color;
+
+typedef union {
+    real n[4];
+    struct {
+        real alpha;
+        union {
+            real_rgb_color rgb;
+            struct {
+                real red, green, blue;
+            };
+        };
+    };
+} real_argb_color;
+
+typedef union {
+    real n[3];
+    struct {
+        real hue, saturation, value;
+    };
+} real_hsv_color;
+
+typedef union {
+    real n[4];
+    struct {
+        real alpha;
+        union {
+            real_hsv_color hsv;
+            struct {
+                real hue, saturation, value;
+            };
+        };
+    };
+} real_ahsv_color;
+
+typedef union {
+    real n[2];
+    struct {
+        real x, y;
+    };
+    struct {
+        real u, v;
+    };
+} real_point2d;
+
+typedef union {
+    real n[3];
+    struct {
+        real x, y, z;
+    };
+    struct {
+        real u, v, w;
+    };
+} real_point3d;
+
+typedef union {
+    real n[2];
+    struct {
+        real i, j;
+    };
+} real_vector2d;
+
+typedef union {
+    real n[3];
+    struct {
+        real i, j, k;
+    };
+} real_vector3d;
+
+typedef union {
+    real n[4];
+    struct {
+        real i, j, k, l;
+    };
+} real_vector4d;
+
+typedef struct {
+    real_vector2d n;
+    real d;
+} real_plane2d;
+
+typedef struct {
+    real_vector3d n;
+    real d;
+} real_plane3d;
+
+typedef union {
+    real n[4];
+    struct {
+        real x0, x1;
+        real y0, y1;
+    };
+} real_rectangle2d;
+
+typedef union {
+    real n[6];
+    struct {
+        real x0, x1;
+        real y0, y1;
+        real z0, z1;
+    };
+} real_rectangle3d;
+
+typedef struct {
+    real_vector3d v;
+    real w;
+} real_quaternion;
+
+typedef struct {
+    real_quaternion rotation;
+    real_point3d translation;
+    real scale;
+} real_orientation;
+
+typedef union {
+    real n[2];
+    struct {
+        real yaw, pitch;
+    };
+} real_euler_angles2d;
+
+typedef union {
+    real n[3];
+    struct {
+        real yaw, pitch, roll;
+    };
+} real_euler_angles3d;
+
+typedef struct {
+    union {
+        real n[3][3];
+        struct {
+            real_vector3d forward;
+            real_vector3d left;
+            real_vector3d up;
+        };
+    };
+} real_matrix3x3;
+
+typedef struct {
+    real scale;
+    union {
+        real n[4][3];
+        struct {
+            real_vector3d forward;
+            real_vector3d left;
+            real_vector3d up;
+            real_point3d position;
+        };
+    };
+} real_matrix4x3;
 
 /* ---------- asserts */
 
