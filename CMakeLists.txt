@@ -22,7 +22,6 @@ add_library(demon SHARED
 
 target_compile_definitions(demon PUBLIC
     DEBUG
-    NO_DEBUG_TRAP
     TARGET="halo"
     REQUIRE_CACHE_FILE
 )
