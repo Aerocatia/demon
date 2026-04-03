@@ -26,7 +26,9 @@ windows-sys = {
         "Win32_System_Threading",
         "Win32_UI_WindowsAndMessaging",
         "Win32_System_LibraryLoader",
-        "Win32_System_Memory"
+        "Win32_System_Memory",
+        "Win32_System_Environment",
+        "Win32_UI_Shell"
     ]
 }
 

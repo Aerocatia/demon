@@ -29,3 +29,11 @@ pub fn terminate() -> ! {
         ExitProcess(111)
     }
 }
+
+pub const unsafe fn wstrlen(w: *const u16) -> usize {
+    let mut end = w;
+    while *end != 0 {
+        end = end.add(1);
+    }
+    end.offset_from(w) as usize
+}

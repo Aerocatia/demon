@@ -7,11 +7,12 @@ mod util;
 use alloc::{collections::btree_map::BTreeMap, ffi::CString, string::String};
 use min32::dllmain;
 use util::messagebox;
-use windows_sys::Win32::System::{LibraryLoader::{GetProcAddress, LoadLibraryA}, Memory::{MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE, VirtualAlloc, VirtualProtect}, SystemServices};
+use windows_sys::Win32::{System::{Environment::GetCommandLineW, LibraryLoader::{GetProcAddress, LoadLibraryA}, Memory::{MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE, VirtualAlloc, VirtualProtect}, SystemServices}, UI::Shell::CommandLineToArgvW};
+
 
 use core::{ffi::{CStr, c_char, c_void}, mem::transmute};
 
-use crate::util::terminate;
+use crate::util::{terminate, wstrlen};
 
 #[cfg(not(target_os = "windows"))]
 compile_error!("Must be Windows, ideally i686-pc-windows-gnu");
@@ -37,6 +38,24 @@ pub unsafe fn main(
 
 #[expect(dangerous_implicit_autorefs)]
 unsafe fn attach() {
+    let mut number_of_args = 0;
+    let data = CommandLineToArgvW(GetCommandLineW(), &mut number_of_args);
+
+    // Disable nearly everything
+    let vanilla = core::slice::from_raw_parts(
+        data,
+        number_of_args as usize
+    ).iter().copied().map(|m| {
+        let q = core::slice::from_raw_parts(m, wstrlen(m));
+        match String::from_utf16(q) {
+            Ok(n) => n,
+            Err(_) => {
+                messagebox("Bad args", "Command line arg parse failure!");
+                terminate();
+            }
+        }
+    }).any(|i| i == "-vanilla" || i == "--vanilla");
+
     let target_dll = LoadLibraryA(c"demon.dll".as_ptr() as *const u8);
     if target_dll.is_null() {
         messagebox("Failed to load", "Missing the demon (demon.dll)");
@@ -138,6 +157,10 @@ unsafe fn attach() {
 
     for (function_name, replacement_data) in functions {
         if replacement_data.ignore.unwrap_or(false) {
+            continue
+        }
+
+        if vanilla && replacement_data.critical != Some(true) {
             continue
         }
 
@@ -246,10 +269,20 @@ unsafe fn attach() {
 
 #[derive(serde::Deserialize)]
 struct Replacement {
+    /// Hexadecimal address of where to inject the jmp instruction (usually this is the thunk)
     address: String,
+
+    /// Disable this thunk so that it errors or no-ops when trying to call it
     disable: Option<DisableType>,
+
+    /// This is disabled
     ignore: Option<bool>,
-    sudo: Option<bool>
+
+    /// This works on a non-thunk
+    sudo: Option<bool>,
+
+    /// Always applied even when --vanilla is used (unless ignore is true)
+    critical: Option<bool>
 }
 
 #[derive(serde::Deserialize)]
