@@ -434,34 +434,26 @@ real_plane3d *matrix4x3_inverse_transform_plane(const real_matrix4x3 *matrix, co
 }
 
 void matrix4x3_multiply(const real_matrix4x3 *a, const real_matrix4x3 *b, real_matrix4x3 *result) {
-    real_matrix4x3 temporary;
+    real_matrix4x3 ac = *a;
+    real_matrix4x3 bc = *b;
 
-    if(a == result) {
-        temporary = *a;
-        a = &temporary;
-    }
-    if(b == result) {
-        temporary = *b;
-        b = &temporary;
-    }
+    result->n[0][0] = ac.n[0][0] * bc.n[0][0] + ac.n[1][0] * bc.n[0][1] + ac.n[2][0] * bc.n[0][2];
+    result->n[0][1] = ac.n[0][1] * bc.n[0][0] + ac.n[1][1] * bc.n[0][1] + ac.n[2][1] * bc.n[0][2];
+    result->n[0][2] = ac.n[0][2] * bc.n[0][0] + ac.n[1][2] * bc.n[0][1] + ac.n[2][2] * bc.n[0][2];
 
-    result->n[0][0] = a->n[0][0] * b->n[0][0] + a->n[1][0] * b->n[0][1] + a->n[2][0] * b->n[0][2];
-    result->n[0][1] = a->n[0][1] * b->n[0][0] + a->n[1][1] * b->n[0][1] + a->n[2][1] * b->n[0][2];
-    result->n[0][2] = a->n[0][2] * b->n[0][0] + a->n[1][2] * b->n[0][1] + a->n[2][2] * b->n[0][2];
+    result->n[1][0] = ac.n[0][0] * bc.n[1][0] + ac.n[1][0] * bc.n[1][1] + ac.n[2][0] * bc.n[1][2];
+    result->n[1][1] = ac.n[0][1] * bc.n[1][0] + ac.n[1][1] * bc.n[1][1] + ac.n[2][1] * bc.n[1][2];
+    result->n[1][2] = ac.n[0][2] * bc.n[1][0] + ac.n[1][2] * bc.n[1][1] + ac.n[2][2] * bc.n[1][2];
 
-    result->n[1][0] = a->n[0][0] * b->n[1][0] + a->n[1][0] * b->n[1][1] + a->n[2][0] * b->n[1][2];
-    result->n[1][1] = a->n[0][1] * b->n[1][0] + a->n[1][1] * b->n[1][1] + a->n[2][1] * b->n[1][2];
-    result->n[1][2] = a->n[0][2] * b->n[1][0] + a->n[1][2] * b->n[1][1] + a->n[2][2] * b->n[1][2];
+    result->n[2][0] = ac.n[0][0] * bc.n[2][0] + ac.n[1][0] * bc.n[2][1] + ac.n[2][0] * bc.n[2][2];
+    result->n[2][1] = ac.n[0][1] * bc.n[2][0] + ac.n[1][1] * bc.n[2][1] + ac.n[2][1] * bc.n[2][2];
+    result->n[2][2] = ac.n[0][2] * bc.n[2][0] + ac.n[1][2] * bc.n[2][1] + ac.n[2][2] * bc.n[2][2];
 
-    result->n[2][0] = a->n[0][0] * b->n[2][0] + a->n[1][0] * b->n[2][1] + a->n[2][0] * b->n[2][2];
-    result->n[2][1] = a->n[0][1] * b->n[2][0] + a->n[1][1] * b->n[2][1] + a->n[2][1] * b->n[2][2];
-    result->n[2][2] = a->n[0][2] * b->n[2][0] + a->n[1][2] * b->n[2][1] + a->n[2][2] * b->n[2][2];
+    result->n[3][0] = ac.n[3][0] + ac.scale * (ac.n[0][0] * bc.n[3][0] + ac.n[1][0] * bc.n[3][1] + ac.n[2][0] * bc.n[3][2]);
+    result->n[3][1] = ac.n[3][1] + ac.scale * (ac.n[0][1] * bc.n[3][0] + ac.n[1][1] * bc.n[3][1] + ac.n[2][1] * bc.n[3][2]);
+    result->n[3][2] = ac.n[3][2] + ac.scale * (ac.n[0][2] * bc.n[3][0] + ac.n[1][2] * bc.n[3][1] + ac.n[2][2] * bc.n[3][2]);
 
-    result->n[3][0] = a->n[3][0] + a->scale * (a->n[0][0] * b->n[3][0] + a->n[1][0] * b->n[3][1] + a->n[2][0] * b->n[3][2]);
-    result->n[3][1] = a->n[3][1] + a->scale * (a->n[0][1] * b->n[3][0] + a->n[1][1] * b->n[3][1] + a->n[2][1] * b->n[3][2]);
-    result->n[3][2] = a->n[3][2] + a->scale * (a->n[0][2] * b->n[3][0] + a->n[1][2] * b->n[3][1] + a->n[2][2] * b->n[3][2]);
-
-    result->scale = a->scale * b->scale;
+    result->scale = ac.scale * bc.scale;
 }
 
 real matrix3x3_determinant(const real_matrix3x3 *matrix) {
@@ -491,13 +483,9 @@ real_matrix3x3 *matrix3x3_transpose(const real_matrix3x3 *matrix, real_matrix3x3
 }
 
 real_matrix3x3 *matrix3x3_inverse(const real_matrix3x3 *matrix, real determinant, real_matrix3x3 *result) {
-    real_matrix3x3 copy;
-    if(matrix == result) {
-        copy = *matrix;
-        matrix = &copy;
-    }
-
     assert(!realcmp(determinant, 0.0f));
+
+    real_matrix3x3 mc = *matrix;
     real oodeterminant = 1.0f / determinant;
     for(int16_t i = 0; i < 3; i++) {
         for(int16_t j = 0; j < 3; j++) {
@@ -506,13 +494,13 @@ real_matrix3x3 *matrix3x3_inverse(const real_matrix3x3 *matrix, real determinant
             int16_t j1 = j < 2 ? j + 1 : 0;
             int16_t j2 = j > 0 ? j - 1 : 2;
 
-            result->n[j][i] = oodeterminant * (matrix->n[i1][j1] * matrix->n[i2][j2] - matrix->n[i1][j2] * matrix->n[i2][j1]);
+            result->n[j][i] = oodeterminant * (mc.n[i1][j1] * mc.n[i2][j2] - mc.n[i1][j2] * mc.n[i2][j1]);
         }
     }
 
 #ifdef DEBUG_MATRIX3X3_INVERSE
     real_matrix3x3 I;
-    matrix3x3_multiply(matrix, result, &I);
+    matrix3x3_multiply(&mc, result, &I);
     assert(
         realcmp(I.n[0][0], 1.0f) && realcmp(I.n[0][1], 0.0f) && realcmp(I.n[0][2], 0.0f) &&
         realcmp(I.n[1][0], 0.0f) && realcmp(I.n[1][1], 1.0f) && realcmp(I.n[1][2], 0.0f) &&
@@ -549,41 +537,30 @@ real_matrix3x3 *matrix3x3_from_axis_and_angle(real_matrix3x3 *matrix, const real
 }
 
 real_matrix3x3 *matrix3x3_multiply(const real_matrix3x3 *a, const real_matrix3x3 *b, real_matrix3x3 *result) {
-    real_matrix3x3 copy;
-    if(a == result) {
-        copy = *a;
-        a = &copy;
-    }
-    if(b==result) {
-        copy = *b;
-        b = &copy;
-    }
+    real_matrix3x3 ac = *a;
+    real_matrix3x3 bc = *b;
 
-    result->n[0][0] = a->n[0][0] * b->n[0][0] + a->n[1][0] * b->n[0][1] + a->n[2][0] * b->n[0][2];
-    result->n[0][1] = a->n[0][1] * b->n[0][0] + a->n[1][1] * b->n[0][1] + a->n[2][1] * b->n[0][2];
-    result->n[0][2] = a->n[0][2] * b->n[0][0] + a->n[1][2] * b->n[0][1] + a->n[2][2] * b->n[0][2];
+    result->n[0][0] = ac.n[0][0] * bc.n[0][0] + ac.n[1][0] * bc.n[0][1] + ac.n[2][0] * bc.n[0][2];
+    result->n[0][1] = ac.n[0][1] * bc.n[0][0] + ac.n[1][1] * bc.n[0][1] + ac.n[2][1] * bc.n[0][2];
+    result->n[0][2] = ac.n[0][2] * bc.n[0][0] + ac.n[1][2] * bc.n[0][1] + ac.n[2][2] * bc.n[0][2];
 
-    result->n[1][0] = a->n[0][0] * b->n[1][0] + a->n[1][0] * b->n[1][1] + a->n[2][0] * b->n[1][2];
-    result->n[1][1] = a->n[0][1] * b->n[1][0] + a->n[1][1] * b->n[1][1] + a->n[2][1] * b->n[1][2];
-    result->n[1][2] = a->n[0][2] * b->n[1][0] + a->n[1][2] * b->n[1][1] + a->n[2][2] * b->n[1][2];
+    result->n[1][0] = ac.n[0][0] * bc.n[1][0] + ac.n[1][0] * bc.n[1][1] + ac.n[2][0] * bc.n[1][2];
+    result->n[1][1] = ac.n[0][1] * bc.n[1][0] + ac.n[1][1] * bc.n[1][1] + ac.n[2][1] * bc.n[1][2];
+    result->n[1][2] = ac.n[0][2] * bc.n[1][0] + ac.n[1][2] * bc.n[1][1] + ac.n[2][2] * bc.n[1][2];
 
-    result->n[2][0] = a->n[0][0] * b->n[2][0] + a->n[1][0] * b->n[2][1] + a->n[2][0] * b->n[2][2];
-    result->n[2][1] = a->n[0][1] * b->n[2][0] + a->n[1][1] * b->n[2][1] + a->n[2][1] * b->n[2][2];
-    result->n[2][2] = a->n[0][2] * b->n[2][0] + a->n[1][2] * b->n[2][1] + a->n[2][2] * b->n[2][2];
+    result->n[2][0] = ac.n[0][0] * bc.n[2][0] + ac.n[1][0] * bc.n[2][1] + ac.n[2][0] * bc.n[2][2];
+    result->n[2][1] = ac.n[0][1] * bc.n[2][0] + ac.n[1][1] * bc.n[2][1] + ac.n[2][1] * bc.n[2][2];
+    result->n[2][2] = ac.n[0][2] * bc.n[2][0] + ac.n[1][2] * bc.n[2][1] + ac.n[2][2] * bc.n[2][2];
 
     return result;
 }
 
 real_vector3d *matrix3x3_transform_vector(const real_matrix3x3 *matrix, const real_vector3d *vector, real_vector3d *result) {
-    real_vector3d copy;
-    if(vector == result) {
-        copy = *vector;
-        vector = &copy;
-    }
+    real_vector3d vc = *vector;
 
-    result->i = vector->i * matrix->n[0][0] + vector->j * matrix->n[1][0] + vector->k * matrix->n[2][0];
-    result->j = vector->i * matrix->n[0][1] + vector->j * matrix->n[1][1] + vector->k * matrix->n[2][1];
-    result->k = vector->i * matrix->n[0][2] + vector->j * matrix->n[1][2] + vector->k * matrix->n[2][2];
+    result->i = vc.i * matrix->n[0][0] + vc.j * matrix->n[1][0] + vc.k * matrix->n[2][0];
+    result->j = vc.i * matrix->n[0][1] + vc.j * matrix->n[1][1] + vc.k * matrix->n[2][1];
+    result->k = vc.i * matrix->n[0][2] + vc.j * matrix->n[1][2] + vc.k * matrix->n[2][2];
 
     return result;
 }
