@@ -17,6 +17,8 @@ add_library(demon SHARED
     source/math/real_math.c
     source/math/real_math_debug_inlines.c
     source/memory/crc.c
+    source/tag_files/tag_groups.c
+    source/text/text_group.c
     source/text/unicode.c
 )
 
