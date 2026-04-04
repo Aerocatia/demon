@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-/* ---------- header */
-
 #define CACHE_FILE_HEADER_SIGNATURE 0x68656164 // head
 #define CACHE_FILE_FOOTER_SIGNATURE 0x666F6F74 // foot
 #define CACHE_FILE_VERSION_RETAIL 7
@@ -38,8 +36,6 @@ struct cache_file_header {
 };
 static_assert(sizeof(struct cache_file_header) == 2048);
 
-/* ---------- tags */
-
 struct cache_file_tag_instance {
     tag group_tag;
     tag parent_group_tags[MAXIMUM_PARENT_GROUP_TYPES_PER_TAG];
@@ -56,7 +52,7 @@ static_assert(sizeof(struct cache_file_tag_instance) == 32);
 #define CACHE_FILE_TAGS_HEADER_SIGNATURE 0x74616773 // tags
 
 struct cache_file_tags_header {
-    struct cache_file_tag_instance *tag_instances; // should immediately follow header
+    struct cache_file_tag_instance *tag_instances;
 
     int32_t scenario_tag_index;
 
@@ -73,28 +69,20 @@ struct cache_file_tags_header {
 };
 static_assert(sizeof(struct cache_file_tags_header) == 40);
 
-/* ---------- structure bsp */
-
 #define CACHE_FILE_STRUCTURE_BSP_HEADER_SIGNATURE 0x73627370 // sbsp
 
 struct cache_file_structure_bsp_header {
-    struct structure_bsp *structure_bsp; // should immediately follow header
+    struct structure_bsp *structure_bsp;
 
     int32_t vertex_buffer_count;
-    void *vertex_buffers; // D3DVertexBuffer
+    void *vertex_buffers;
 
     int32_t lightmap_vertex_buffer_count;
-    void *lightmap_vertex_buffers; // D3DVertexBuffer
+    void *lightmap_vertex_buffers;
 
     tag signature;
 };
 static_assert(sizeof(struct cache_file_structure_bsp_header) == 24);
-
-/* ---------- globals */
-
-/* ---------- constants */
-
-/* ---------- prototypes */
 
 uint32_t cache_files_get_checksum();
 

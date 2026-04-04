@@ -8,13 +8,9 @@
 #include "cseries.h"
 #include "errors.h"
 
-/* ---------- globals */
-
 #if DEBUG
 char temporary[256];
 #endif
-
-/* ---------- code */
 
 tag string_to_tag(const char *s) {
     tag t = NONE;

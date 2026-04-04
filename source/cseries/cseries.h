@@ -4,17 +4,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-/* ---------- constants */
-
 #define NONE -1
 
 #define KILO 1024
 #define MEG (KILO * KILO)
 #define GIG (KILO * MEG)
-
-/* ---------- macros */
-
-/* ---------- types */
 
 typedef uint32_t tag;
 typedef float real;
@@ -43,8 +37,6 @@ enum {
     CHAR_BITS = 8,
     CHAR_BITS_BITS = 3
 };
-
-/* ---------- structures */
 
 typedef union {
     uint8_t n[6];
@@ -266,8 +258,6 @@ typedef struct {
     };
 } real_matrix4x3;
 
-/* ---------- asserts */
-
 #ifdef assert
 #undef assert
 #endif
@@ -314,13 +304,9 @@ typedef struct {
     // #define unreachable() ((void)0) - Use C23 macro
 #endif
 
-/* ---------- globals */
-
 #if DEBUG
 extern char temporary[256];
 #endif
-
-/* ---------- prototypes */
 
 tag string_to_tag(const char *s);
 char *tag_to_string(tag t, char *s);

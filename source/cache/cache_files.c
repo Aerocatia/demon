@@ -16,8 +16,6 @@ char *cache_files_map_directory() {
 
 #ifdef REQUIRE_CACHE_FILE
 
-/* ---------- globals */
-
 asm(".set _cache_file_globals, 0x00AF8368"); // TODO: make static
 extern struct {
     bool tags_loaded;
@@ -31,12 +29,8 @@ extern struct {
 asm(".set _global_tag_instances, 0x00AF8364"); // TODO: remove extern
 extern struct cache_file_tag_instance *global_tag_instances;
 
-/* ---------- private prototypes */
-
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index);
 static bool cache_file_valid_version(int32_t version);
-
-/* ---------- code */
 
 //#ifdef DEBUG
 void *tag_get(tag expected_group_tag, int32_t tag_index) {
@@ -122,8 +116,6 @@ bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]]
 
     return false;
 }
-
-/* ---------- private code */
 
 // TODO: This hack will allow both retail and custom edition map types to run, but the game will create a zero byte loc.map if one does not exist
 static bool cache_file_valid_version(int32_t version) {

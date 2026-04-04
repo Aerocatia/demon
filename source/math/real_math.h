@@ -3,8 +3,6 @@
 
 #include <math.h>
 
-/* ---------- constants */
-
 #define REAL_MAX FLT_MAX
 #define REAL_MIN (-FLT_MAX)
 
@@ -38,8 +36,6 @@
 #define _real_epsilon .0001f
 #define _valid_real_epsilon 0.001f
 
-/* ---------- macros */
-
 #ifdef MATH_ASSERTS
     #define math_assert(expr) assert(expr)
 #else
@@ -49,9 +45,7 @@
 #define realcmp(x, y) _realcmp(x, y, _real_epsilon)
 #define _realcmp(x, y, e) (fabs((x)-(y))<(e))
 
-/* ---------- globals */
-
-/* ---------- prototypes (faux inline) */
+/* inline functions (fix this later) */
 
 real square_root(real x);
 real reciprocal_square_root(real x);
@@ -90,7 +84,7 @@ bool valid_real_vector3d_axes2(const real_vector3d *f, const real_vector3d *u);
 bool valid_real_vector3d_axes3(const real_vector3d *f, const real_vector3d *l, const real_vector3d *u);
 bool valid_real_matrix4x3(const real_matrix4x3 *m);
 
-/* ---------- prototypes */
+/* regular functions */
 
 real_vector3d *perpendicular3d(const real_vector3d *a, real_vector3d *result);
 
