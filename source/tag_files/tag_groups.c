@@ -3,11 +3,19 @@
 #include "../cseries/cseries.h"
 #include "tag_groups.h"
 
+void *tag_data_get_address(const struct tag_data *data) {
+    assert(data);
+    return data->address;
+}
+
 void *tag_data_get_pointer(const struct tag_data *data, int32_t offset, int32_t size) {
-    assert(size >= 0);
+    assert(data && size >= 0);
     assert(offset >= 0 && offset + size <= data->size);
 
-    return (uint8_t *)data->address + offset;
+    uint8_t *address = tag_data_get_address(data);
+    assert(address);
+
+    return address + offset;
 }
 
 void *tag_block_get_address(const struct tag_block *block) {
