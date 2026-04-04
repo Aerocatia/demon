@@ -11,6 +11,19 @@ enum {
     UNICODE_STRING_LISTS_GROUP_TAG = 0x75737472
 };
 
+struct string_list_string_reference {
+    struct tag_data string;
+};
+
+struct string_list_group_header {
+    struct tag_block string_references;
+};
+
+#define string_list_get_header(index) TAG_GET(STRING_LISTS_GROUP_TAG, (index), struct string_list_group_header)
+#define string_list_get_string_reference(header, index) (TAG_BLOCK_GET_ELEMENT(&(header)->string_references, (index), struct string_list_string_reference))
+
+const char *string_list_get_string(int32_t tag_index, int16_t string_index);
+
 struct unicode_string_list_string_reference {
     struct tag_data string;
 };
