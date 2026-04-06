@@ -13,7 +13,8 @@ void *tag_data_get_pointer(const struct tag_data *data, int32_t offset, int32_t 
     assert(offset >= 0 && offset + size <= data->size);
 
     uint8_t *address = tag_data_get_address(data);
-    assert(address);
+    // The exe does not check this and cheat_all_vehicles will cause it to be run on data with a null address.
+    //assert(address);
 
     return address + offset;
 }
