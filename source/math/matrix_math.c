@@ -39,7 +39,7 @@ void matrix4x3_inverse(const real_matrix4x3 *matrix, real_matrix4x3 *result) {
         z *= result->scale;
     }
     else {
-        result->scale= 1.0f;
+        result->scale = 1.0f;
     }
 
     result->n[0][0] = matrix->n[0][0];
@@ -107,18 +107,6 @@ void matrix4x3_rotation_from_angles(real_matrix4x3 *matrix, real yaw, real pitch
     real e = cosine(yaw);
     real f = sine(yaw);
 
-#ifdef NEW_AND_IMPROVED_EULER_ANGLES
-    real ae = a * e;
-    real af = a * f;
-    real be = b * e;
-    real bf = b * f;
-
-    matrix->scale = 1.0f;
-    matrix->n[0][0] = c * e;        matrix->n[0][1] = c * f;        matrix->n[0][2] = d;
-    matrix->n[1][0] = -be * d - af; matrix->n[1][1] = -bf * d + ae; matrix->n[1][2] = b * c;
-    matrix->n[2][0] = -ae * d + bf; matrix->n[2][1] = -af * d - be; matrix->n[2][2] = a * c;
-    matrix->n[3][0] = 0.0f;         matrix->n[3][1] = 0.0f;         matrix->n[3][2] = 0.0f;
-#else
     real ad = a * d;
     real bd = b * d;
 
@@ -127,29 +115,15 @@ void matrix4x3_rotation_from_angles(real_matrix4x3 *matrix, real yaw, real pitch
     matrix->n[1][0] = -c * f; matrix->n[1][1] = bd * f + a * e;  matrix->n[1][2] = -ad * f + b * e;
     matrix->n[2][0] = -d;     matrix->n[2][1] = -b * c;          matrix->n[2][2] = a * c;
     matrix->n[3][0] = 0.0f;   matrix->n[3][1] = 0.0f;            matrix->n[3][2] = 0.0f;
-#endif
 }
 
 void matrix4x3_rotation_to_angles(real_matrix4x3 *matrix, real_euler_angles3d *angles) {
     math_assert(valid_real_matrix4x3(matrix));
 
-#ifdef NEW_AND_IMPROVED_EULER_ANGLES
-    angles->pitch= arcsine(matrix->n[0][2]);
-
-    if(!realcmp(fabs(matrix->n[0][2]), 1.0f)) {
-        angles->yaw = arctangent(matrix->n[0][1], matrix->n[0][0]);
-        angles->roll = arctangent(matrix->n[1][2], matrix->n[2][2]);
-    }
-    else {
-        angles->yaw = arctangent(-matrix->n[1][0], matrix->n[1][1]);
-        angles->roll = 0.0f;
-    }
-#else
     angles->pitch = -arcsine( matrix->n[2][0]);
 
     real trx, try;
     real C = cosine(angles->pitch);
-
     if(C > 0.0001) {
         trx =  matrix->n[2][2] / C;
         try = -matrix->n[2][1] / C;
@@ -170,7 +144,6 @@ void matrix4x3_rotation_to_angles(real_matrix4x3 *matrix, real_euler_angles3d *a
         angles->yaw  = arctangent(try, trx);
 
     }
-#endif
 }
 
 void matrix4x3_rotation_from_quaternion(real_matrix4x3 *matrix, const real_quaternion *quaternion) {
@@ -395,9 +368,9 @@ real_vector3d *matrix4x3_inverse_transform_vector(const real_matrix4x3 *matrix, 
         k *= one_over_scale;
     }
 
-    result->i= i * matrix->n[0][0] + j * matrix->n[0][1] + k * matrix->n[0][2];
-    result->j= i * matrix->n[1][0] + j * matrix->n[1][1] + k * matrix->n[1][2];
-    result->k= i * matrix->n[2][0] + j * matrix->n[2][1] + k * matrix->n[2][2];
+    result->i = i * matrix->n[0][0] + j * matrix->n[0][1] + k * matrix->n[0][2];
+    result->j = i * matrix->n[1][0] + j * matrix->n[1][1] + k * matrix->n[1][2];
+    result->k = i * matrix->n[2][0] + j * matrix->n[2][1] + k * matrix->n[2][2];
 
     return result;
 }

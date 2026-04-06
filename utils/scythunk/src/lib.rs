@@ -86,8 +86,8 @@ unsafe fn attach() {
 
     let mut current_thunk = start.add(1);
 
-    let mut thunks= BTreeMap::<*mut [u8; 5], usize>::new();
-    let mut no_op_thunks= BTreeMap::<*mut [u8; 5], usize>::new();
+    let mut thunks = BTreeMap::<*mut [u8; 5], usize>::new();
+    let mut no_op_thunks = BTreeMap::<*mut [u8; 5], usize>::new();
 
     while (*current_thunk)[0] == 0xE9 {
         let offset = usize::from_le_bytes((*current_thunk)[1..].try_into().unwrap());
@@ -220,7 +220,7 @@ unsafe fn attach() {
 
                 // Rest of data goes here then
                 remaining_jmp_data = remaining;
-                
+
                 asm_code.as_ptr() as *const () as usize
             },
             Some(DisableType::Nop) => {

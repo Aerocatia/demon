@@ -29,7 +29,7 @@ struct data_array {
 
 #define DATUM_IS_USED(datum) ((datum)->identifier)
 #define DATUM_IS_FREE(datum) (!DATUM_IS_USED(datum))
-#define MARK_DATUM_AS_FREE(datum) ((datum)->identifier= 0)
+#define MARK_DATUM_AS_FREE(datum) ((datum)->identifier = 0)
 
 #define BUILD_DATUM_INDEX(identifier, absolute_index) \
     ((uint32_t)(absolute_index) | ((uint32_t)(identifier)<<SHORT_BITS))
