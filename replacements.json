@@ -66,6 +66,8 @@
     "sine": { "address": "0x00406A55" },
     "square_root": { "address": "0x00408ABC" },
     "string_list_get_string": { "address": "0x00405CEA" },
+    "structure_bsp_get_cluster_encoded_sound_data": { "address": "0x00405844" },
+    "structure_bsp_get_cluster_encoded_sound_distance": { "address": "0x00408DE6" },
     "tag_block_get_address": { "address": "0x00407685" },
     "tag_block_get_element_with_size": { "address": "0x00405E16" },
     "tag_data_get_address": { "address": "0x004091D3" },
