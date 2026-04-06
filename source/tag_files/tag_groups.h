@@ -13,6 +13,11 @@ enum {
     TAG_STRING_BUFFER_LENGTH
 };
 
+enum {
+    _tag_data_flags_external_bit, // if the data is in a resource map (only used by sounds)
+    NUMBER_OF_TAG_DATA_FLAGS
+};
+
 struct tag_block {
     int32_t count;
     void *address;
@@ -22,7 +27,7 @@ static_assert(sizeof(struct tag_block) == 12);
 
 struct tag_data {
     int32_t size;
-    uint32_t pad;
+    uint32_t flags;
     int32_t file_offset;
     void *address;
     void *definition; // should be struct tag_data_definition
