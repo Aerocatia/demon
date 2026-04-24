@@ -49,4 +49,9 @@ static_assert(sizeof(struct data_array) == 0x38);
     #define data_verify(data) ((void)0)
 #endif
 
+void data_make_valid(struct data_array *data);
+void data_make_invalid(struct data_array *data);
+
+void data_delete_all(struct data_array *data);
+
 #endif

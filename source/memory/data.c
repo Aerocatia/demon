@@ -6,6 +6,19 @@
 #define DATA_SIGNATURE 0x64407440 // 'd@t@'
 #define DATA_ITERATOR_SIGNATURE 0x69746572 // 'iter'
 
+void data_make_valid(struct data_array *data) {
+    data_verify(data);
+
+    data->valid = true;
+    data_delete_all(data);
+}
+
+void data_make_invalid(struct data_array *data) {
+    data_verify(data);
+
+    data->valid = false;
+}
+
 void data_delete_all(struct data_array *data) {
     data_verify(data);
     assert(data->valid);
