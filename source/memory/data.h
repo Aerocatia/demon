@@ -37,4 +37,16 @@ static_assert(sizeof(struct data_array) == 0x38);
 #define DATUM_INDEX_TO_IDENTIFIER(index) ((index)>>SHORT_BITS)
 #define DATUM_INDEX_TO_ABSOLUTE_INDEX(index) ((index)&((1<<SHORT_BITS)-1))
 
+#define DATUM_TRY_AND_GET(data_array, index, structure) ((structure *)datum_try_and_get((data_array), (index)))
+
+#ifdef DEBUG
+    #define DATUM_GET(data_array, index, structure) ((structure *)datum_get((data_array), (index)))
+    #define DATUM_GET_BY_SIZE(data_array, index, structure) ((structure *)datum_get((data_array), (index)))
+    void data_verify(struct data_array *data);
+#else
+    #define DATUM_GET(data_array, index, structure) ((structure *)(((data_array)->data))+DATUM_INDEX_TO_ABSOLUTE_INDEX(index))
+    #define DATUM_GET_BY_SIZE(data_array, index, structure) ((structure *)(((data_array)->data))+(data_array)->size * DATUM_INDEX_TO_ABSOLUTE_INDEX(index))
+    #define data_verify(data) ((void)0)
+#endif
+
 #endif
