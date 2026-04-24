@@ -22,6 +22,7 @@
     "csstrtok": { "address": "0x004019D8" },
     "data_allocation_size": { "address": "0x004075AE" },
     "data_delete_all": { "address": "0x00407E5F" },
+    "data_dispose": { "address": "0x00409CDC" },
     "data_initialize": { "address": "0x00402207" },
     "data_make_invalid": { "address": "0x00408DA0" },
     "data_make_valid": { "address": "0x004024EB" },

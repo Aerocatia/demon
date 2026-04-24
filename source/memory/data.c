@@ -37,6 +37,13 @@ void data_initialize(struct data_array *data, const char *name, int16_t maximum_
     data->valid = false;
 }
 
+void data_dispose(struct data_array *data) {
+    data_verify(data);
+
+    memset(data, 0, sizeof(struct data_array));
+    free(data);
+}
+
 void data_make_valid(struct data_array *data) {
     data_verify(data);
 
