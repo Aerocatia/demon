@@ -26,6 +26,7 @@ struct data_array {
 
     void *data;
 };
+static_assert(sizeof(struct data_array) == 0x38);
 
 #define DATUM_IS_USED(datum) ((datum)->identifier)
 #define DATUM_IS_FREE(datum) (!DATUM_IS_USED(datum))
