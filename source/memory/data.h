@@ -44,15 +44,18 @@ static_assert(sizeof(struct data_array) == 0x38);
     #define DATUM_GET_BY_SIZE(data_array, index, structure) ((structure *)datum_get((data_array), (index)))
     void data_verify(struct data_array *data);
 #else
-    #define DATUM_GET(data_array, index, structure) ((structure *)(((data_array)->data))+DATUM_INDEX_TO_ABSOLUTE_INDEX(index))
-    #define DATUM_GET_BY_SIZE(data_array, index, structure) ((structure *)(((data_array)->data))+(data_array)->size * DATUM_INDEX_TO_ABSOLUTE_INDEX(index))
+    #define DATUM_GET(data_array, index, structure) ((structure *)(((data_array)->data)) + DATUM_INDEX_TO_ABSOLUTE_INDEX(index))
+    #define DATUM_GET_BY_SIZE(data_array, index, structure) ((structure *)(((data_array)->data)) + (data_array)->size * DATUM_INDEX_TO_ABSOLUTE_INDEX(index))
     #define data_verify(data) ((void)0)
 #endif
 
+int32_t data_allocation_size(int16_t maximum_count, int16_t size);
 void data_initialize(struct data_array *data, const char *name, int16_t maximum_count, int16_t size);
 
 void data_make_valid(struct data_array *data);
 void data_make_invalid(struct data_array *data);
+
+struct data_array *data_new(const char *name, int16_t maximum_count, int16_t size);
 
 void data_delete_all(struct data_array *data);
 

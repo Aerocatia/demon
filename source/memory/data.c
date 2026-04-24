@@ -6,6 +6,22 @@
 #define DATA_SIGNATURE 0x64407440 // 'd@t@'
 #define DATA_ITERATOR_SIGNATURE 0x69746572 // 'iter'
 
+static void datum_initialize(struct data_array *data, struct datum_header *header);
+
+struct data_array *data_new(const char *name, int16_t maximum_count, int16_t size) {
+    struct data_array *data = malloc(data_allocation_size(maximum_count, size));
+
+    if(data) {
+        data_initialize(data, name, maximum_count, size);
+    }
+
+    return data;
+}
+
+int32_t data_allocation_size(int16_t maximum_count, int16_t size) {
+    return sizeof(struct data_array) + maximum_count * size;
+}
+
 void data_initialize(struct data_array *data, const char *name, int16_t maximum_count, int16_t size) {
     assert(maximum_count > 0);
     assert(size > 0);
@@ -67,3 +83,11 @@ void data_verify(struct data_array *data) {
     vhalt(csprintf(temporary, "%s data array @%p is bad or not allocated", data->name, data));
 }
 #endif
+
+static void datum_initialize(struct data_array *data, struct datum_header *header) {
+    memset(header, 0, data->size);
+    header->identifier = data->next_identifier++;
+    if(!data->next_identifier) {
+        data->next_identifier = SHORT_MIN;
+    }
+}

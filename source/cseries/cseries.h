@@ -352,4 +352,18 @@ char *tag_to_string(tag t, char *s);
 
 void system_exit(int code);
 
+#ifdef DEBUG
+extern void *(*debug_malloc)(size_t size, bool clear, const char *source_file, int32_t source_line);
+#undef malloc
+#undef calloc
+#undef free
+#undef realloc
+
+#define calloc(num, size) (debug_malloc((num) * (size), true, __FILE__, __LINE__))
+#define malloc(size) (debug_malloc((size), false, __FILE__, __LINE__))
+#define free(pointer) (debug_free((pointer), __FILE__, __LINE__))
+#define realloc(pointer, size) (debug_realloc(pointer, size, __FILE__, __LINE__))
+
+#endif
+
 #endif

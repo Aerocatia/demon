@@ -10,6 +10,7 @@ add_library(demon SHARED
     source/cache/cache_files.c
     source/cseries/cseries.c
     source/cseries/errors.c
+    source/cseries/debug_memory.c
     source/main/console.c
     source/main/demon.c
     source/main/main.c
