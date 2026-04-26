@@ -25,6 +25,8 @@
     "data_dispose": { "address": "0x00409CDC" },
     "data_destroy": { "address": "0x00402329" },
     "data_initialize": { "address": "0x00402207" },
+    "data_iterator_new": { "address": "0x004087BF" },
+    "data_iterator_next": { "address": "0x004047FF" },
     "data_make_invalid": { "address": "0x00408DA0" },
     "data_make_valid": { "address": "0x004024EB" },
     "data_new": { "address": "0x004099CB" },

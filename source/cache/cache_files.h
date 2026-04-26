@@ -19,9 +19,7 @@ struct cache_file_header {
     int32_t version;
     int32_t size;
     int32_t compressed_file_padding;
-
     int32_t tags_offset, tags_size;
-
     int32_t index_buffer_count;
     int32_t index_buffers_offset;
     char name[TAG_STRING_LENGTH + 1];
@@ -29,9 +27,7 @@ struct cache_file_header {
     int16_t scenario_type;
     uint16_t pad;
     uint32_t checksum;
-
     uint32_t unused2[485];
-
     int32_t footer_signature;
 };
 static_assert(sizeof(struct cache_file_header) == 2048);
@@ -39,9 +35,7 @@ static_assert(sizeof(struct cache_file_header) == 2048);
 struct cache_file_tag_instance {
     tag group_tag;
     tag parent_group_tags[MAXIMUM_PARENT_GROUP_TYPES_PER_TAG];
-
     int32_t tag_index;
-
     char *name;
     void *base_address;
     uint32_t flags;
@@ -53,18 +47,14 @@ static_assert(sizeof(struct cache_file_tag_instance) == 32);
 
 struct cache_file_tags_header {
     struct cache_file_tag_instance *tag_instances;
-
     int32_t scenario_tag_index;
-
     uint32_t tags_checksum;
     int32_t tag_count;
-
     int32_t vertex_buffer_count;
     int32_t vertex_buffers_offset; // file offset
     int32_t index_buffer_count;
     int32_t index_buffers_offset; // offset from vertex buffers
     int32_t model_data_size;
-
     tag signature;
 };
 static_assert(sizeof(struct cache_file_tags_header) == 40);
@@ -73,13 +63,10 @@ static_assert(sizeof(struct cache_file_tags_header) == 40);
 
 struct cache_file_structure_bsp_header {
     struct structure_bsp *structure_bsp;
-
     int32_t vertex_buffer_count;
     void *vertex_buffers;
-
     int32_t lightmap_vertex_buffer_count;
     void *lightmap_vertex_buffers;
-
     tag signature;
 };
 static_assert(sizeof(struct cache_file_structure_bsp_header) == 24);

@@ -156,6 +156,43 @@ void data_delete_all(struct data_array *data) {
     }
 }
 
+void data_iterator_new(struct data_iterator *iterator, struct data_array *data) {
+    data_verify(data);
+    assert(data->valid);
+
+    iterator->data = data;
+    iterator->absolute_index = 0;
+    iterator->index = NONE;
+    iterator->signature = DATA_ITERATOR_SIGNATURE ^ (uint32_t)data;
+}
+
+void *data_iterator_next(struct data_iterator *iterator) {
+    vassert(iterator->signature == (DATA_ITERATOR_SIGNATURE ^ (uint32_t)iterator->data),
+        "uninitialized iterator passed to iterator_next()");
+    data_verify(iterator->data);
+    assert(iterator->data->valid);
+
+    void *result = nullptr;
+    int16_t absolute_index = iterator->absolute_index;
+    void *cursor = iterator->data->data + iterator->data->size * absolute_index;
+    struct datum_header *header = cursor;
+    while(absolute_index < iterator->data->count) {
+        if(DATUM_IS_USED(header)) {
+            iterator->index = BUILD_DATUM_INDEX(header->identifier, absolute_index);
+            result = cursor;
+
+            break;
+        }
+
+        absolute_index++;
+        header = cursor += iterator->data->size;
+    }
+
+    iterator->absolute_index = ++absolute_index;
+
+    return result;
+}
+
 void *datum_get(struct data_array *data, int32_t index) {
     assert(data->valid);
 

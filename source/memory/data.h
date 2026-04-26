@@ -11,23 +11,26 @@ static_assert(sizeof(struct datum_header) == 2);
 
 struct data_array {
     char name[32];
-
     int16_t maximum_count;
     int16_t size;
-
     bool valid;
     bool identifier_zero_invalid;
-
     tag signature;
-
     int16_t first_free_absolute_index;
     int16_t count;
     int16_t actual_count;
     int16_t next_identifier;
-
     void *data;
 };
 static_assert(sizeof(struct data_array) == 56);
+
+struct data_iterator {
+    struct data_array *data;
+    int16_t absolute_index;
+    int32_t index;
+    tag signature;
+};
+static_assert(sizeof(struct data_iterator) == 16);
 
 #define DATUM_IS_USED(datum) ((datum)->identifier)
 #define DATUM_IS_FREE(datum) (!DATUM_IS_USED(datum))
@@ -66,5 +69,8 @@ void datum_delete(struct data_array *data, int32_t index);
 void *datum_get(struct data_array *data, int32_t index);
 
 void data_delete_all(struct data_array *data);
+
+void data_iterator_new(struct data_iterator *iterator, struct data_array *data);
+void *data_iterator_next(struct data_iterator *iterator);
 
 #endif
