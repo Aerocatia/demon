@@ -37,10 +37,15 @@ void data_initialize(struct data_array *data, const char *name, int16_t maximum_
     data->valid = false;
 }
 
-void data_dispose(struct data_array *data) {
+// Name is a guess. Split from data_dispose in the 2020 Custom Edition debug EXE.
+void data_destroy(struct data_array *data) {
     data_verify(data);
 
     memset(data, 0, sizeof(struct data_array));
+}
+
+void data_dispose(struct data_array *data) {
+    data_destroy(data);
     free(data);
 }
 
