@@ -119,6 +119,27 @@ int32_t datum_new(struct data_array *data) {
     return BUILD_DATUM_INDEX(header->identifier, absolute_index);
 }
 
+void datum_delete(struct data_array *data, int32_t index) {
+    void *cursor = datum_get(data, index);
+    struct datum_header *header = cursor;
+    MARK_DATUM_AS_FREE(header);
+
+    int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index);
+    if(absolute_index < data->first_free_absolute_index) {
+        data->first_free_absolute_index = absolute_index;
+    }
+
+    if(absolute_index + 1 == data->count) {
+        do {
+            header = cursor -= data->size;
+            data->count -= 1;
+        }
+        while(data->count > 0 && DATUM_IS_FREE(header));
+    }
+
+    data->actual_count -= 1;
+}
+
 void data_delete_all(struct data_array *data) {
     data_verify(data);
     assert(data->valid);
@@ -133,6 +154,26 @@ void data_delete_all(struct data_array *data) {
         struct datum_header *header = (struct datum_header *)((uint8_t *)data->data + index * data->size);
         MARK_DATUM_AS_FREE(header);
     }
+}
+
+void *datum_get(struct data_array *data, int32_t index) {
+    assert(data->valid);
+
+    int16_t identifier = DATUM_INDEX_TO_IDENTIFIER(index);
+    assert(identifier || !data->identifier_zero_invalid);
+
+    int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index);
+    if(absolute_index >= 0 && absolute_index < data->count) {
+        struct datum_header *header = (struct datum_header *)((uint8_t *)data->data + absolute_index * data->size);
+        if(DATUM_IS_USED(header) && (!identifier || identifier == header->identifier)) {
+            return header;
+        }
+    }
+
+    vhalt(csprintf(temporary, "%s index #%d (0x%x) is unused or changed",
+        data->name, DATUM_INDEX_TO_ABSOLUTE_INDEX(index), index));
+
+    return nullptr;
 }
 
 #ifdef DEBUG

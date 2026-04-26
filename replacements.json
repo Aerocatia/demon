@@ -29,6 +29,8 @@
     "data_make_valid": { "address": "0x004024EB" },
     "data_new": { "address": "0x004099CB" },
     "data_verify": { "address": "0x00405EC5" },
+    "datum_delete": { "address": "0x004088A5" },
+    "datum_get": { "address": "0x00409A1B" },
     "datum_new": { "address": "0x0040614F" },
     "datum_new_at_index": { "address": "0x00406B86" },
     "display_assert": { "address": "0x00406C85" },
