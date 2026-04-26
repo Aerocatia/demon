@@ -88,6 +88,37 @@ int32_t datum_new_at_index(struct data_array *data, int32_t index) {
     return index;
 }
 
+int32_t datum_new(struct data_array *data) {
+    data_verify(data);
+    assert(data->valid);
+
+    int16_t absolute_index = data->first_free_absolute_index;
+    void *cursor = data->data + absolute_index * data->size;
+    struct datum_header *header;
+    while(true) {
+        if(absolute_index >= data->maximum_count) {
+            return NONE;
+        }
+
+        header = cursor;
+        if(DATUM_IS_FREE(header)) {
+            break;
+        }
+
+        absolute_index++;
+        cursor += data->size;
+    }
+
+    datum_initialize(data, header);
+    data->actual_count += 1;
+    data->first_free_absolute_index = absolute_index + 1;
+    if(absolute_index >= data->count) {
+        data->count = absolute_index + 1;
+    }
+
+    return BUILD_DATUM_INDEX(header->identifier, absolute_index);
+}
+
 void data_delete_all(struct data_array *data) {
     data_verify(data);
     assert(data->valid);

@@ -7,6 +7,7 @@
 struct datum_header {
     DATUM_HEADER;
 };
+static_assert(sizeof(struct datum_header) == 2);
 
 struct data_array {
     char name[32];
@@ -26,7 +27,7 @@ struct data_array {
 
     void *data;
 };
-static_assert(sizeof(struct data_array) == 0x38);
+static_assert(sizeof(struct data_array) == 56);
 
 #define DATUM_IS_USED(datum) ((datum)->identifier)
 #define DATUM_IS_FREE(datum) (!DATUM_IS_USED(datum))
@@ -58,6 +59,9 @@ void data_initialize(struct data_array *data, const char *name, int16_t maximum_
 
 void data_make_valid(struct data_array *data);
 void data_make_invalid(struct data_array *data);
+
+int32_t datum_new(struct data_array *data);
+int32_t datum_new_at_index(struct data_array *data, int32_t index);
 
 void data_delete_all(struct data_array *data);
 
