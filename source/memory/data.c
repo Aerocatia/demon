@@ -62,6 +62,32 @@ void data_make_invalid(struct data_array *data) {
     data->valid = false;
 }
 
+int32_t datum_new_at_index(struct data_array *data, int32_t index) {
+    data_verify(data);
+    assert(data->valid);
+
+    int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index);
+    int16_t identifier = DATUM_INDEX_TO_IDENTIFIER(index);
+    if(absolute_index < 0 && absolute_index > data->maximum_count && !identifier) {
+        return NONE;
+    }
+
+    struct datum_header *header = (struct datum_header *)((uint8_t *)data->data + absolute_index * data->size);
+    if(!DATUM_IS_FREE(header)) {
+        return NONE;
+    }
+
+    data->actual_count += 1;
+    if(absolute_index >= data->count) {
+        data->count = absolute_index + 1;
+    }
+
+    datum_initialize(data, header);
+    header->identifier = identifier;
+
+    return index;
+}
+
 void data_delete_all(struct data_array *data) {
     data_verify(data);
     assert(data->valid);
