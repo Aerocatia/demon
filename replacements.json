@@ -37,6 +37,7 @@
     "datum_get": { "address": "0x00409A1B" },
     "datum_new": { "address": "0x0040614F" },
     "datum_new_at_index": { "address": "0x00406B86" },
+    "datum_try_and_get": { "address": "0x00408CF6" },
     "display_assert": { "address": "0x00406C85" },
     "dot_product3d": { "address": "0x00401212" },
     "magnitude_squared2d": { "address": "0x004065DC" },

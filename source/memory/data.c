@@ -236,6 +236,28 @@ int32_t data_prev_index(struct data_array *data, int32_t index) {
     return NONE;
 }
 
+void *datum_try_and_get(struct data_array *data, int32_t index) {
+    if(index == NONE) {
+        return nullptr;
+    }
+
+    assert(data->valid);
+
+    int16_t identifier = DATUM_INDEX_TO_IDENTIFIER(index);
+    assert(identifier || !data->identifier_zero_invalid);
+
+    int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index);
+    if(absolute_index >= 0 && absolute_index < data->maximum_count) {
+        void *datum = data->data + absolute_index * data->size;
+        struct datum_header *header = datum;
+        if(DATUM_IS_USED(header) && (!identifier || header->identifier == identifier)) {
+            return datum;
+        }
+    }
+
+    return nullptr;
+}
+
 void *datum_get(struct data_array *data, int32_t index) {
     assert(data->valid);
 
@@ -244,14 +266,15 @@ void *datum_get(struct data_array *data, int32_t index) {
 
     int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index);
     if(absolute_index >= 0 && absolute_index < data->count) {
-        struct datum_header *header = (struct datum_header *)((uint8_t *)data->data + absolute_index * data->size);
+        void *datum = data->data + absolute_index * data->size;
+        struct datum_header *header = datum;
         if(DATUM_IS_USED(header) && (!identifier || identifier == header->identifier)) {
-            return header;
+            return datum;
         }
     }
 
     vhalt(csprintf(temporary, "%s index #%d (0x%x) is unused or changed",
-        data->name, DATUM_INDEX_TO_ABSOLUTE_INDEX(index), index));
+        data->name, absolute_index, index));
 
     return nullptr;
 }

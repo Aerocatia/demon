@@ -67,6 +67,7 @@ int32_t datum_new(struct data_array *data);
 int32_t datum_new_at_index(struct data_array *data, int32_t index);
 void datum_delete(struct data_array *data, int32_t index);
 void *datum_get(struct data_array *data, int32_t index);
+void *datum_try_and_get(struct data_array *data, int32_t index);
 
 void data_delete_all(struct data_array *data);
 
