@@ -73,4 +73,7 @@ void data_delete_all(struct data_array *data);
 void data_iterator_new(struct data_iterator *iterator, struct data_array *data);
 void *data_iterator_next(struct data_iterator *iterator);
 
+int32_t data_next_index(struct data_array *data, int32_t index);
+int32_t data_prev_index(struct data_array *data, int32_t index);
+
 #endif

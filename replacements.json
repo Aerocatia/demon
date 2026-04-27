@@ -30,6 +30,8 @@
     "data_make_invalid": { "address": "0x00408DA0" },
     "data_make_valid": { "address": "0x004024EB" },
     "data_new": { "address": "0x004099CB" },
+    "data_next_index": { "address": "0x004083C3" },
+    "data_prev_index": { "address": "0x00408B75" },
     "data_verify": { "address": "0x00405EC5" },
     "datum_delete": { "address": "0x004088A5" },
     "datum_get": { "address": "0x00409A1B" },

@@ -193,6 +193,49 @@ void *data_iterator_next(struct data_iterator *iterator) {
     return result;
 }
 
+int32_t data_next_index(struct data_array *data, int32_t index) {
+    data_verify(data);
+    assert(data->valid);
+
+    int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index) + 1;
+    if(absolute_index >= 0 && absolute_index < data->count) {
+        void *cursor = data->data + absolute_index * data->size;
+        struct datum_header *header = cursor;
+        do {
+            if(DATUM_IS_USED(header)) {
+                return BUILD_DATUM_INDEX(header->identifier, absolute_index);
+            }
+
+            absolute_index++;
+            header = cursor += data->size;
+        }
+        while(absolute_index < data->count);
+    }
+
+    return NONE;
+}
+
+int32_t data_prev_index(struct data_array *data, int32_t index) {
+    data_verify(data);
+    assert(data->valid);
+
+    int16_t absolute_index = (index == NONE) ? (data->count - 1) : (DATUM_INDEX_TO_ABSOLUTE_INDEX(index) - 1);
+    if(absolute_index >= 0 && absolute_index < data->count) {
+        void *cursor = data->data + absolute_index * data->size;
+        struct datum_header *header = cursor;
+        do {
+            if (DATUM_IS_USED(header)) {
+                return BUILD_DATUM_INDEX(header->identifier, absolute_index);
+            }
+
+            header = cursor -= data->size;
+        }
+        while(absolute_index-- >= 0);
+    }
+
+    return NONE;
+}
+
 void *datum_get(struct data_array *data, int32_t index) {
     assert(data->valid);
 
