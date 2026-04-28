@@ -21,6 +21,7 @@
     "csstrncpy": { "address": "0x00403BB1" },
     "csstrtok": { "address": "0x004019D8" },
     "data_allocation_size": { "address": "0x004075AE" },
+    "data_compact": { "address": "0x006DCE50", "sudo": true },
     "data_delete_all": { "address": "0x00407E5F" },
     "data_dispose": { "address": "0x00409CDC" },
     "data_destroy": { "address": "0x00402329" },
