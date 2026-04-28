@@ -150,9 +150,12 @@ void data_delete_all(struct data_array *data) {
     strncpy((char *)&data->next_identifier, data->name, sizeof(data->next_identifier));
     data->next_identifier |= (int16_t)0x8000;
 
-    for(int16_t index = 0; index < data->maximum_count; index++) {
-        struct datum_header *header = (struct datum_header *)((uint8_t *)data->data + index * data->size);
+    void *datum = data->data;
+    for(int16_t i = 0; i < data->maximum_count; i++) {
+        struct datum_header *header = datum;
         MARK_DATUM_AS_FREE(header);
+
+        datum += data->size;
     }
 }
 
@@ -175,8 +178,8 @@ void *data_iterator_next(struct data_iterator *iterator) {
     void *result = nullptr;
     int16_t absolute_index = iterator->absolute_index;
     void *datum = iterator->data->data + iterator->data->size * absolute_index;
-    struct datum_header *header = datum;
     while(absolute_index < iterator->data->count) {
+        struct datum_header *header = datum;
         if(DATUM_IS_USED(header)) {
             iterator->index = BUILD_DATUM_INDEX(header->identifier, absolute_index);
             result = datum;
@@ -185,7 +188,7 @@ void *data_iterator_next(struct data_iterator *iterator) {
         }
 
         absolute_index++;
-        header = datum += iterator->data->size;
+        datum += iterator->data->size;
     }
 
     iterator->absolute_index = ++absolute_index;
@@ -200,14 +203,14 @@ int32_t data_next_index(struct data_array *data, int32_t index) {
     int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index) + 1;
     if(absolute_index >= 0 && absolute_index < data->count) {
         void *datum = data->data + absolute_index * data->size;
-        struct datum_header *header = datum;
         do {
+            struct datum_header *header = datum;
             if(DATUM_IS_USED(header)) {
                 return BUILD_DATUM_INDEX(header->identifier, absolute_index);
             }
 
             absolute_index++;
-            header = datum += data->size;
+            datum += data->size;
         }
         while(absolute_index < data->count);
     }
@@ -222,13 +225,13 @@ int32_t data_prev_index(struct data_array *data, int32_t index) {
     int16_t absolute_index = (index == NONE) ? (data->count - 1) : (DATUM_INDEX_TO_ABSOLUTE_INDEX(index) - 1);
     if(absolute_index >= 0 && absolute_index < data->count) {
         void *datum = data->data + absolute_index * data->size;
-        struct datum_header *header = datum;
         do {
+            struct datum_header *header = datum;
             if(DATUM_IS_USED(header)) {
                 return BUILD_DATUM_INDEX(header->identifier, absolute_index);
             }
 
-            header = datum -= data->size;
+            datum -= data->size;
         }
         while(absolute_index-- >= 0);
     }
@@ -248,10 +251,9 @@ void *datum_try_and_get(struct data_array *data, int32_t index) {
 
     int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index);
     if(absolute_index >= 0 && absolute_index < data->maximum_count) {
-        void *datum = data->data + absolute_index * data->size;
-        struct datum_header *header = datum;
+        struct datum_header *header = (struct datum_header *)((uint8_t *)data->data + absolute_index * data->size);
         if(DATUM_IS_USED(header) && (!identifier || header->identifier == identifier)) {
-            return datum;
+            return header;
         }
     }
 
@@ -266,10 +268,9 @@ void *datum_get(struct data_array *data, int32_t index) {
 
     int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index);
     if(absolute_index >= 0 && absolute_index < data->count) {
-        void *datum = data->data + absolute_index * data->size;
-        struct datum_header *header = datum;
+        struct datum_header *header = (struct datum_header *)((uint8_t *)data->data + absolute_index * data->size);
         if(DATUM_IS_USED(header) && (!identifier || identifier == header->identifier)) {
-            return datum;
+            return header;
         }
     }
 
