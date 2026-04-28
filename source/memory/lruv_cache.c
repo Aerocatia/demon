@@ -67,6 +67,19 @@ void lruv_initialize(struct lruv_cache *cache, const char *name, int32_t page_co
     lruv_cache_verify(cache, true);
 }
 
+void lruv_update_function_pointers(struct lruv_cache *cache, lruv_delete_block_proc delete_block_proc, lruv_locked_block_proc locked_block_proc) {
+    assert(cache);
+
+    cache->delete_block_proc = delete_block_proc;
+    cache->locked_block_proc = locked_block_proc;
+}
+
+bool lruv_has_locked_proc(const struct lruv_cache *cache) {
+	assert(cache);
+
+    return (cache->locked_block_proc != nullptr);
+}
+
 #ifdef DEBUG
 static void lruv_cache_verify(struct lruv_cache *cache, bool verify_blocks) {
     assert(cache);
