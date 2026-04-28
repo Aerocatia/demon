@@ -1,11 +1,8 @@
 #ifndef __DATA_H__
 #define __DATA_H__
 
-#define DATUM_HEADER \
-    int16_t identifier
-
 struct datum_header {
-    DATUM_HEADER;
+    int16_t identifier;
 };
 static_assert(sizeof(struct datum_header) == 2);
 

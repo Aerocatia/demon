@@ -43,6 +43,8 @@
     "datum_try_and_get": { "address": "0x00408CF6" },
     "display_assert": { "address": "0x00406C85" },
     "dot_product3d": { "address": "0x00401212" },
+    "lruv_cache_verify": { "address": "0x006E5540", "sudo": true, "ignore": true },
+    "lruv_initialize": { "address": "0x00403D19" },
     "magnitude_squared2d": { "address": "0x004065DC" },
     "magnitude_squared3d": { "address": "0x004090E3" },
     "main_crash": { "address": "0x00403C29" },
