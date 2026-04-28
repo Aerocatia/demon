@@ -65,6 +65,7 @@ void data_make_invalid(struct data_array *data);
 
 int32_t datum_new(struct data_array *data);
 int32_t datum_new_at_index(struct data_array *data, int32_t index);
+int32_t datum_new_at_index_with_new_identifier(struct data_array *data, int32_t index);
 void datum_delete(struct data_array *data, int32_t index);
 void *datum_get(struct data_array *data, int32_t index);
 void *datum_try_and_get(struct data_array *data, int32_t index);
@@ -77,5 +78,6 @@ void *data_iterator_next(struct data_iterator *iterator);
 
 int32_t data_next_index(struct data_array *data, int32_t index);
 int32_t data_prev_index(struct data_array *data, int32_t index);
+int32_t data_last_index(struct data_array *data);
 
 #endif

@@ -37,7 +37,7 @@ void data_initialize(struct data_array *data, const char *name, int16_t maximum_
     data->valid = false;
 }
 
-// Name is a guess. Split from data_dispose in the 2020 Custom Edition debug EXE.
+// split from data_dispose in halo pc, original name unknown
 void data_destroy(struct data_array *data) {
     data_verify(data);
 
@@ -86,6 +86,31 @@ int32_t datum_new_at_index(struct data_array *data, int32_t index) {
     header->identifier = identifier;
 
     return index;
+}
+
+// added in halo pc, original name unknown
+int32_t datum_new_at_index_with_new_identifier(struct data_array *data, int32_t index) {
+    data_verify(data);
+    assert(data->valid);
+
+    int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index);
+    if(absolute_index < 0 && absolute_index > data->maximum_count) {
+        return NONE;
+    }
+
+    struct datum_header *header = (struct datum_header *)((uint8_t *)data->data + absolute_index * data->size);
+    if(!DATUM_IS_FREE(header)) {
+        return NONE;
+    }
+
+    data->actual_count += 1;
+    if(absolute_index >= data->count) {
+        data->count = absolute_index + 1;
+    }
+
+    datum_initialize(data, header);
+
+    return BUILD_DATUM_INDEX(header->identifier, absolute_index);
 }
 
 int32_t datum_new(struct data_array *data) {
@@ -237,6 +262,21 @@ int32_t data_prev_index(struct data_array *data, int32_t index) {
     }
 
     return NONE;
+}
+
+// added in halo pc, original name unknown
+int32_t data_last_index(struct data_array *data) {
+    data_verify(data);
+    assert(data->valid);
+
+    int32_t index, next_index = NONE;
+    do {
+        index = next_index;
+        next_index = data_next_index(data, index);
+    }
+    while(next_index != NONE);
+
+    return index;
 }
 
 void *datum_try_and_get(struct data_array *data, int32_t index) {
