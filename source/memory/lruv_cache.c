@@ -41,6 +41,19 @@ static_assert(sizeof(struct lruv_cache_block) == 0x1C);
     #define lruv_cache_verify(cache, verify_blocks) ((void)0)
 #endif
 
+struct lruv_cache *lruv_new(const char *name, int32_t page_count, int32_t page_size_bits, int32_t maximum_block_count, lruv_delete_block_proc delete_block_proc, lruv_locked_block_proc locked_block_proc) {
+    struct lruv_cache *cache = malloc(lruv_allocation_size(maximum_block_count));
+    if(cache) {
+        lruv_initialize(cache, name, page_count, page_size_bits, maximum_block_count, delete_block_proc, locked_block_proc);
+    }
+
+    return cache;
+}
+
+int32_t lruv_allocation_size(int32_t maximum_block_count) {
+    return sizeof(struct lruv_cache) + data_allocation_size(maximum_block_count, sizeof(struct lruv_cache_block));
+}
+
 void lruv_initialize(struct lruv_cache *cache, const char *name, int32_t page_count, int32_t page_size_bits, int32_t maximum_block_count, lruv_delete_block_proc delete_block_proc, lruv_locked_block_proc locked_block_proc) {
     assert(name);
     assert(page_count > 0);
