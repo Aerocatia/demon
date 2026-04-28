@@ -98,6 +98,54 @@ void lruv_delete(struct lruv_cache *cache) {
     free(cache);
 }
 
+void lruv_idle(struct lruv_cache *cache) {
+    lruv_cache_verify(cache, false);
+
+    cache->frame_index += 1;
+}
+
+void lruv_flush(struct lruv_cache *cache) {
+    lruv_cache_verify(cache, true);
+
+    struct data_iterator iterator;
+    struct lruv_cache_block *block;
+
+    data_iterator_new(&iterator, cache->blocks);
+    while((block = data_iterator_next(&iterator))) {
+        lruv_block_delete(cache, iterator.index);
+    }
+}
+
+void lruv_block_delete(struct lruv_cache *cache, int32_t block_index) {
+    lruv_cache_verify(cache, true);
+
+    if(cache->delete_block_proc) {
+        cache->delete_block_proc(block_index);
+    }
+
+    struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+    if(block->previous_block_index != NONE) {
+        struct lruv_cache_block *previous_block = lruv_cache_block_get(cache, block->previous_block_index);
+        previous_block->next_block_index = block->next_block_index;
+    }
+    else {
+        assert(cache->first_block_index == block_index);
+        cache->first_block_index = block->next_block_index;
+    }
+
+    if(block->next_block_index != NONE) {
+        struct lruv_cache_block *next_block = lruv_cache_block_get(cache, block->next_block_index);
+        next_block->previous_block_index = block->previous_block_index;
+    }
+    else {
+        assert(cache->last_block_index == block_index);
+        cache->last_block_index = block->previous_block_index;
+    }
+
+    datum_delete(cache->blocks, block_index);
+    lruv_cache_verify(cache, true);
+}
+
 bool lruv_has_locked_proc(const struct lruv_cache *cache) {
 	assert(cache);
 
