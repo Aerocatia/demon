@@ -87,6 +87,17 @@ void lruv_update_function_pointers(struct lruv_cache *cache, lruv_delete_block_p
     cache->locked_block_proc = locked_block_proc;
 }
 
+void lruv_delete(struct lruv_cache *cache) {
+    lruv_cache_verify(cache, true);
+
+    // The Xbox NTSC and PAL versions call data_dispose() here resulting in an invalid call to free()
+    // Xbox demo and Halo PC removed that call. We can use data_destroy() here instead.
+    // Note this will be optimized out unless using the debug_memory wrapper.
+    data_destroy(cache->blocks);
+    memset(cache, 0, sizeof(struct lruv_cache));
+    free(cache);
+}
+
 bool lruv_has_locked_proc(const struct lruv_cache *cache) {
 	assert(cache);
 

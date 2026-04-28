@@ -45,6 +45,7 @@
     "dot_product3d": { "address": "0x00401212" },
     "lruv_allocation_size": { "address": "0x004031CA" },
     "lruv_cache_verify": { "address": "0x006E5540", "sudo": true, "ignore": true },
+    "lruv_delete": { "address": "0x004042A5" },
     "lruv_has_locked_proc": { "address": "0x004051C3" },
     "lruv_initialize": { "address": "0x00403D19" },
     "lruv_new": { "address": "0x0040297D" },
