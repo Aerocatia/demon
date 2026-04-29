@@ -17,6 +17,7 @@ void lruv_initialize(struct lruv_cache *cache, const char *name, int32_t page_co
 void lruv_idle(struct lruv_cache *cache);
 void lruv_flush(struct lruv_cache *cache);
 
+int32_t lruv_block_new(struct lruv_cache *cache, int32_t size);
 void lruv_block_delete(struct lruv_cache *cache, int32_t block_index);
 
 bool lruv_has_locked_proc(const struct lruv_cache *cache);
