@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 
 #include "../cseries/cseries.h"
@@ -387,6 +388,66 @@ bool lruv_has_locked_proc(const struct lruv_cache *cache) {
 	assert(cache);
 
     return (cache->locked_block_proc != nullptr);
+}
+
+void lruv_debug_to_file(const char *path, const char *failed_allocation_name, int32_t failed_allocation_size, struct lruv_cache *cache, lruv_header_proc header_proc, lruv_name_block_proc name_block_proc) {
+    lruv_cache_verify(cache, true);
+    assert(header_proc);
+    assert(name_block_proc);
+
+    FILE *stream = fopen(path, "w+");
+    if(!stream) {
+        return;
+    }
+
+    fprintf(stream, "%s (v1: only blocks used this frame are locked)\n", cache->name);
+
+    // prints header
+    header_proc(stream);
+
+    fprintf(stream, "\n#%d pages, each #%d bytes\n#%d blocks at frame index #%d\nfailed allocation of \"%s\" was #%d bytes (#%d pages)\n\n",
+        cache->page_count, 1 << cache->page_size_bits, cache->blocks->actual_count, cache->frame_index,
+        failed_allocation_name, failed_allocation_size, lruv_cache_bytes_to_pages(cache, failed_allocation_size));
+
+    int32_t block_index = cache->first_block_index;
+    int32_t page_index = 0;
+
+    while(page_index < cache->page_count) {
+        uint32_t age = 0;
+        const char *name = nullptr;
+        bool locked = false;
+        int32_t page_count;
+        if(block_index == NONE) {
+            page_count = cache->page_count - page_index;
+            page_index = cache->page_count;
+        }
+        else {
+            struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+            if(page_index == block->first_page_index) {
+                age = cache->frame_index-block->last_used_frame_index;
+                page_count = block->page_count;
+                locked = cache->locked_block_proc && cache->locked_block_proc(block_index);
+                if(block->last_used_frame_index + 1 >= cache->frame_index) {
+                    locked = true;
+                }
+
+                page_index = block->first_page_index + block->page_count;
+                name = name_block_proc(block_index);
+                block_index = block->next_block_index;
+            }
+            else {
+                page_count = block->first_page_index-page_index;
+                assert(page_count > 0);
+
+                page_index = block->first_page_index;
+            }
+        }
+
+        fprintf(stream, "%s % 5d% 5d %s\n", locked ? "L" : " ", page_count, age < 9999 ? age : 9999, name ? name : "");
+    }
+
+    fprintf(stream, "\n");
+    fclose(stream);
 }
 
 static int32_t lruv_cache_bytes_to_pages(struct lruv_cache *cache, int32_t size_in_bytes) {

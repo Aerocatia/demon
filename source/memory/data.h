@@ -1,6 +1,10 @@
 #ifndef __DATA_H__
 #define __DATA_H__
 
+#include <stdint.h>
+
+#include "../cseries/cseries.h"
+
 struct datum_header {
     int16_t identifier;
 };

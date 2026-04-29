@@ -51,6 +51,7 @@
     "lruv_block_touched": { "address": "0x00407DEC" },
     "lruv_cache_verify": { "address": "0x006E5540", "sudo": true, "ignore": true },
     "lruv_cache_get_page_usage": { "address": "0x0040171C" },
+    "lruv_debug_to_file": { "address": "0x0040925F", "ignore": true },
     "lruv_delete": { "address": "0x004042A5" },
     "lruv_flush": { "address": "0x00406F96" },
     "lruv_has_locked_proc": { "address": "0x004051C3" },

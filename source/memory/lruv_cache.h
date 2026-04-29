@@ -1,10 +1,15 @@
 #ifndef __LRUV_CACHE_H__
 #define __LRUV_CACHE_H__
 
+#include <stdint.h>
+#include <stdio.h>
+
 struct lruv_cache;
 
 typedef void (*lruv_delete_block_proc)(int32_t block_index);
 typedef bool (*lruv_locked_block_proc)(int32_t block_index);
+typedef const char *(*lruv_name_block_proc)(int32_t block_index);
+typedef void (*lruv_header_proc)(FILE *stream);
 
 struct lruv_cache *lruv_new(const char *name, int32_t page_count, int32_t page_size_bits, int32_t maximum_block_count, lruv_delete_block_proc delete_block_proc, lruv_locked_block_proc locked_block_proc);
 void lruv_delete(struct lruv_cache *cache);
