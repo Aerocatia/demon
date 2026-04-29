@@ -20,6 +20,10 @@ void lruv_flush(struct lruv_cache *cache);
 int32_t lruv_block_new(struct lruv_cache *cache, int32_t size);
 void lruv_block_delete(struct lruv_cache *cache, int32_t block_index);
 
+void lruv_block_touch(struct lruv_cache *cache, int32_t block_index);
+bool lruv_block_touched(struct lruv_cache *cache, int32_t block_index);
+uint32_t lruv_block_get_address(struct lruv_cache *cache, int32_t block_index);
+
 bool lruv_has_locked_proc(const struct lruv_cache *cache);
 
 #endif

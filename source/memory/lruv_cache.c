@@ -319,6 +319,27 @@ void lruv_block_delete(struct lruv_cache *cache, int32_t block_index) {
     lruv_cache_verify(cache, true);
 }
 
+void lruv_block_touch(struct lruv_cache *cache, int32_t block_index) {
+    lruv_cache_verify(cache, false);
+
+    struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+    block->last_used_frame_index = cache->frame_index;
+}
+
+uint32_t lruv_block_get_address(struct lruv_cache *cache, int32_t block_index) {
+    lruv_cache_verify(cache, false);
+
+    struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+    return block->first_page_index << cache->page_size_bits;
+}
+
+bool lruv_block_touched(struct lruv_cache *cache, int32_t block_index) {
+    lruv_cache_verify(cache, false);
+
+    struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+    return block->last_used_frame_index == cache->frame_index;
+}
+
 bool lruv_has_locked_proc(const struct lruv_cache *cache) {
 	assert(cache);
 
