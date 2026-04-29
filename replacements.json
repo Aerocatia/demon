@@ -57,6 +57,7 @@
     "lruv_idle": { "address": "0x00405E3E" },
     "lruv_initialize": { "address": "0x00403D19" },
     "lruv_new": { "address": "0x0040297D" },
+    "lruv_resize": { "address": "0x006E6040", "sudo": true },
     "lruv_update_function_pointers": { "address": "0x00406DD9" },
     "magnitude_squared2d": { "address": "0x004065DC" },
     "magnitude_squared3d": { "address": "0x004090E3" },

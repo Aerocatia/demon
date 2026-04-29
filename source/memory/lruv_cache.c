@@ -347,8 +347,8 @@ void lruv_cache_get_page_usage(struct lruv_cache *cache, uint8_t *page_usage) {
     memset(page_usage, 0, cache->page_count);
 
     struct data_iterator iterator;
-    data_iterator_new(&iterator, cache->blocks);
     struct lruv_cache_block *block;
+    data_iterator_new(&iterator, cache->blocks);
     while((block = data_iterator_next(&iterator))) {
         uint8_t block_usage = FLAG(_lruv_cache_page_usage_allocated_bit);
         if(cache->locked_block_proc && cache->locked_block_proc(iterator.index)) {
@@ -365,6 +365,22 @@ void lruv_cache_get_page_usage(struct lruv_cache *cache, uint8_t *page_usage) {
 
         memset(page_usage + block->first_page_index, block_usage, block->page_count);
     }
+}
+
+void lruv_resize(struct lruv_cache *cache, int32_t new_page_count) {
+    assert(new_page_count > 0);
+    lruv_cache_verify(cache, true);
+
+    struct data_iterator iterator;
+    struct lruv_cache_block *block;
+    data_iterator_new(&iterator, cache->blocks);
+    while((block = data_iterator_next(&iterator))) {
+        if(block->first_page_index + block->page_count > new_page_count) {
+            lruv_block_delete(cache, iterator.index);
+        }
+    }
+
+    cache->page_count = new_page_count;
 }
 
 bool lruv_has_locked_proc(const struct lruv_cache *cache) {

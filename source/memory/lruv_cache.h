@@ -26,6 +26,8 @@ uint32_t lruv_block_get_address(struct lruv_cache *cache, int32_t block_index);
 
 bool lruv_has_locked_proc(const struct lruv_cache *cache);
 
+void lruv_resize(struct lruv_cache *cache, int32_t new_page_count) ;
+
 enum {
     _lruv_cache_page_usage_allocated_bit,
     _lruv_cache_page_usage_used_this_frame_bit,
