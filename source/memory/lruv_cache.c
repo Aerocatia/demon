@@ -6,6 +6,7 @@
 #include "lruv_cache.h"
 
 #define LRUV_CACHE_SIGNATURE 0x77656565 // 'weee'
+#define OLD_BLOCK_FRAME_COUNT 30
 
 struct lruv_cache {
     char name[32];
@@ -338,6 +339,32 @@ bool lruv_block_touched(struct lruv_cache *cache, int32_t block_index) {
 
     struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
     return block->last_used_frame_index == cache->frame_index;
+}
+
+void lruv_cache_get_page_usage(struct lruv_cache *cache, uint8_t *page_usage) {
+    lruv_cache_verify(cache, true);
+
+    memset(page_usage, 0, cache->page_count);
+
+    struct data_iterator iterator;
+    data_iterator_new(&iterator, cache->blocks);
+    struct lruv_cache_block *block;
+    while((block = data_iterator_next(&iterator))) {
+        uint8_t block_usage = FLAG(_lruv_cache_page_usage_allocated_bit);
+        if(cache->locked_block_proc && cache->locked_block_proc(iterator.index)) {
+            SET_FLAG(block_usage, _lruv_cache_page_usage_locked_bit, true);
+        }
+
+        if(block->last_used_frame_index == cache->frame_index) {
+            SET_FLAG(block_usage, _lruv_cache_page_usage_used_this_frame_bit, true);
+        }
+
+        if(block->last_used_frame_index + OLD_BLOCK_FRAME_COUNT < cache->frame_index) {
+            SET_FLAG(block_usage, _lruv_cache_page_usage_old_bit, true);
+        }
+
+        memset(page_usage + block->first_page_index, block_usage, block->page_count);
+    }
 }
 
 bool lruv_has_locked_proc(const struct lruv_cache *cache) {

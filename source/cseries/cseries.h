@@ -49,6 +49,12 @@ enum {
     NUMBER_OF_POINTS_PER_RECTANGLE
 };
 
+#define FLAG(b) (1<<(b))
+
+#define TEST_FLAG(f, b) (((f)&FLAG(b))!=0)
+#define SWAP_FLAG(f, b) ((f)^=FLAG(b))
+#define SET_FLAG(f, b, v) ((v) ? ((f)|=FLAG(b)) : ((f)&=~FLAG(b)))
+
 typedef uint32_t tag;
 typedef float real;
 
