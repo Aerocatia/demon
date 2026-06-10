@@ -76,6 +76,26 @@ bool errors_handle(void) {
     return handled;
 }
 
+void errors_output_to_debug_file(bool output_to_debug_file) {
+    error_globals.output_to_debug_file = output_to_debug_file;
+}
+
+void errors_overflow_suppression_enable(bool overflow_suppression) {
+    error_globals.overflow_suppression = overflow_suppression;
+}
+
+void errors_suppress_all_enable(bool suppress_all) {
+    error_globals.suppress_all = suppress_all;
+}
+
+const char *error_get(void) {
+    return error_globals.message_buffer;
+}
+
+void errors_clear(void) {
+    reset_error_state();
+}
+
 void write_to_error_file(char *string, bool date) {
     static bool first_line = true;
     if(first_line) {

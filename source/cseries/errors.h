@@ -18,12 +18,22 @@ enum {
     _developer_mode_full = 127
 };
 
+extern bool find_all_fucked_up_shit;
+extern int32_t fucked_up_shit_count;
+
 void errors_initialize(void);
 void errors_dispose(void);
 
 bool errors_handle(void);
 
+void errors_output_to_debug_file(bool output_to_debug_file);
+void errors_overflow_suppression_enable(bool overflow_suppression);
+void errors_suppress_all_enable(bool suppress_all);
+
 extern void (*error)(int16_t priority, const char *format, ...);
+
+const char *error_get(void);
+void errors_clear();
 
 void write_to_error_file(char *string, bool date);
 
