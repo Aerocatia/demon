@@ -51,22 +51,30 @@ struct cache_file_tags_header {
     uint32_t tags_checksum;
     int32_t tag_count;
     int32_t vertex_buffer_count;
-    int32_t vertex_buffers_offset; // file offset
+    int32_t vertex_buffers_offset; // file offset (was void *vertex_buffers)
     int32_t index_buffer_count;
-    int32_t index_buffers_offset; // offset from vertex buffers
-    int32_t model_data_size;
+    int32_t index_buffers_offset; // offset from vertex buffers (was void *index_buffers)
+    int32_t vertex_index_buffer_size;
     tag signature;
 };
 static_assert(sizeof(struct cache_file_tags_header) == 40);
 
 #define CACHE_FILE_STRUCTURE_BSP_HEADER_SIGNATURE 0x73627370 // sbsp
-
+/* Xbox
 struct cache_file_structure_bsp_header {
     struct structure_bsp *structure_bsp;
     int32_t vertex_buffer_count;
     void *vertex_buffers;
     int32_t lightmap_vertex_buffer_count;
     void *lightmap_vertex_buffers;
+    tag signature;
+};
+*/
+struct cache_file_structure_bsp_header {
+    struct structure_bsp *structure_bsp;
+    int32_t vertex_buffer_size;
+    int32_t vertex_buffer_file_ofs;
+    uint32_t dummy[2];
     tag signature;
 };
 static_assert(sizeof(struct cache_file_structure_bsp_header) == 24);
