@@ -16,6 +16,28 @@
 #define CACHE_STRING ""
 #endif
 
+enum {
+    ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE = 4 * KILO
+};
+
+struct error_global_data {
+    bool delayed;
+    char debug_file_path[260]; // not in Gearbox Custom Edition release
+    bool output_to_debug_file;
+    bool display_state;
+    bool recursion_lock;
+    bool overflow_suppression;
+    bool suppress_all;
+    uint8_t developer_mode; // developer_mode enum
+    uint8_t padding;
+    int16_t message_buffer_size;
+    char message_buffer[ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE];
+};
+static_assert(sizeof(struct error_global_data) == 4366);
+
+asm(".set _error_globals, 0x00B016C8"); // HACK demon.dll
+extern struct error_global_data error_globals; // remove extern
+
 void (*error)(int16_t priority, const char *format, ...) = (void *)0x005512E0;
 
 void write_to_error_file(char *string, bool date) {
@@ -32,9 +54,7 @@ void write_to_error_file(char *string, bool date) {
         write_to_error_file(line, true);
     }
 
-    // FIXME: use error_globals
-    bool output_to_debug_file = *(bool *)0x00B017CD;
-    if(!output_to_debug_file /* error_globals.output_to_debug_file */) {
+    if(!error_globals.output_to_debug_file) {
         return;
     }
 
