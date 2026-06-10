@@ -119,11 +119,7 @@ bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]]
 
 // TODO: This hack will allow both retail and custom edition map types to run, but the game will create a zero byte loc.map if one does not exist
 static bool cache_file_valid_version(int32_t version) {
-    if(version == CACHE_FILE_VERSION_RETAIL || version == CACHE_FILE_VERSION_CUSTOM_EDITION) {
-        return true;
-    }
-
-    return false;
+    return (version == CACHE_FILE_VERSION_RETAIL || version == CACHE_FILE_VERSION_CUSTOM_EDITION);
 }
 
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index) {
