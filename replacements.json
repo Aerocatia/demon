@@ -43,6 +43,8 @@
     "datum_try_and_get": { "address": "0x00408CF6" },
     "display_assert": { "address": "0x00406C85" },
     "dot_product3d": { "address": "0x00401212" },
+    "errors_dispose": { "address": "0x0040470A" },
+    "errors_handle": { "address": "0x0040673F" },
     "errors_initialize": { "address": "0x00405E89" },
     "lruv_allocation_size": { "address": "0x004031CA" },
     "lruv_block_delete": { "address": "0x00403FD5" },

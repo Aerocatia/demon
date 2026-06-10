@@ -11,6 +11,7 @@ add_library(demon SHARED
     source/cseries/cseries.c
     source/cseries/errors.c
     source/cseries/debug_memory.c
+    source/cseries/stack_walk_windows.c
     source/main/console.c
     source/main/demon.c
     source/main/main.c

@@ -1,6 +1,9 @@
 #ifndef DEMON_PLATFORM_H
 #define DEMON_PLATFORM_H
 
+// We need 1-byte bools
+static_assert(sizeof(bool) == 1);
+
 #if defined(DEBUG)
 #elif defined(NO_DEBUG)
 #else

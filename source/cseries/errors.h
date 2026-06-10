@@ -19,9 +19,15 @@ enum {
 };
 
 void errors_initialize(void);
+void errors_dispose(void);
+
+bool errors_handle(void);
 
 extern void (*error)(int16_t priority, const char *format, ...);
 
 void write_to_error_file(char *string, bool date);
+
+extern void (*stack_walk_initialize)(void);
+extern void (*stack_walk_dispose)(void);
 
 #endif

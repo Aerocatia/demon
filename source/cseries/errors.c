@@ -36,12 +36,20 @@ struct error_global_data {
 };
 static_assert(sizeof(struct error_global_data) == 4366);
 
+/* globals */
+
 asm(".set _error_globals, 0x00B016C8"); // HACK demon.dll
 extern struct error_global_data error_globals; // remove extern
 
+bool find_all_fucked_up_shit = false;
+int32_t fucked_up_shit_count = 0;
+
+/* forward declarations */
+
 static void reset_error_state(void);
 char *(*errors_debug_file_path)(char *filename) = (void *)0x0075BB30;
-void (*stack_walk_initialize)(void) = (void *)0x00559480;
+
+/* public functions */
 
 void errors_initialize(void) {
     error_globals.developer_mode = _developer_mode_full;
@@ -56,7 +64,17 @@ void errors_initialize(void) {
     stack_walk_initialize();
 }
 
+void errors_dispose(void) {
+    stack_walk_dispose();
+}
+
 void (*error)(int16_t priority, const char *format, ...) = (void *)0x005512E0;
+
+bool errors_handle(void) {
+    bool handled = error_globals.delayed;
+    reset_error_state();
+    return handled;
+}
 
 void write_to_error_file(char *string, bool date) {
     static bool first_line = true;
@@ -103,6 +121,8 @@ void write_to_error_file(char *string, bool date) {
     fprintf(stream, "%s", string);
     fclose(stream);
 }
+
+/* private functions */
 
 static void reset_error_state(void) {
     error_globals.delayed = false;
