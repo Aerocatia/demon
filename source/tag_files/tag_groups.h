@@ -25,12 +25,22 @@ struct tag_block {
 };
 static_assert(sizeof(struct tag_block) == 12);
 
+typedef void (*byte_swap_data_proc)(void *block_element, void *data, int32_t size);
+
+struct tag_data_definition {
+    char *name;
+    uint32_t flags;
+    int32_t maximum_size;
+    byte_swap_data_proc byte_swap_data;
+};
+static_assert(sizeof(struct tag_data_definition) == 16);
+
 struct tag_data {
     int32_t size;
     uint32_t flags;
     int32_t file_offset;
     void *address;
-    void *definition; // should be struct tag_data_definition
+    struct tag_data_definition *definition;
 };
 static_assert(sizeof(struct tag_data) == 20);
 
