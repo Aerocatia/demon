@@ -1,5 +1,5 @@
-#ifndef __BSP3D_H__
-#define __BSP3D_H__
+#ifndef DEMON_BSP3D_H
+#define DEMON_BSP3D_H
 
 #include <stdint.h>
 

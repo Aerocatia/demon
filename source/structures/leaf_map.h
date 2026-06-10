@@ -1,5 +1,5 @@
-#ifndef __LEAF_MAP_H__
-#define __LEAF_MAP_H__
+#ifndef DEMON_LEAF_MAP_H
+#define DEMON_LEAF_MAP_H
 
 #include <stdint.h>
 

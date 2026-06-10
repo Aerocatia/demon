@@ -1,5 +1,5 @@
-#ifndef __CACHE_FILES_H__
-#define __CACHE_FILES_H__
+#ifndef DEMON_CACHE_FILES_H
+#define DEMON_CACHE_FILES_H
 
 #include <stdint.h>
 

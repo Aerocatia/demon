@@ -1,5 +1,5 @@
-#ifndef __TAG_GROUPS_H__
-#define __TAG_GROUPS_H__
+#ifndef DEMON_TAG_GROUPS_H
+#define DEMON_TAG_GROUPS_H
 
 #include <stdint.h>
 

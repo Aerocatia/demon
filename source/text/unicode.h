@@ -1,5 +1,5 @@
-#ifndef __UNICODE_H__
-#define __UNICODE_H__
+#ifndef DEMON_UNICODE_H
+#define DEMON_UNICODE_H
 
 #include <uchar.h>
 

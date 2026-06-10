@@ -1,5 +1,5 @@
-#ifndef __STRUCTURE_BSP_H__
-#define __STRUCTURE_BSP_H__
+#ifndef DEMON_STRUCTURE_BSP_H
+#define DEMON_STRUCTURE_BSP_H
 
 #include <stdint.h>
 

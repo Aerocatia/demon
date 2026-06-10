@@ -1,5 +1,5 @@
-#ifndef __BYTE_SWAPPING_H__
-#define __BYTE_SWAPPING_H__
+#ifndef DEMON_BYTE_SWAPPING_H
+#define DEMON_BYTE_SWAPPING_H
 
 #include <stdint.h>
 

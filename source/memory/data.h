@@ -1,5 +1,5 @@
-#ifndef __DATA_H__
-#define __DATA_H__
+#ifndef DEMON_DATA_H
+#define DEMON_DATA_H
 
 #include <stdint.h>
 

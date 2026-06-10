@@ -1,5 +1,5 @@
-#ifndef __LRUV_CACHE_H__
-#define __LRUV_CACHE_H__
+#ifndef DEMON_LRUV_CACHE_H
+#define DEMON_LRUV_CACHE_H
 
 #include <stdint.h>
 #include <stdio.h>

@@ -1,5 +1,5 @@
-#ifndef __CSERIES_H__
-#define __CSERIES_H__
+#ifndef DEMON_CSERIES_H
+#define DEMON_CSERIES_H
 
 #include <stdint.h>
 #include <stdlib.h>

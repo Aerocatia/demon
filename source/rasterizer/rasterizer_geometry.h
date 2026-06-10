@@ -1,5 +1,5 @@
-#ifndef __RASTERIZER_GEOMETRY_H__
-#define __RASTERIZER_GEOMETRY_H__
+#ifndef DEMON_RASTERIZER_GEOMETRY_H
+#define DEMON_RASTERIZER_GEOMETRY_H
 
 #include <stdint.h>
 

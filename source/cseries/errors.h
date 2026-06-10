@@ -1,5 +1,5 @@
-#ifndef __ERRORS_H__
-#define __ERRORS_H__
+#ifndef DEMON_ERRORS_H
+#define DEMON_ERRORS_H
 
 enum {
     _error_immediate,

@@ -1,5 +1,5 @@
-#ifndef __TEXT_GROUP_H__
-#define __TEXT_GROUP_H__
+#ifndef DEMON_TEXT_GROUP_H
+#define DEMON_TEXT_GROUP_H
 
 #include <uchar.h>
 

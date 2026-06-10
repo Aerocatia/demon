@@ -1,5 +1,5 @@
-#ifndef __REAL_MATH_H__
-#define __REAL_MATH_H__
+#ifndef DEMON_REAL_MATH_H
+#define DEMON_REAL_MATH_H
 
 #include <math.h>
 

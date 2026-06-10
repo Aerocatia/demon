@@ -1,5 +1,5 @@
-#ifndef __RENDER_H__
-#define __RENDER_H__
+#ifndef DEMON_RENDER_H
+#define DEMON_RENDER_H
 
 #include "../cseries/cseries.h"
 

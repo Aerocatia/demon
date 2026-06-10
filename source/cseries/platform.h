@@ -1,5 +1,5 @@
-#ifndef __PLATFORM_H__
-#define __PLATFORM_H__
+#ifndef DEMON_PLATFORM_H
+#define DEMON_PLATFORM_H
 
 #if defined(DEBUG)
 #elif defined(NO_DEBUG)

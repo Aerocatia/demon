@@ -1,5 +1,5 @@
-#ifndef __CRC_H__
-#define __CRC_H__
+#ifndef DEMON_CRC_H
+#define DEMON_CRC_H
 
 #include <stdint.h>
 
