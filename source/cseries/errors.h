@@ -18,6 +18,8 @@ enum {
     _developer_mode_full = 127
 };
 
+void errors_initialize(void);
+
 extern void (*error)(int16_t priority, const char *format, ...);
 
 void write_to_error_file(char *string, bool date);

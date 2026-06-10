@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 
 #include "cseries.h"
 #include "build_number.h"
@@ -29,7 +30,7 @@ struct error_global_data {
     bool overflow_suppression;
     bool suppress_all;
     uint8_t developer_mode; // developer_mode enum
-    uint8_t padding;
+    uint8_t unused;
     int16_t message_buffer_size;
     char message_buffer[ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE];
 };
@@ -37,6 +38,23 @@ static_assert(sizeof(struct error_global_data) == 4366);
 
 asm(".set _error_globals, 0x00B016C8"); // HACK demon.dll
 extern struct error_global_data error_globals; // remove extern
+
+static void reset_error_state(void);
+char *(*errors_debug_file_path)(char *filename) = (void *)0x0075BB30;
+void (*stack_walk_initialize)(void) = (void *)0x00559480;
+
+void errors_initialize(void) {
+    error_globals.developer_mode = _developer_mode_full;
+    error_globals.output_to_debug_file = true;
+    error_globals.overflow_suppression = true;
+    error_globals.suppress_all = false;
+    error_globals.debug_file_path[0] = '\0';
+
+    strcpy(error_globals.debug_file_path, errors_debug_file_path(DEBUG_OUTPUT_FILENAME));
+
+    reset_error_state();
+    stack_walk_initialize();
+}
 
 void (*error)(int16_t priority, const char *format, ...) = (void *)0x005512E0;
 
@@ -84,4 +102,9 @@ void write_to_error_file(char *string, bool date) {
 
     fprintf(stream, "%s", string);
     fclose(stream);
+}
+
+static void reset_error_state(void) {
+    error_globals.delayed = false;
+    error_globals.message_buffer_size = 0;
 }
