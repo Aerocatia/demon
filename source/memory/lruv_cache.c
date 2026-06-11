@@ -68,7 +68,7 @@ int32_t lruv_allocation_size(int32_t maximum_block_count) {
 void lruv_initialize(struct lruv_cache *cache, const char *name, int32_t page_count, int32_t page_size_bits, int32_t maximum_block_count, lruv_delete_block_proc delete_block_proc, lruv_locked_block_proc locked_block_proc) {
     assert(name);
     assert(page_count > 0);
-    assert(page_size_bits > 0 && page_size_bits < SHORT_BITS);
+    assert(page_size_bits > 0 && page_size_bits < INT16_BITS);
     assert(maximum_block_count > 0);
 
     struct data_array *blocks = (struct data_array *)(cache + 1);

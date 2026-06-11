@@ -4,11 +4,20 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+/* constants */
+
 #define NONE -1
 
 #define KILO 1024
 #define MEG (KILO * KILO)
 #define GIG (KILO * MEG)
+
+#define INT32_BITS 32
+#define INT32_BITS_BITS 5
+#define INT16_BITS 16
+#define INT16_BITS_BITS 4
+#define INT8_BITS 8
+#define INT8_BITS_BITS 3
 
 enum {
     MILLISECONDS_PER_SECOND = 1000,
@@ -49,39 +58,22 @@ enum {
     NUMBER_OF_POINTS_PER_RECTANGLE
 };
 
+/* macros */
+
+#define FLOOR(n,floor) ((n)<(floor)?(floor):(n))
+#define CEILING(n,ceiling) ((n)>(ceiling)?(ceiling):(n))
+#define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : CEILING(n,ceiling))
+
 #define FLAG(b) (1<<(b))
 
 #define TEST_FLAG(f, b) (((f)&FLAG(b))!=0)
 #define SWAP_FLAG(f, b) ((f)^=FLAG(b))
 #define SET_FLAG(f, b, v) ((v) ? ((f)|=FLAG(b)) : ((f)&=~FLAG(b)))
 
+/* types */
+
 typedef uint32_t tag;
 typedef float real;
-
-#undef LONG_MAX
-#undef LONG_MIN
-#undef CHAR_MAX
-#undef CHAR_MIN
-
-enum {
-    UNSIGNED_LONG_MAX = 4294967295,
-    LONG_MAX = 2147483647L,
-    LONG_MIN = -LONG_MAX - 1L,
-    LONG_BITS = 32,
-    LONG_BITS_BITS = 5,
-
-    UNSIGNED_SHORT_MAX = 65535,
-    SHORT_MAX = 32767,
-    SHORT_MIN = -SHORT_MAX - 1,
-    SHORT_BITS = 16,
-    SHORT_BITS_BITS = 4,
-
-    UNSIGNED_CHAR_MAX = 255,
-    CHAR_MAX = 127,
-    CHAR_MIN = -CHAR_MAX - 1,
-    CHAR_BITS = 8,
-    CHAR_BITS_BITS = 3
-};
 
 typedef union {
     uint8_t n[6];
@@ -303,6 +295,8 @@ typedef struct {
     };
 } real_matrix4x3;
 
+/* asserts */
+
 #ifdef assert
 #undef assert
 #endif
@@ -353,10 +347,52 @@ typedef struct {
 extern char temporary[256];
 #endif
 
+/* global colors */
+
+extern const real_argb_color *global_real_argb_white;
+extern const real_argb_color *global_real_argb_grey;
+extern const real_argb_color *global_real_argb_black;
+extern const real_argb_color *global_real_argb_red;
+extern const real_argb_color *global_real_argb_green;
+extern const real_argb_color *global_real_argb_blue;
+extern const real_argb_color *global_real_argb_yellow;
+extern const real_argb_color *global_real_argb_cyan;
+extern const real_argb_color *global_real_argb_magenta;
+extern const real_argb_color *global_real_argb_pink;
+extern const real_argb_color *global_real_argb_lightblue;
+extern const real_argb_color *global_real_argb_orange;
+extern const real_argb_color *global_real_argb_purple;
+extern const real_argb_color *global_real_argb_aqua;
+extern const real_argb_color *global_real_argb_darkgreen;
+extern const real_argb_color *global_real_argb_salmon;
+extern const real_argb_color *global_real_argb_violet;
+
+extern const real_rgb_color *global_real_rgb_white;
+extern const real_rgb_color *global_real_rgb_grey;
+extern const real_rgb_color *global_real_rgb_black;
+extern const real_rgb_color *global_real_rgb_red;
+extern const real_rgb_color *global_real_rgb_green;
+extern const real_rgb_color *global_real_rgb_blue;
+extern const real_rgb_color *global_real_rgb_yellow;
+extern const real_rgb_color *global_real_rgb_cyan;
+extern const real_rgb_color *global_real_rgb_magenta;
+extern const real_rgb_color *global_real_rgb_pink;
+extern const real_rgb_color *global_real_rgb_lightblue;
+extern const real_rgb_color *global_real_rgb_orange;
+extern const real_rgb_color *global_real_rgb_purple;
+extern const real_rgb_color *global_real_rgb_aqua;
+extern const real_rgb_color *global_real_rgb_darkgreen;
+extern const real_rgb_color *global_real_rgb_salmon;
+extern const real_rgb_color *global_real_rgb_violet;
+
+/* functions */
+
 tag string_to_tag(const char *s);
 char *tag_to_string(tag t, char *s);
 
 void system_exit(int code);
+
+/* debug memory */
 
 #ifdef DEBUG
 extern void *(*debug_malloc)(size_t size, bool clear, const char *source_file, int32_t source_line);
@@ -372,5 +408,7 @@ extern void *(*debug_free)(void *pointer, const char *source_file, int32_t sourc
 #define realloc(pointer, size) (debug_realloc(pointer, size, __FILE__, __LINE__))
 
 #endif
+
+uint32_t system_milliseconds(void);
 
 #endif

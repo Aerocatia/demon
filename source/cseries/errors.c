@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
@@ -8,6 +9,8 @@
 #include "platform.h"
 
 #include "errors.h"
+
+#include "../interface/terminal.h"
 
 #define DEBUG_OUTPUT_FILENAME "debug.txt"
 
@@ -68,7 +71,110 @@ void errors_dispose(void) {
     stack_walk_dispose();
 }
 
-void (*error)(int16_t priority, const char *format, ...) = (void *)0x005512E0;
+void error(short priority, const char *format, ...) {
+    assert(priority >= 0 && priority < NUMBER_OF_ERROR_MESSAGE_PRIORITIES);
+
+    // No.
+    if(error_globals.suppress_all && priority == _error_silent) {
+        return;
+    }
+
+    if(error_globals.overflow_suppression && priority == _error_silent) {
+        static int32_t old_time = 0;
+        static int32_t count = 0;
+        int32_t current_time = system_milliseconds();
+        int32_t timeout = TICKS_PER_SECOND * 30;
+        int32_t max_count = 10;
+
+        if(current_time > (timeout + old_time)) {
+            count = 0;
+        }
+
+        old_time = current_time;
+        if(count == max_count) {
+            terminal_printf(global_real_argb_white, "too many errors, only printing to debug.txt");
+        }
+
+        count++;
+        if(count >= max_count) {
+            priority = _error_log;
+        }
+    }
+
+    if(error_globals.recursion_lock) {
+        return;
+    }
+
+    error_globals.recursion_lock = true;
+    if(priority == _error_delayed) {
+        error_globals.delayed = true;
+    }
+
+    if(format) {
+        char buffer[ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE + 4];
+
+        va_list arglist;
+        va_start(arglist, format);
+        vsnprintf(buffer, ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE, format, arglist);
+        va_end(arglist);
+
+        strcat(buffer, EOL_STRING);
+
+#ifdef SHELL_CONSOLE
+        fprintf(stderr, buffer);
+#endif
+
+//FIXME not in release builds
+//#ifdef SYMBOLS
+        display_debug_string(buffer);
+//#endif
+        if(priority != _error_log) {
+            terminal_printf(global_real_argb_white, "%s", buffer);
+        }
+
+        write_to_error_file(buffer, true);
+
+        int32_t new_size = strlen(buffer);
+        if(error_globals.message_buffer_size + new_size >= ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE) {
+            const char *prefix = "[...too many errors to print...]" EOL_STRING;
+            int32_t prefix_size = strlen(prefix);
+
+            char *start_ptr = error_globals.message_buffer +
+                PIN(ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE / 2 + prefix_size + new_size, 0, error_globals.message_buffer_size - 1);
+            char *copy_ptr = strchr(start_ptr, '\n');
+
+            int32_t copy_index;
+            if(copy_ptr == nullptr) {
+                copy_index = error_globals.message_buffer_size;
+            }
+            else {
+                copy_index = (copy_ptr - error_globals.message_buffer) + 1;
+            }
+
+            int32_t copy_size = error_globals.message_buffer_size - copy_index;
+            assert(prefix_size + copy_size + new_size < ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE);
+
+            strncpy(error_globals.message_buffer, prefix, prefix_size);
+            if(copy_size > 0) {
+                memmove(error_globals.message_buffer + prefix_size, copy_ptr, copy_size);
+            }
+
+            error_globals.message_buffer[prefix_size + copy_size] = '\0';
+            error_globals.message_buffer_size = prefix_size + copy_size;
+        }
+
+        if(error_globals.message_buffer_size + new_size < ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE) {
+            strcpy(error_globals.message_buffer + error_globals.message_buffer_size, buffer);
+            error_globals.message_buffer_size += new_size;
+        }
+    }
+
+    if(priority == _error_immediate) {
+        system_exit(-4998);
+    }
+
+    error_globals.recursion_lock = false;
+}
 
 bool errors_handle(void) {
     bool handled = error_globals.delayed;

@@ -369,6 +369,6 @@ static void datum_initialize(struct data_array *data, struct datum_header *heade
     memset(header, 0, data->size);
     header->identifier = data->next_identifier++;
     if(!data->next_identifier) {
-        data->next_identifier = SHORT_MIN;
+        data->next_identifier = INT16_MIN;
     }
 }

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdcountof.h>
 
 #include "../memory/byte_swapping.h"
 
@@ -11,6 +12,65 @@
 #if DEBUG
 char temporary[256];
 #endif
+
+#define NUMBER_OF_GLOBAL_COLORS 17
+
+static const real_argb_color private_real_argb_colors[] = {
+    {{1.0f, 1.0f, 1.0f, 1.0f}},
+    {{1.0f, 0.5f, 0.5f, 0.5f}},
+    {{1.0f, 0.0f, 0.0f, 0.0f}},
+    {{1.0f, 1.0f, 0.0f, 0.0f}},
+    {{1.0f, 0.0f, 1.0f, 0.0f}},
+    {{1.0f, 0.0f, 0.0f, 1.0f}},
+    {{1.0f, 0.0f, 1.0f, 1.0f}},
+    {{1.0f, 1.0f, 1.0f, 0.0f}},
+    {{1.0f, 1.0f, 0.0f, 1.0f}},
+    {{1.0f, 1.0f, 0.41f, 0.7f}},
+    {{1.0f, 0.39f, 0.58f, 0.93f}},
+    {{1.0f, 1.0f, 0.5f, 0.0f}},
+    {{1.0f, 0.44f, 0.05f, 0.43f}},
+    {{1.0f, 0.5f, 1.0f, 0.83f}},
+    {{1.0f, 0.0f, 0.39f, 0.0f}},
+    {{1.0f, 1.0f, 0.63f, 0.48f}},
+    {{1.0f, 0.81f, 0.13f, 0.56f}}
+};
+static_assert(countof(private_real_argb_colors) == NUMBER_OF_GLOBAL_COLORS);
+
+const real_argb_color *global_real_argb_white     = &private_real_argb_colors[0];
+const real_argb_color *global_real_argb_grey      = &private_real_argb_colors[1];
+const real_argb_color *global_real_argb_black     = &private_real_argb_colors[2];
+const real_argb_color *global_real_argb_red       = &private_real_argb_colors[3];
+const real_argb_color *global_real_argb_green     = &private_real_argb_colors[4];
+const real_argb_color *global_real_argb_blue      = &private_real_argb_colors[5];
+const real_argb_color *global_real_argb_cyan      = &private_real_argb_colors[6];
+const real_argb_color *global_real_argb_yellow    = &private_real_argb_colors[7];
+const real_argb_color *global_real_argb_magenta   = &private_real_argb_colors[8];
+const real_argb_color *global_real_argb_pink      = &private_real_argb_colors[9];
+const real_argb_color *global_real_argb_lightblue = &private_real_argb_colors[10];
+const real_argb_color *global_real_argb_orange    = &private_real_argb_colors[11];
+const real_argb_color *global_real_argb_purple    = &private_real_argb_colors[12];
+const real_argb_color *global_real_argb_aqua      = &private_real_argb_colors[13];
+const real_argb_color *global_real_argb_darkgreen = &private_real_argb_colors[14];
+const real_argb_color *global_real_argb_salmon    = &private_real_argb_colors[15];
+const real_argb_color *global_real_argb_violet    = &private_real_argb_colors[16];
+
+const real_rgb_color *global_real_rgb_white       = &private_real_argb_colors[0].rgb;
+const real_rgb_color *global_real_rgb_grey        = &private_real_argb_colors[1].rgb;
+const real_rgb_color *global_real_rgb_black       = &private_real_argb_colors[2].rgb;
+const real_rgb_color *global_real_rgb_red         = &private_real_argb_colors[3].rgb;
+const real_rgb_color *global_real_rgb_green       = &private_real_argb_colors[4].rgb;
+const real_rgb_color *global_real_rgb_blue        = &private_real_argb_colors[5].rgb;
+const real_rgb_color *global_real_rgb_cyan        = &private_real_argb_colors[6].rgb;
+const real_rgb_color *global_real_rgb_yellow      = &private_real_argb_colors[7].rgb;
+const real_rgb_color *global_real_rgb_magenta     = &private_real_argb_colors[8].rgb;
+const real_rgb_color *global_real_rgb_pink        = &private_real_argb_colors[9].rgb;
+const real_rgb_color *global_real_rgb_lightblue   = &private_real_argb_colors[10].rgb;
+const real_rgb_color *global_real_rgb_orange      = &private_real_argb_colors[11].rgb;
+const real_rgb_color *global_real_rgb_purple      = &private_real_argb_colors[12].rgb;
+const real_rgb_color *global_real_rgb_aqua        = &private_real_argb_colors[13].rgb;
+const real_rgb_color *global_real_rgb_darkgreen   = &private_real_argb_colors[14].rgb;
+const real_rgb_color *global_real_rgb_salmon      = &private_real_argb_colors[15].rgb;
+const real_rgb_color *global_real_rgb_violet      = &private_real_argb_colors[16].rgb;
 
 tag string_to_tag(const char *s) {
     tag t = NONE;
@@ -137,6 +197,9 @@ void display_assert(char *information, char *file, int32_t line, bool fatal) {
 }
 //#endif
 
+void (*keystone_dispose)(void) = (void *)0x0086D320;
+
 void system_exit(int code) {
+    keystone_dispose();
     exit(code);
 }

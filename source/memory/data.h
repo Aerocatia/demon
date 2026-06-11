@@ -38,9 +38,9 @@ static_assert(sizeof(struct data_iterator) == 16);
 #define MARK_DATUM_AS_FREE(datum) ((datum)->identifier = 0)
 
 #define BUILD_DATUM_INDEX(identifier, absolute_index) \
-    ((uint32_t)(absolute_index) | ((uint32_t)(identifier) << SHORT_BITS))
-#define DATUM_INDEX_TO_IDENTIFIER(index) ((index) >> SHORT_BITS)
-#define DATUM_INDEX_TO_ABSOLUTE_INDEX(index) ((index) & ((1 << SHORT_BITS) -1))
+    ((uint32_t)(absolute_index) | ((uint32_t)(identifier) << INT16_BITS))
+#define DATUM_INDEX_TO_IDENTIFIER(index) ((index) >> INT16_BITS)
+#define DATUM_INDEX_TO_ABSOLUTE_INDEX(index) ((index) & ((1 << INT16_BITS) -1))
 
 #define DATUM_TRY_AND_GET(data_array, index, structure) ((structure *)datum_try_and_get((data_array), (index)))
 
