@@ -1,6 +1,8 @@
 #ifndef DEMON_ERRORS_H
 #define DEMON_ERRORS_H
 
+#include <stdint.h>
+
 enum {
     _developer_mode_off,
     _developer_mode_errors_enabled,
@@ -37,7 +39,7 @@ void errors_clear();
 
 void write_to_error_file(char *string, bool date);
 
-extern void (*stack_walk_initialize)(void);
-extern void (*stack_walk_dispose)(void);
+void stack_walk_initialize(void);
+void stack_walk_dispose(void);
 
 #endif

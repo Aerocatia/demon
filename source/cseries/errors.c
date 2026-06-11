@@ -50,6 +50,8 @@ int32_t fucked_up_shit_count = 0;
 /* forward declarations */
 
 static void reset_error_state(void);
+
+// halo_cache_symbols.exe
 char *(*errors_debug_file_path)(char *filename) = (void *)0x0075BB30;
 
 /* public functions */

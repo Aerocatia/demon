@@ -1,9 +1,12 @@
+#include <stdlib.h>
+
 #include "../cseries/build_number.h"
 #include "../cseries/platform.h"
 #include "console.h"
 
 void main_crash([[maybe_unused]] const char *str) {
     *((char **)nullptr) = "chucky was here!  NULL belongs to me!!!!!";
+    abort(); // just in case
 }
 
 void main_print_version() {

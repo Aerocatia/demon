@@ -197,6 +197,7 @@ void display_assert(char *information, char *file, int32_t line, bool fatal) {
 }
 //#endif
 
+// halo_cache_symbols.exe
 void (*keystone_dispose)(void) = (void *)0x0086D320;
 
 void system_exit(int code) {

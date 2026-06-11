@@ -395,8 +395,11 @@ void system_exit(int code);
 /* debug memory */
 
 #ifdef DEBUG
-extern void *(*debug_malloc)(size_t size, bool clear, const char *source_file, int32_t source_line);
-extern void *(*debug_free)(void *pointer, const char *source_file, int32_t source_line);
+
+void *debug_malloc(size_t size, bool clear, const char *source_file, int32_t source_line);
+void debug_free(void *pointer, const char *source_file, int32_t source_line);
+void *debug_realloc(void *pointer, size_t size, const char *source_file, int32_t source_line);
+
 #undef malloc
 #undef calloc
 #undef free
