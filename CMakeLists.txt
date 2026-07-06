@@ -8,6 +8,7 @@ project(Demon
 
 add_library(demon SHARED
     source/cache/cache_files.c
+    source/cache/physical_memory_map.c
     source/cseries/cseries.c
     source/cseries/cseries_windows.c
     source/cseries/errors.c

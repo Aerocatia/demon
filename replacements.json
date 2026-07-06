@@ -125,6 +125,7 @@
     "system_milliseconds": { "address": "0x004092AF" },
     "tag_block_get_address": { "address": "0x00407685" },
     "tag_block_get_element_with_size": { "address": "0x00405E16" },
+    "tag_cache_size": { "address": "0x00407004" },
     "tag_data_get_address": { "address": "0x004091D3" },
     "tag_data_get_pointer": { "address": "0x004010CD" },
     "tag_get": { "address": "0x0040A0DD" },
