@@ -24,7 +24,7 @@ extern struct {
     uint32_t unknown; // set to 0 and never read
     struct cache_file_tags_header *tags_header;
     struct cache_file_structure_bsp_header *structure_bsp_header;
-}cache_file_globals;
+} cache_file_globals;
 
 asm(".set _global_tag_instances, 0x00AF8364"); // TODO: remove extern
 extern struct cache_file_tag_instance *global_tag_instances;
