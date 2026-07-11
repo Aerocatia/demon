@@ -1,3 +1,6 @@
+#include <stdint.h>
+
+#include "../cseries/cseries_windows.h"
 #include "physical_memory_map.h"
 
 /* globals */
@@ -11,6 +14,31 @@ extern struct {
 } physical_memory_map_globals;
 
 /* public functions */
+
+void physical_memory_free(void) {
+    if(physical_memory_map_globals.game_state_base_address != nullptr) {
+        VirtualFree(physical_memory_map_globals.game_state_base_address, 0, MEM_RELEASE);
+        physical_memory_map_globals.game_state_base_address = nullptr;
+    }
+
+#ifdef REQUIRE_CACHE_FILE
+    if(physical_memory_map_globals.tag_cache_base_address != nullptr) {
+        // halo_cache_symbols.exe frees this, but Halo PC changed it to be part of the game state allocation so this is invalid
+        // VirtualFree(physical_memory_map_globals.tag_cache_base_address, 0, MEM_RELEASE);
+        physical_memory_map_globals.tag_cache_base_address = nullptr;
+    }
+#endif
+
+    if(physical_memory_map_globals.texture_cache_base_address != nullptr) {
+        VirtualFree(physical_memory_map_globals.texture_cache_base_address, 0, MEM_RELEASE);
+        physical_memory_map_globals.texture_cache_base_address = nullptr;
+    }
+
+    if(physical_memory_map_globals.sound_cache_base_address != nullptr) {
+        VirtualFree(physical_memory_map_globals.sound_cache_base_address, 0, MEM_RELEASE);
+        physical_memory_map_globals.sound_cache_base_address = nullptr;
+    }
+}
 
 void *physical_memory_get_game_state_base_address(void) {
     return physical_memory_map_globals.game_state_base_address;

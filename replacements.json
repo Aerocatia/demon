@@ -110,6 +110,7 @@
     "matrix4x3_translation": { "address": "0x00408382" },
     "matrix4x3_transpose": { "address": "0x00409C9B" },
     "perpendicular3d": { "address": "0x0040A3EE" },
+    "physical_memory_free": { "address": "0x005203C0", "sudo": true },
     "physical_memory_get_game_state_base_address": { "address": "0x00403788" },
     "physical_memory_get_sound_cache_base_address": { "address": "0x00407004" },
     "physical_memory_get_tag_cache_base_address": { "address": "0x00403FAD" },
