@@ -212,7 +212,7 @@ void write_to_error_file(char *string, bool date) {
         write_to_error_file(EOL_STRING EOL_STRING, false);
         write_to_error_file(TARGET_STRING " " PLATFORM_NAME_STRING " " BUILD_NUMBER CACHE_STRING
             " ----------------------------------------------" EOL_STRING, true);
-        sprintf(line, "reference function: %s" EOL_STRING, "_write_to_error_file");
+        sprintf(line, "reference function: %s" EOL_STRING, __func__);
         write_to_error_file(line, true);
         sprintf(line, "reference address: %p" EOL_STRING, write_to_error_file);
         write_to_error_file(line, true);
