@@ -21,7 +21,7 @@ struct lruv_cache {
     struct data_array *blocks;
     uint32_t signature;
 };
-static_assert(sizeof(struct lruv_cache) == 0x44);
+static_assert(sizeof(struct lruv_cache) == 68);
 
 struct lruv_cache_block {
     struct datum_header;
@@ -33,7 +33,7 @@ struct lruv_cache_block {
     uint32_t last_used_frame_index;
     uint32_t unused;
 };
-static_assert(sizeof(struct lruv_cache_block) == 0x1C);
+static_assert(sizeof(struct lruv_cache_block) == 28);
 
 struct lruv_cache_hole {
     int32_t previous_block_index;
@@ -224,7 +224,7 @@ int32_t lruv_block_new(struct lruv_cache *cache, int32_t size) {
     struct lruv_cache_block *block;
     data_iterator_new(&iterator, cache->blocks);
     while((block = data_iterator_next(&iterator))) {
-        if(block->first_page_index < best_hole.first_page_index+desired_page_count && block->first_page_index + block->page_count > best_hole.first_page_index) {
+        if(block->first_page_index < best_hole.first_page_index + desired_page_count && block->first_page_index + block->page_count > best_hole.first_page_index) {
             assert(!cache->locked_block_proc || !cache->locked_block_proc(iterator.index));
             lruv_block_delete(cache, iterator.index);
         }
