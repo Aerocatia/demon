@@ -66,7 +66,7 @@ void data_make_invalid(struct data_array *data);
 
 int32_t datum_new(struct data_array *data);
 int32_t datum_new_at_index(struct data_array *data, int32_t index);
-int32_t datum_new_at_index_with_new_identifier(struct data_array *data, int32_t index);
+int32_t datum_new_at_plain_index_hack_for_player_data(struct data_array *data, int32_t index);
 void datum_delete(struct data_array *data, int32_t index);
 void *datum_get(struct data_array *data, int32_t index);
 void *datum_try_and_get(struct data_array *data, int32_t index);

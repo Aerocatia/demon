@@ -88,8 +88,7 @@ int32_t datum_new_at_index(struct data_array *data, int32_t index) {
     return index;
 }
 
-// added in halo pc, original name unknown
-int32_t datum_new_at_index_with_new_identifier(struct data_array *data, int32_t index) {
+int32_t datum_new_at_plain_index_hack_for_player_data(struct data_array *data, int32_t index) {
     data_verify(data);
     assert(data->valid);
 

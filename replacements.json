@@ -39,7 +39,7 @@
     "datum_get": { "address": "0x00409A1B" },
     "datum_new": { "address": "0x0040614F" },
     "datum_new_at_index": { "address": "0x00406B86" },
-    "datum_new_at_index_with_new_identifier": { "address": "0x00401343" },
+    "datum_new_at_plain_index_hack_for_player_data": { "address": "0x00401343" },
     "datum_try_and_get": { "address": "0x00408CF6" },
     "debug_free": { "address": "0x00407E64" },
     "debug_malloc": { "address": "0x00404417" },
