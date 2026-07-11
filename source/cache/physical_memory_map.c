@@ -21,7 +21,7 @@ void physical_memory_free(void) {
         physical_memory_map_globals.game_state_base_address = nullptr;
     }
 
-#ifdef REQUIRE_CACHE_FILE
+#ifdef CACHE_FILE_BUILD
     if(physical_memory_map_globals.tag_cache_base_address != nullptr) {
         // halo_cache_symbols.exe frees this, but Halo PC changed it to be part of the game state allocation so this is invalid
         // VirtualFree(physical_memory_map_globals.tag_cache_base_address, 0, MEM_RELEASE);
@@ -45,7 +45,7 @@ void *physical_memory_get_game_state_base_address(void) {
 }
 
 void *physical_memory_get_tag_cache_base_address(void) {
-#ifdef REQUIRE_CACHE_FILE
+#ifdef CACHE_FILE_BUILD
     return physical_memory_map_globals.tag_cache_base_address;
 #else
     return nullptr;
@@ -53,7 +53,7 @@ void *physical_memory_get_tag_cache_base_address(void) {
 }
 
 uint32_t physical_memory_get_tag_cache_size(void) {
-#ifdef REQUIRE_CACHE_FILE
+#ifdef CACHE_FILE_BUILD
     return TAG_CACHE_SIZE;
 #else
     return 0;

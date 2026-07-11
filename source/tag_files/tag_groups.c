@@ -28,7 +28,7 @@ void *tag_block_get_element_with_size(const struct tag_block *block, int32_t ind
     assert(block);
     assert(block->count >= 0);
 
-#ifndef REQUIRE_CACHE_FILE
+#ifndef CACHE_FILE_BUILD
     #error "implement for tag build"
 #else
     vassert(index >= 0 && index < block->count,

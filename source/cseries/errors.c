@@ -14,7 +14,7 @@
 
 #define DEBUG_OUTPUT_FILENAME "debug.txt"
 
-#ifdef REQUIRE_CACHE_FILE
+#ifdef CACHE_FILE_BUILD
 #define CACHE_STRING "(CACHE)"
 #else
 #define CACHE_STRING ""
@@ -127,7 +127,7 @@ void error(short priority, const char *format, ...) {
 #endif
 
 //FIXME not in release builds
-//#ifdef SYMBOLS
+//#ifdef SYMBOLS_BUILD
         display_debug_string(buffer);
 //#endif
         if(priority != _error_log) {
@@ -210,7 +210,7 @@ void write_to_error_file(char *string, bool date) {
         char line[KILO];
         first_line = false;
         write_to_error_file(EOL_STRING EOL_STRING, false);
-        write_to_error_file(TARGET " " PLATFORM_NAME_STRING " " BUILD_NUMBER CACHE_STRING
+        write_to_error_file(TARGET_STRING " " PLATFORM_NAME_STRING " " BUILD_NUMBER CACHE_STRING
             " ----------------------------------------------" EOL_STRING, true);
         sprintf(line, "reference function: %s" EOL_STRING, "_write_to_error_file");
         write_to_error_file(line, true);

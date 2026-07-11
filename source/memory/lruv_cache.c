@@ -46,7 +46,7 @@ static int32_t lruv_cache_bytes_to_pages(struct lruv_cache *cache, int32_t size_
 
 #define lruv_cache_block_get(cache, index) DATUM_GET((cache)->blocks, index, struct lruv_cache_block)
 
-#ifdef DEBUG
+#ifdef DEBUG_BUILD
     static void lruv_cache_verify(struct lruv_cache *cache, bool verify_blocks);
 #else
     #define lruv_cache_verify(cache, verify_blocks) ((void)0)
@@ -459,7 +459,7 @@ static int32_t lruv_cache_bytes_to_pages(struct lruv_cache *cache, int32_t size_
     return page_count;
 }
 
-#ifdef DEBUG
+#ifdef DEBUG_BUILD
 static void lruv_cache_verify(struct lruv_cache *cache, bool verify_blocks) {
     assert(cache);
     assert(cache->signature == LRUV_CACHE_SIGNATURE);

@@ -10,5 +10,5 @@ void main_crash([[maybe_unused]] const char *str) {
 }
 
 void main_print_version() {
-    console_printf(false, TARGET " " PLATFORM_NAME_STRING " " BUILD_NUMBER " " __DATE__ " " __TIME__);
+    console_printf(false, TARGET_STRING " " PLATFORM_NAME_STRING " " BUILD_NUMBER " " __DATE__ " " __TIME__);
 }

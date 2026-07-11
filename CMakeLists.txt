@@ -31,9 +31,9 @@ add_library(demon SHARED
 )
 
 target_compile_definitions(demon PUBLIC
-    DEBUG
-    TARGET="halo"
-    REQUIRE_CACHE_FILE
+    CACHE_FILE_BUILD
+    DEBUG_BUILD
+    TARGET_STRING="halo"
 )
 
 option(DEMON_COUNT_THUNKS "Count thunks on DLL load" OFF)

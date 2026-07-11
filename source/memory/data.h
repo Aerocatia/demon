@@ -44,7 +44,7 @@ static_assert(sizeof(struct data_iterator) == 16);
 
 #define DATUM_TRY_AND_GET(data_array, index, structure) ((structure *)datum_try_and_get((data_array), (index)))
 
-#ifdef DEBUG
+#ifdef DEBUG_BUILD
     #define DATUM_GET(data_array, index, structure) ((structure *)datum_get((data_array), (index)))
     #define DATUM_GET_BY_SIZE(data_array, index, structure) ((structure *)datum_get((data_array), (index)))
     void data_verify(struct data_array *data);

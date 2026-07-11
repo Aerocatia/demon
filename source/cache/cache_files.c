@@ -14,7 +14,7 @@ char *cache_files_map_directory() {
     return "maps\\";
 }
 
-#ifdef REQUIRE_CACHE_FILE
+#ifdef CACHE_FILE_BUILD
 
 asm(".set _cache_file_globals, 0x00AF8368"); // TODO: make static
 extern struct {
@@ -32,11 +32,11 @@ extern struct cache_file_tag_instance *global_tag_instances;
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index);
 static bool cache_file_valid_version(int32_t version);
 
-//#ifdef DEBUG
+//#ifdef DEBUG_BUILD // FIXME: the game uses the tag instances pointer directly in release builds
 void *tag_get(tag expected_group_tag, int32_t tag_index) {
     struct cache_file_tag_instance *tag_instance = cache_file_tag_instance_get(tag_index);
 
-#ifdef DEBUG
+#ifdef DEBUG_BUILD
     if(tag_instance->group_tag != expected_group_tag &&
         tag_instance->parent_group_tags[0] != expected_group_tag &&
         tag_instance->parent_group_tags[1] != expected_group_tag

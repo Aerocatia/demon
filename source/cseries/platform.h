@@ -4,14 +4,8 @@
 // We need 1-byte bools
 static_assert(sizeof(bool) == 1);
 
-#if defined(DEBUG)
-#elif defined(NO_DEBUG)
-#else
-    #error "must have DEBUG or NO_DEBUG defined"
-#endif
-
-#ifndef TARGET
-#error "TARGET is not defined"
+#ifndef TARGET_STRING
+#error "TARGET_STRING is not defined"
 #endif
 
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)

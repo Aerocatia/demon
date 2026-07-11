@@ -347,7 +347,7 @@ void data_compact(struct data_array *data) {
     free(new_data);
 }
 
-#ifdef DEBUG
+#ifdef DEBUG_BUILD
 void data_verify(struct data_array *data) {
     assert(data);
 

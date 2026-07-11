@@ -9,7 +9,7 @@
 #include "cseries.h"
 #include "errors.h"
 
-#if DEBUG
+#if DEBUG_BUILD
 char temporary[256];
 #endif
 
@@ -87,7 +87,7 @@ char *tag_to_string(tag t, char *s) {
     return s;
 }
 
-//#ifdef DEBUG
+#ifdef DEBUG_BUILD
 char *csprintf(char *buffer, char *format, ...) {
     va_list arglist;
     va_start(arglist, format);
@@ -188,14 +188,14 @@ void *csmemcpy(void *destination, const void *source, size_t size) {
 
     return memcpy(destination, source, size);
 }
-//#endif
+#endif
 
-//#ifdef DEBUG
+#ifdef DEBUG_BUILD
 void display_assert(char *information, char *file, int32_t line, bool fatal) {
     error(_error_silent, "EXCEPTION %s in %s,#%d: %s", fatal ? "halt" : "warn", file, line,
         information ? information : "<no reason given>");
 }
-//#endif
+#endif
 
 // halo_cache_symbols.exe
 void (*keystone_dispose)(void) = (void *)0x0086D320;

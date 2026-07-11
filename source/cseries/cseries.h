@@ -301,7 +301,7 @@ typedef struct {
 #undef assert
 #endif
 
-#ifdef DEBUG
+#ifdef DEBUG_BUILD
     void display_assert(char *string, char *file, int32_t line, bool fatal);
     void display_debug_string(char *string);
     char *csprintf(char *buffer, char *format, ...);
@@ -343,7 +343,7 @@ typedef struct {
     // #define unreachable() ((void)0) - Use C23 macro
 #endif
 
-#if DEBUG
+#if DEBUG_BUILD
 extern char temporary[256];
 #endif
 
@@ -394,7 +394,7 @@ void system_exit(int code);
 
 /* debug memory */
 
-#ifdef DEBUG
+#ifdef DEBUG_BUILD
 
 void *debug_malloc(size_t size, bool clear, const char *source_file, int32_t source_line);
 void debug_free(void *pointer, const char *source_file, int32_t source_line);
