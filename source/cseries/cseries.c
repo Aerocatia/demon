@@ -98,10 +98,10 @@ char *csprintf(char *buffer, char *format, ...) {
 }
 
 enum {
-    MAXIMUM_MEMCMP_SIZE = 512 * MEG,
-    MAXIMUM_MEMCPY_MEMMOVE_SIZE = 512 * MEG,
-    MAXIMUM_MEMSET_SIZE = 512 * MEG,
-    MAXIMUM_STRING_SIZE = 256 * KILO
+    MAXIMUM_MEMCMP_SIZE = 512 * MIB,
+    MAXIMUM_MEMCPY_MEMMOVE_SIZE = 512 * MIB,
+    MAXIMUM_MEMSET_SIZE = 512 * MIB,
+    MAXIMUM_STRING_SIZE = 256 * KIB
 };
 
 int csmemcmp(const void *p1, const void *p2, size_t size) {

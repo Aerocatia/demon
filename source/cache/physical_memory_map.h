@@ -4,7 +4,7 @@
 
 #include "../cseries/cseries.h"
 
-#define TAG_CACHE_SIZE (64 * MEG) // was (23 * MEG)
+#define TAG_CACHE_SIZE (64 * MIB) // was (23 * MIB)
 
 void *physical_memory_get_game_state_base_address(void);
 

@@ -6,7 +6,7 @@
 #include "unicode.h"
 
 enum {
-    MAXIMUM_STRING_SIZE = 32 * KILO
+    MAXIMUM_STRING_SIZE = 32 * KIB
 };
 
 static size_t strlen16(const char16_t *str) {

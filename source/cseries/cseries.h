@@ -8,9 +8,9 @@
 
 #define NONE -1
 
-#define KILO 1024
-#define MEG (KILO * KILO)
-#define GIG (KILO * MEG)
+#define KIB 1024
+#define MIB (KIB * KIB)
+#define GIB (KIB * MIB)
 
 #define INT32_BITS 32
 #define INT32_BITS_BITS 5

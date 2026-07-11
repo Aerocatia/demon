@@ -21,7 +21,7 @@
 #endif
 
 enum {
-    ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE = 4 * KILO
+    ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE = 4 * KIB
 };
 
 struct error_global_data {
@@ -207,7 +207,7 @@ void errors_clear(void) {
 void write_to_error_file(char *string, bool date) {
     static bool first_line = true;
     if(first_line) {
-        char line[KILO];
+        char line[KIB];
         first_line = false;
         write_to_error_file(EOL_STRING EOL_STRING, false);
         write_to_error_file(TARGET_STRING " " PLATFORM_NAME_STRING " " BUILD_NUMBER CACHE_STRING
