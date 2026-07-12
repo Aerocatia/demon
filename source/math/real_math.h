@@ -33,7 +33,7 @@
 #define _quarter_circle _half_pi
 #define _eighth_circle _quarter_pi
 
-#define _real_epsilon .0001f
+#define _real_epsilon 0.0001f
 #define _valid_real_epsilon 0.001f
 
 #ifdef MATH_ASSERTS

@@ -6,9 +6,9 @@
 #include "../cseries/platform.h"
 
 #define SWAP2(q) ((((uint16_t)(q))>>8) | ((((uint16_t)(q))<<8)))
-#define SWAP4(q) (((((uint32_t) (q)))>>24) | ((((uint32_t) (q))>>8)&0xff00) | ((((uint32_t) (q))<<8)&0xff0000) | ((((uint32_t) (q))<<24)))
-#define SWAP8(q) (((uint64_t)(q)>>56) | (((uint64_t)(q)>>40)&0xff00) | (((uint64_t)(q)>>24)&0xff0000) | (((uint64_t)(q)>>8)&0xff000000) | \
-(((uint64_t)(q)<<8)&0xff00000000) | (((uint64_t)(q)<<24)&0xff0000000000) | (((uint64_t)(q)<<40)&0xff000000000000) | ((uint64_t)(q)<<56))
+#define SWAP4(q) (((((uint32_t) (q)))>>24) | ((((uint32_t) (q))>>8)&0xFF00) | ((((uint32_t) (q))<<8)&0xFF0000) | ((((uint32_t) (q))<<24)))
+#define SWAP8(q) (((uint64_t)(q)>>56) | (((uint64_t)(q)>>40)&0xFF00) | (((uint64_t)(q)>>24)&0xFF0000) | (((uint64_t)(q)>>8)&0xFF000000) | \
+(((uint64_t)(q)<<8)&0xFF00000000) | (((uint64_t)(q)<<24)&0xFF0000000000) | (((uint64_t)(q)<<40)&0xFF000000000000) | ((uint64_t)(q)<<56))
 
 #if defined(big_endian)
     #define SWAP2_BE(q) q
