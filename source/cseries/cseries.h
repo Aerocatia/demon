@@ -7,6 +7,7 @@
 /* constants */
 
 #define NONE -1
+#define TAG_NONE 0xFFFFFFFF
 
 #define KIB 1024
 #define MIB (KIB * KIB)

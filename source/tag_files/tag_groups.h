@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "../cseries/cseries.h"
+#include "../memory/data.h"
 
 #define MAXIMUM_PARENT_GROUP_TYPES_PER_TAG 2
 #define MAXIMUM_SIMULTANEOUS_TAG_INSTANCES 4000
@@ -59,5 +60,13 @@ void *tag_get(tag group_tag, int32_t tag_index);
 void *tag_data_get_address(const struct tag_data *data);
 void *tag_data_get_pointer(const struct tag_data *data, int32_t offset, int32_t size);
 void *tag_block_get_element_with_size(const struct tag_block *block, int32_t index, int32_t element_size);
+
+struct tag_iterator {
+    struct data_iterator iterator;
+    tag key_group_tag;
+};
+
+void tag_iterator_new(struct tag_iterator *iterator, tag key_group_tag);
+int32_t tag_iterator_next(struct tag_iterator *iterator);
 
 #endif

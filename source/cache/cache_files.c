@@ -107,6 +107,30 @@ int32_t scenario_tags_load(const char *name) {
     return cache_file_globals.tags_header->scenario_tag_index;
 }
 
+bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]] const char *name, bool fatal) {
+    if(header->header_signature != CACHE_FILE_HEADER_SIGNATURE ||
+        header->footer_signature != CACHE_FILE_FOOTER_SIGNATURE ||
+        header->size < 0 ||
+        header->size > CACHE_FILE_MAXIMUM_SIZE ||
+        strlen(header->name) > TAG_STRING_LENGTH
+    ) {
+        if(fatal) {
+            vhalt(csprintf(temporary, "'%s' does not appear to be a cache file", name));
+        };
+    }
+    // TODO: This hack will allow both retail and custom edition map types to run, but the game will create a zero byte loc.map if one does not exist
+    else if(!(header->version == CACHE_FILE_VERSION_RETAIL || header->version == CACHE_FILE_VERSION_CUSTOM_EDITION)) {
+        if(fatal) {
+            vhalt(csprintf(temporary, "the cache file '%s' is an unsupported version (%d)", name, header->version));
+        };
+    }
+    else {
+        return true;
+    }
+
+    return false;
+}
+
 //#ifdef DEBUG_BUILD // FIXME: the game uses the tag instances pointer directly in release builds
 void *tag_get(tag expected_group_tag, int32_t tag_index) {
     struct cache_file_tag_instance *tag_instance = cache_file_tag_instance_get(tag_index);
@@ -169,28 +193,27 @@ int32_t tag_loaded(tag group_tag, const char *name) {
     return tag_index;
 }
 
-bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]] const char *name, bool fatal) {
-    if(header->header_signature != CACHE_FILE_HEADER_SIGNATURE ||
-        header->footer_signature != CACHE_FILE_FOOTER_SIGNATURE ||
-        header->size < 0 ||
-        header->size > CACHE_FILE_MAXIMUM_SIZE ||
-        strlen(header->name) > TAG_STRING_LENGTH
-    ) {
-        if(fatal) {
-            vhalt(csprintf(temporary, "'%s' does not appear to be a cache file", name));
-        };
-    }
-    // TODO: This hack will allow both retail and custom edition map types to run, but the game will create a zero byte loc.map if one does not exist
-    else if(!(header->version == CACHE_FILE_VERSION_RETAIL || header->version == CACHE_FILE_VERSION_CUSTOM_EDITION)) {
-        if(fatal) {
-            vhalt(csprintf(temporary, "the cache file '%s' is an unsupported version (%d)", name, header->version));
-        };
-    }
-    else {
-        return true;
+void tag_iterator_new(struct tag_iterator *iterator, tag key_group_tag) {
+    iterator->iterator.absolute_index = 0;
+    iterator->key_group_tag = key_group_tag;
+}
+
+int32_t tag_iterator_next(struct tag_iterator *iterator) {
+    while(iterator->iterator.absolute_index < cache_file_globals.tags_header->tag_count) {
+        struct cache_file_tag_instance *instance = &global_tag_instances[iterator->iterator.absolute_index++];
+        if(instance) {
+            if(
+                iterator->key_group_tag == TAG_NONE ||
+                iterator->key_group_tag == instance->group_tag ||
+                iterator->key_group_tag == instance->parent_group_tags[0] ||
+                iterator->key_group_tag == instance->parent_group_tags[1]
+            ) {
+                return instance->tag_index;
+            }
+        }
     }
 
-    return false;
+    return NONE;
 }
 
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index) {
