@@ -108,7 +108,8 @@ int32_t scenario_tags_load(const char *name) {
 }
 
 bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]] const char *name, bool fatal) {
-    if(header->header_signature != CACHE_FILE_HEADER_SIGNATURE ||
+    if(
+        header->header_signature != CACHE_FILE_HEADER_SIGNATURE ||
         header->footer_signature != CACHE_FILE_FOOTER_SIGNATURE ||
         header->size < 0 ||
         header->size > CACHE_FILE_MAXIMUM_SIZE ||
@@ -134,19 +135,18 @@ bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]]
 //#ifdef DEBUG_BUILD // FIXME: the game uses the tag instances pointer directly in release builds
 void *tag_get(tag expected_group_tag, int32_t tag_index) {
     struct cache_file_tag_instance *tag_instance = cache_file_tag_instance_get(tag_index);
-
 #ifdef DEBUG_BUILD
-    if(tag_instance->group_tag != expected_group_tag &&
+    if(
+        tag_instance->group_tag != expected_group_tag &&
         tag_instance->parent_group_tags[0] != expected_group_tag &&
         tag_instance->parent_group_tags[1] != expected_group_tag
     ) {
-        char group1[16], group2[16];
-
+        char group1[16];
+        char group2[16];
         vhalt(csprintf(temporary, "expected tag group '%s' but got '%s' for %08x",
             tag_to_string(expected_group_tag, group1), tag_to_string(tag_instance->group_tag, group2), tag_index));
     }
 #endif
-
     vassert(tag_instance->base_address, csprintf(temporary, "can't get() a tag with a base address!"));
 
     return tag_instance->base_address;
@@ -167,6 +167,7 @@ tag tag_get_group_tag(int32_t tag_index) {
 
 uint32_t tag_groups_checksum() {
     assert(cache_file_globals.tags_loaded);
+
     return cache_file_globals.tags_header->tags_checksum;
 }
 
@@ -219,7 +220,6 @@ int32_t tag_iterator_next(struct tag_iterator *iterator) {
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index) {
     assert(cache_file_globals.tags_loaded);
     assert(global_tag_instances);
-
     int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(tag_index);
     vassert(absolute_index >= 0 && absolute_index < cache_file_globals.tags_header->tag_count,
         csprintf(temporary, "i don't think %08x is a tag index", tag_index));
