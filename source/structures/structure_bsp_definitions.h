@@ -194,28 +194,28 @@ struct structure_fog_region {
 static_assert(sizeof(struct structure_fog_region) == 40);
 
 struct structure_fog_palette_entry {
-    char name[TAG_STRING_BUFFER_LENGTH];
+    char name[TAG_STRING_LENGTH + 1];
     struct tag_reference fog;
     uint16_t pad;
     int16_t runtime_global_function_index;
-    char global_function_name[TAG_STRING_BUFFER_LENGTH];
+    char global_function_name[TAG_STRING_LENGTH + 1];
     uint32_t unused[13];
 };
 static_assert(sizeof(struct structure_fog_palette_entry) == 136);
 
 struct structure_weather_palette_entry {
-    char name[TAG_STRING_BUFFER_LENGTH];
+    char name[TAG_STRING_LENGTH + 1];
     struct tag_reference particle_system;
     uint16_t pad1;
     int16_t runtime_particle_system_global_function_index;
-    char particle_system_global_function_name[TAG_STRING_BUFFER_LENGTH];
+    char particle_system_global_function_name[TAG_STRING_LENGTH + 1];
     uint32_t unused0[11];
     struct tag_reference wind;
     real_vector3d wind_direction;
     real wind_magnitude;
     uint16_t pad2;
     int16_t wind_global_function_index;
-    char wind_global_function_name[TAG_STRING_BUFFER_LENGTH];
+    char wind_global_function_name[TAG_STRING_LENGTH + 1];
     uint32_t unused1[11];
 };
 static_assert(sizeof(struct structure_weather_palette_entry) == 240);
@@ -229,17 +229,17 @@ struct structure_weather_polyhedron {
 static_assert(sizeof(struct structure_weather_polyhedron) == 32);
 
 struct structure_sound_environment_palette_entry {
-    char name[TAG_STRING_BUFFER_LENGTH];
+    char name[TAG_STRING_LENGTH + 1];
     struct tag_reference sound_environment;
     uint32_t unused[8];
 };
 
 struct structure_background_sound_palette_entry {
-    char name[TAG_STRING_BUFFER_LENGTH];
+    char name[TAG_STRING_LENGTH + 1];
     struct tag_reference background_sound;
     uint16_t pad;
     int16_t runtime_global_function_index;
-    char global_function_name[TAG_STRING_BUFFER_LENGTH];
+    char global_function_name[TAG_STRING_LENGTH + 1];
     uint32_t unused[8];
 };
 static_assert(sizeof(struct structure_background_sound_palette_entry) == 116);
@@ -253,7 +253,7 @@ struct structure_breakable_surface {
 static_assert(sizeof(struct structure_breakable_surface) == 48);
 
 struct structure_marker {
-    char name[TAG_STRING_BUFFER_LENGTH];
+    char name[TAG_STRING_LENGTH + 1];
     real_quaternion rotation;
     real_point3d translation;
 };
