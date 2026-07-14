@@ -2,14 +2,20 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <windows.h>
+
 #include "../cseries/build_number.h"
 #include "../cseries/cseries.h"
 #include "../tag_files/files.h"
+#include "../tag_files/tag_files.h"
 #include "../tag_files/tag_groups.h"
 #include "../memory/byte_swapping.h"
 #include "../memory/data.h"
 
 #include "cache_files.h"
+#include "sound_cache.h"
+#include "texture_cache.h"
+#include "physical_memory_map.h"
 
 static char cache_root_directory[MAXIMUM_FILENAME_LENGTH + 1] = {};
 
@@ -44,7 +50,62 @@ asm(".set _global_tag_instances, 0x00AF8364"); // TODO: remove extern
 extern struct cache_file_tag_instance *global_tag_instances;
 
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index);
-static bool cache_file_valid_version(int32_t version);
+
+int32_t scenario_tags_load(const char *name) {
+    assert(name);
+    texture_cache_open();
+    sound_cache_open();
+    cache_file_globals.unknown_bool = true;
+    const char *name_without_path = tag_name_strip_path(name);
+    if(!cache_file_open(name_without_path, &cache_file_globals.header)) {
+        return NONE;
+    }
+
+    if(!cache_file_header_verify(&cache_file_globals.header, name, true)) {
+        return NONE;
+    }
+
+    void *tag_cache_base_address = physical_memory_get_tag_cache_base_address();
+#ifdef DEBUG_BUILD
+    memset(tag_cache_base_address, 0xCD, TAG_CACHE_SIZE);
+#endif
+    struct cache_file_read_request_params params = {};
+    volatile bool finished_flag;
+    params.finished_flag = &finished_flag;
+    cache_file_read(NONE,
+        cache_file_globals.header.tags_offset,
+        cache_file_globals.header.tags_size,
+        tag_cache_base_address,
+        &params,
+        true,
+        false);
+
+    while(!finished_flag) {
+        Sleep(0);
+    }
+
+    cache_file_globals.tags_header = tag_cache_base_address;
+#ifdef DEBUG_BUILD
+    vassert(cache_file_globals.tags_header->signature == CACHE_FILE_TAGS_HEADER_SIGNATURE,
+        csprintf(temporary, "signature is '%c%c%c%c', should be '%c%c%c%c'",
+            ((char*)&cache_file_globals.tags_header->signature)[3],
+            ((char*)&cache_file_globals.tags_header->signature)[2],
+            ((char*)&cache_file_globals.tags_header->signature)[1],
+            ((char*)&cache_file_globals.tags_header->signature)[0],
+            (CACHE_FILE_TAGS_HEADER_SIGNATURE >> 24) & 0xFF,
+            (CACHE_FILE_TAGS_HEADER_SIGNATURE >> 16) & 0xFF,
+            (CACHE_FILE_TAGS_HEADER_SIGNATURE >> 8)  & 0xFF,
+            (CACHE_FILE_TAGS_HEADER_SIGNATURE)       & 0xFF));
+#endif
+    global_tag_instances = cache_file_globals.tags_header->tag_instances;
+    cache_file_globals.tags_loaded = true;
+
+    tags_header_register_vertex_and_index_buffers(cache_file_globals.tags_header);
+
+    // TODO: handle indexed tags here;
+
+    return cache_file_globals.tags_header->scenario_tag_index;
+}
 
 //#ifdef DEBUG_BUILD // FIXME: the game uses the tag instances pointer directly in release builds
 void *tag_get(tag expected_group_tag, int32_t tag_index) {
@@ -119,7 +180,8 @@ bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]]
             vhalt(csprintf(temporary, "'%s' does not appear to be a cache file", name));
         };
     }
-    else if(!cache_file_valid_version(header->version)) {
+    // TODO: This hack will allow both retail and custom edition map types to run, but the game will create a zero byte loc.map if one does not exist
+    else if(!(header->version == CACHE_FILE_VERSION_RETAIL || header->version == CACHE_FILE_VERSION_CUSTOM_EDITION)) {
         if(fatal) {
             vhalt(csprintf(temporary, "the cache file '%s' is an unsupported version (%d)", name, header->version));
         };
@@ -129,11 +191,6 @@ bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]]
     }
 
     return false;
-}
-
-// TODO: This hack will allow both retail and custom edition map types to run, but the game will create a zero byte loc.map if one does not exist
-static bool cache_file_valid_version(int32_t version) {
-    return (version == CACHE_FILE_VERSION_RETAIL || version == CACHE_FILE_VERSION_CUSTOM_EDITION);
 }
 
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index) {

@@ -8,6 +8,9 @@ project(Demon
 
 add_library(demon SHARED
     source/cache/cache_files.c
+    source/cache/cache_files_windows.c
+    source/cache/pc_sound_cache.c
+    source/cache/pc_texture_cache.c
     source/cache/physical_memory_map.c
     source/cseries/cseries.c
     source/cseries/cseries_windows.c
@@ -25,6 +28,7 @@ add_library(demon SHARED
     source/memory/data.c
     source/memory/lruv_cache.c
     source/structures/structure_bsp_definitions.c
+    source/tag_files/tag_files.c
     source/tag_files/tag_groups.c
     source/text/text_group.c
     source/text/unicode.c

@@ -2,6 +2,8 @@
 #define DEMON_CACHE_FILES_H
 
 #include <stdint.h>
+#include "../cseries/cseries.h"
+#include "../tag_files/tag_groups.h"
 
 #define CACHE_FILE_HEADER_SIGNATURE 0x68656164 // head
 #define CACHE_FILE_FOOTER_SIGNATURE 0x666F6F74 // foot
@@ -79,11 +81,23 @@ struct cache_file_structure_bsp_header {
 };
 static_assert(sizeof(struct cache_file_structure_bsp_header) == 24);
 
+struct cache_file_read_request_params {
+    volatile bool *finished_flag;
+    void (*finished_func)(struct cache_file_read_request_params *);
+    void *userdata;
+};
+static_assert(sizeof(struct cache_file_read_request_params) == 12);
+
+bool cache_file_open(const char *scenario_name, struct cache_file_header *header);
+int16_t cache_file_read(int32_t tag_index, int32_t offset, int32_t size, void *buffer, struct cache_file_read_request_params *params, bool blocking, bool data_file);
+
 void cache_files_set_root_directory(const char *root_directory);
 const char *cache_files_root_directory();
 char *cache_files_map_directory();
 
 uint32_t cache_files_get_checksum();
 bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]] const char *name, bool fatal);
+
+void tags_header_register_vertex_and_index_buffers(struct cache_file_tags_header *tags_header);
 
 #endif
