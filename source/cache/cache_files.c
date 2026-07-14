@@ -9,6 +9,7 @@
 #include "../tag_files/tag_groups.h"
 #include "../memory/byte_swapping.h"
 #include "../memory/data.h"
+#include "../scenario/scenario_definitions.h"
 
 #include "cache_files.h"
 #include "sound_cache.h"
@@ -100,7 +101,19 @@ int32_t scenario_tags_load(const char *name) {
 
     tags_header_register_vertex_and_index_buffers(cache_file_globals.tags_header);
 
-    // TODO: handle indexed tags here;
+    struct tag_iterator iterator;
+    tag_iterator_new(&iterator, TAG_NONE);
+    int32_t tag_index;
+    while((tag_index = tag_iterator_next(&iterator)) != NONE) {
+        struct cache_file_tag_instance *tag_instance = cache_file_tag_instance_get(tag_index);
+        if(tag_instance->group_tag == SCENARIO_GROUP_TAG) {
+            struct scenario *scenario = scenario_get(tag_index);
+            struct data_array *scenario_hs_syntax_data = scenario->hs_syntax_data.address;
+            scenario_hs_syntax_data->data = scenario_hs_syntax_data + 1;
+        }
+
+         // TODO: handle indexed tags here;
+    }
 
     return cache_file_globals.tags_header->scenario_tag_index;
 }
