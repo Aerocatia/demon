@@ -1,13 +1,27 @@
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "../cseries/build_number.h"
 #include "../cseries/cseries.h"
+#include "../tag_files/files.h"
 #include "../tag_files/tag_groups.h"
 #include "../memory/byte_swapping.h"
 #include "../memory/data.h"
 
 #include "cache_files.h"
+
+static char cache_root_directory[MAXIMUM_FILENAME_LENGTH + 1] = {};
+
+void cache_files_set_root_directory(const char *root_directory) {
+    assert(root_directory);
+    strncpy(cache_root_directory, root_directory, sizeof(cache_root_directory));
+    cache_root_directory[sizeof(cache_root_directory) - 1] = '\0';
+}
+
+const char *cache_files_root_directory() {
+    return cache_root_directory;
+}
 
 // TODO: This is not used to get the path for resource maps, they will always be loaded from `maps`
 char *cache_files_map_directory() {

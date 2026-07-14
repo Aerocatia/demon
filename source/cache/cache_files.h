@@ -79,6 +79,11 @@ struct cache_file_structure_bsp_header {
 };
 static_assert(sizeof(struct cache_file_structure_bsp_header) == 24);
 
+void cache_files_set_root_directory(const char *root_directory);
+const char *cache_files_root_directory();
+char *cache_files_map_directory();
+
 uint32_t cache_files_get_checksum();
+bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]] const char *name, bool fatal);
 
 #endif
