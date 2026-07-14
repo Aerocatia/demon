@@ -56,4 +56,4 @@ if(${DEMON_NO_DEBUG_TRAP})
 endif()
 
 set_target_properties(demon PROPERTIES PREFIX "")
-target_compile_options(demon PRIVATE -Wall -Wextra -mfpmath=sse)
+target_compile_options(demon PRIVATE -Wall -Wextra -msse2 -mfpmath=sse)
