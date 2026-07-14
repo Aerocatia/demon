@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <windows.h>
-
 #include "../cseries/build_number.h"
 #include "../cseries/cseries.h"
 #include "../tag_files/files.h"
@@ -81,7 +79,7 @@ int32_t scenario_tags_load(const char *name) {
         false);
 
     while(!finished_flag) {
-        Sleep(0);
+        system_sleep(0);
     }
 
     cache_file_globals.tags_header = tag_cache_base_address;

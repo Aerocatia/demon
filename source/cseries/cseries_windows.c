@@ -15,3 +15,7 @@ uint32_t (*exe_system_milliseconds)() = (void *)0x0054F1E0;
 uint32_t system_milliseconds() {
     return exe_system_milliseconds();
 }
+
+void system_sleep(uint32_t milliseconds) {
+    Sleep(milliseconds);
+}
