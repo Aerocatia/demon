@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 4.0)
 
 project(Demon
     VERSION 1.0.0
-    DESCRIPTION "Here we go again"
+    DESCRIPTION "3rd time unlucky"
     LANGUAGES C
 )
 
