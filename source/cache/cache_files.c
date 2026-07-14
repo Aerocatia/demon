@@ -67,7 +67,7 @@ int32_t scenario_tags_load(const char *name) {
 
     void *tag_cache_base_address = physical_memory_get_tag_cache_base_address();
 #ifdef DEBUG_BUILD
-    memset(tag_cache_base_address, 0xCD, TAG_CACHE_SIZE);
+    memset(tag_cache_base_address, 0xCD, physical_memory_get_tag_cache_size());
 #endif
     struct cache_file_read_request_params params = {};
     volatile bool finished_flag;
