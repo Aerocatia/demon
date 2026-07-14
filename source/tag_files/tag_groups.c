@@ -32,7 +32,8 @@ void *tag_block_get_element_with_size(const struct tag_block *block, int32_t ind
     #error "implement for tag build"
 #else
     vassert(index >= 0 && index < block->count,
-        csprintf(temporary, "#%d is not a valid index in [#0,#%d]", index, block->count));
+        csprintf(temporary, "#%d is not a valid %s index in [#0,#%d)", index,
+            block->definition ? block->definition->name : "<unknown>", block->count));
 #endif
 
     uint8_t *address = tag_block_get_address(block);

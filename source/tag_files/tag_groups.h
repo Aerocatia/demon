@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "../cseries/cseries.h"
+#include "../memory/byte_swapping.h"
 #include "../memory/data.h"
 
 #define MAXIMUM_PARENT_GROUP_TYPES_PER_TAG 2
@@ -18,10 +19,31 @@ enum {
     NUMBER_OF_TAG_DATA_FLAGS
 };
 
+struct tag_block;
+
+typedef void (*byte_swap_block_proc)(void *header);
+typedef bool (*postprocess_block_proc)(void *element, bool editing);
+typedef char *(*format_block_proc)(int32_t tag_index, struct tag_block *block, int32_t element_index, char *buffer);
+typedef void (*delete_block_proc)(struct tag_block *block, int32_t element_index);
+
+struct tag_block_definition {
+    char *name;
+    uint32_t flags;
+    int32_t maximum_element_count;
+    int32_t element_size;
+    void *default_element;
+    struct tag_field *fields;
+    byte_swap_block_proc byte_swap_block;
+    postprocess_block_proc postprocess_block;
+    format_block_proc format_block;
+    delete_block_proc delete_block;
+    byte_swap_code *byte_swap_codes;
+};
+
 struct tag_block {
     int32_t count;
     void *address;
-    void *definition; // should be struct tag_block_definition
+    struct tag_block_definition *definition;
 };
 static_assert(sizeof(struct tag_block) == 12);
 
