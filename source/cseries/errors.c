@@ -56,7 +56,7 @@ char *(*errors_debug_file_path)(char *filename) = (void *)0x0075BB30;
 
 /* public functions */
 
-void errors_initialize(void) {
+void errors_initialize() {
     error_globals.developer_mode = _developer_mode_full;
     error_globals.output_to_debug_file = true;
     error_globals.overflow_suppression = true;
@@ -69,7 +69,7 @@ void errors_initialize(void) {
     stack_walk_initialize();
 }
 
-void errors_dispose(void) {
+void errors_dispose() {
     stack_walk_dispose();
 }
 
@@ -178,7 +178,7 @@ void error(short priority, const char *format, ...) {
     error_globals.recursion_lock = false;
 }
 
-bool errors_handle(void) {
+bool errors_handle() {
     bool handled = error_globals.delayed;
     reset_error_state();
     return handled;
@@ -196,11 +196,11 @@ void errors_suppress_all_enable(bool suppress_all) {
     error_globals.suppress_all = suppress_all;
 }
 
-const char *error_get(void) {
+const char *error_get() {
     return error_globals.message_buffer;
 }
 
-void errors_clear(void) {
+void errors_clear() {
     reset_error_state();
 }
 
@@ -252,7 +252,7 @@ void write_to_error_file(char *string, bool date) {
 
 /* private functions */
 
-static void reset_error_state(void) {
+static void reset_error_state() {
     error_globals.delayed = false;
     error_globals.message_buffer_size = 0;
 }

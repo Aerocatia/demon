@@ -15,7 +15,7 @@ extern struct {
 
 /* public functions */
 
-void physical_memory_free(void) {
+void physical_memory_free() {
     if(physical_memory_map_globals.game_state_base_address != nullptr) {
         VirtualFree(physical_memory_map_globals.game_state_base_address, 0, MEM_RELEASE);
         physical_memory_map_globals.game_state_base_address = nullptr;
@@ -40,11 +40,11 @@ void physical_memory_free(void) {
     }
 }
 
-void *physical_memory_get_game_state_base_address(void) {
+void *physical_memory_get_game_state_base_address() {
     return physical_memory_map_globals.game_state_base_address;
 }
 
-void *physical_memory_get_tag_cache_base_address(void) {
+void *physical_memory_get_tag_cache_base_address() {
 #ifdef CACHE_FILE_BUILD
     return physical_memory_map_globals.tag_cache_base_address;
 #else
@@ -52,7 +52,7 @@ void *physical_memory_get_tag_cache_base_address(void) {
 #endif
 }
 
-uint32_t physical_memory_get_tag_cache_size(void) {
+uint32_t physical_memory_get_tag_cache_size() {
 #ifdef CACHE_FILE_BUILD
     return TAG_CACHE_SIZE;
 #else
@@ -60,10 +60,10 @@ uint32_t physical_memory_get_tag_cache_size(void) {
 #endif
 }
 
-void *physical_memory_get_texture_cache_base_address(void) {
+void *physical_memory_get_texture_cache_base_address() {
     return physical_memory_map_globals.texture_cache_base_address;
 }
 
-void *physical_memory_get_sound_cache_base_address(void) {
+void *physical_memory_get_sound_cache_base_address() {
     return physical_memory_map_globals.sound_cache_base_address;
 }
