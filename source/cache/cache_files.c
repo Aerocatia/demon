@@ -193,8 +193,6 @@ int32_t tag_loaded(tag group_tag, const char *name) {
     }
 
     assert(global_tag_instances);
-
-    // find this tag in the index
     int32_t tag_index = NONE;
     for(int index = 0; index < cache_file_globals.tags_header->tag_count; ++index) {
         if(group_tag == global_tag_instances[index].group_tag && !stricmp(name, global_tag_instances[index].name)) {
