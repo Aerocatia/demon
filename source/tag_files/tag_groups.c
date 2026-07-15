@@ -27,14 +27,10 @@ void *tag_block_get_address(const struct tag_block *block) {
 void *tag_block_get_element_with_size(const struct tag_block *block, int32_t index, int32_t element_size) {
     assert(block);
     assert(block->count >= 0);
-
-#ifndef CACHE_FILE_BUILD
-    #error "implement for tag build"
-#else
+    assert(!block->definition || block->definition->element_size == element_size);
     vassert(index >= 0 && index < block->count,
         csprintf(temporary, "#%d is not a valid %s index in [#0,#%d)", index,
             block->definition ? block->definition->name : "<unknown>", block->count));
-#endif
 
     uint8_t *address = tag_block_get_address(block);
     assert(address);
