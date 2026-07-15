@@ -13,6 +13,7 @@
 #include "../bitmaps/bitmap_group.h"
 #include "../scenario/scenario_definitions.h"
 #include "../sound/sound_definitions.h"
+#include "../interface/hud_messaging_definitions.h"
 #include "../text/font_group.h"
 #include "../text/text_group.h"
 
@@ -208,6 +209,25 @@ int32_t scenario_tags_load(const char *name) {
 
                 if(font->pixels.address) {
                     font->pixels.address = tag_data_cursor + (uint32_t)font->pixels.address;
+                }
+
+                break;
+            case HUD_MESSAGE_TEXT_DEFINITION_TAG:
+                size = data_file_load_tag(_data_file_type_loc, (uint32_t)tag_instance->base_address, tag_data_cursor);
+                assert(size);
+
+                tag_instance->base_address = tag_data_cursor;
+                struct hud_state_messages *hud_messages = hud_state_messages_get(tag_index);
+                if(hud_messages->text_data.address) {
+                    hud_messages->text_data.address = tag_data_cursor + (uint32_t)hud_messages->text_data.address;
+                }
+
+                if(hud_messages->elements.address) {
+                    hud_messages->elements.address = tag_data_cursor + (uint32_t)hud_messages->elements.address;
+                }
+
+                if(hud_messages->messages.address) {
+                    hud_messages->messages.address = tag_data_cursor + (uint32_t)hud_messages->messages.address;
                 }
 
                 break;
