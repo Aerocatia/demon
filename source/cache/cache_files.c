@@ -108,24 +108,23 @@ int32_t scenario_tags_load(const char *name) {
 
     tags_header_register_vertex_and_index_buffers(cache_file_globals.tags_header);
 
+    // fix scenario script data pointer
+    struct scenario *scenario = scenario_get(cache_file_globals.tags_header->scenario_tag_index);
+    struct data_array *scenario_hs_syntax_data = scenario->hs_syntax_data.address;
+    scenario_hs_syntax_data->data = scenario_hs_syntax_data + 1;
+
+    // load external tag data from the data maps
+    uint8_t *tag_data_cursor = (uint8_t *)tag_cache_base_address + cache_file_globals.header.tags_size;
+    int32_t tag_index;
     struct tag_iterator iterator;
     tag_iterator_new(&iterator, TAG_NONE);
-    int32_t tag_index;
-    uint8_t *tag_data_cursor = (uint8_t *)tag_cache_base_address + cache_file_globals.header.tags_size;
     while((tag_index = tag_iterator_next(&iterator)) != NONE) {
         struct cache_file_tag_instance *tag_instance = cache_file_tag_instance_get(tag_index);
-
-        // this does not need to be in the loop, gearbox
-        if(tag_instance->group_tag == SCENARIO_GROUP_TAG) {
-            struct scenario *scenario = scenario_get(tag_index);
-            struct data_array *scenario_hs_syntax_data = scenario->hs_syntax_data.address;
-            scenario_hs_syntax_data->data = scenario_hs_syntax_data + 1;
-        }
-
         if(!TEST_FLAG(tag_instance->flags, _cache_file_tag_instance_flags_tag_in_data_file_bit)) {
             continue;
         }
 
+        // BUG: size is set after the data is copied, so if it was too large it would have overwritten the BSP
         uint32_t size = 0;
         switch(tag_instance->group_tag) {
             case BITMAP_GROUP_TAG:
