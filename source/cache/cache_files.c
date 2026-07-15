@@ -10,6 +10,7 @@
 #include "../memory/byte_swapping.h"
 #include "../memory/data.h"
 
+#include "../bitmaps/bitmap_group.h"
 #include "../scenario/scenario_definitions.h"
 #include "../sound/sound_definitions.h"
 
