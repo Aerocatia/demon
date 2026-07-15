@@ -159,7 +159,6 @@ int32_t scenario_tags_load(const char *name) {
                 }
 
                 tag_data_cursor += size;
-
                 break;
             default:
                 [[maybe_unused]] char group[16];
