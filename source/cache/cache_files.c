@@ -123,10 +123,33 @@ int32_t scenario_tags_load(const char *name) {
             continue;
         }
 
+        uint32_t size = 0;
         switch(tag_instance->group_tag) {
+            case BITMAP_GROUP_TAG:
+                size = data_file_load_tag(_data_file_type_bitmap, (uint32_t)tag_instance->base_address, tag_data_cursor);
+                assert(size);
+
+                tag_instance->base_address = tag_data_cursor;
+                struct bitmap_group *bitmap_group = bitmap_group_get(tag_index);
+                if(bitmap_group->bitmaps.address) {
+                    bitmap_group->bitmaps.address = tag_data_cursor + (uint32_t)bitmap_group->bitmaps.address;
+                }
+
+                if(bitmap_group->sequences.address) {
+                    bitmap_group->sequences.address = tag_data_cursor + (uint32_t)bitmap_group->sequences.address;
+                }
+
+                for(int sequence_index = 0; sequence_index < bitmap_group->sequences.count; sequence_index++) {
+                    struct bitmap_group_sequence *sequence = bitmap_group_get_sequence(bitmap_group, sequence_index);
+                    if(sequence->sprites.address) {
+                        sequence->sprites.address = tag_data_cursor + (uint32_t)sequence->sprites.address;
+                    }
+                }
+
+                break;
             case SOUND_DEFINITION_TAG:
                 uint32_t sound_index = data_file_find_item(_data_file_type_sound, tag_get_name(tag_index));
-                uint32_t size = data_file_load_tag(_data_file_type_sound, sound_index, tag_data_cursor);
+                size = data_file_load_tag(_data_file_type_sound, sound_index, tag_data_cursor);
                 assert(size);
 
                 struct sound_definition *sound = sound_definition_get(tag_index);
@@ -159,13 +182,14 @@ int32_t scenario_tags_load(const char *name) {
                     }
                 }
 
-                tag_data_cursor += size;
                 break;
             default:
                 [[maybe_unused]] char group[16];
                 vhalt(csprintf(temporary, "external data is not supported for tag group '%s' (tag instance %d)",
                     tag_to_string(tag_instance->group_tag, group), DATUM_INDEX_TO_ABSOLUTE_INDEX(tag_index)));
         }
+
+        tag_data_cursor += size;
     }
 
     return cache_file_globals.tags_header->scenario_tag_index;
