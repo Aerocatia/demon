@@ -78,6 +78,7 @@ void *tag_block_get_element_with_size(const struct tag_block *block, int32_t ind
 void *tag_data_get_address(const struct tag_data *data);
 void *tag_data_get_pointer(const struct tag_data *data, int32_t offset, int32_t size);
 void *tag_get(tag group_tag, int32_t tag_index);
+char *tag_get_name(int32_t tag_index);
 
 struct tag_iterator {
     struct data_iterator iterator;

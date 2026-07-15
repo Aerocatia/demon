@@ -4,10 +4,10 @@
 #include <stdint.h>
 
 enum {
-    data_file_type_none,
-    data_file_type_bitmap,
-    data_file_type_sound,
-    data_file_type_loc,
+    _data_file_type_none,
+    _data_file_type_bitmap,
+    _data_file_type_sound,
+    _data_file_type_loc,
     NUMBER_OF_DATA_FILE_TYPES //was data_file_type_max
 };
 
@@ -46,5 +46,8 @@ struct data_file_s {
     void *hFile;
 };
 static_assert(sizeof(struct data_file_s) == 64);
+
+uint32_t data_file_find_item(int32_t data_file_id, const char *item_name);
+uint32_t data_file_load_tag(int32_t data_file_id, uint32_t item_index, void *tag_load_address);
 
 #endif

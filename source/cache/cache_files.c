@@ -9,9 +9,12 @@
 #include "../tag_files/tag_groups.h"
 #include "../memory/byte_swapping.h"
 #include "../memory/data.h"
+
 #include "../scenario/scenario_definitions.h"
+#include "../sound/sound_definitions.h"
 
 #include "cache_files.h"
+#include "data_file.h"
 #include "sound_cache.h"
 #include "texture_cache.h"
 #include "physical_memory_map.h"
@@ -104,16 +107,65 @@ int32_t scenario_tags_load(const char *name) {
     struct tag_iterator iterator;
     tag_iterator_new(&iterator, TAG_NONE);
     int32_t tag_index;
+    uint8_t *tag_data_cursor = (uint8_t *)tag_cache_base_address + cache_file_globals.header.tags_size;
     while((tag_index = tag_iterator_next(&iterator)) != NONE) {
         struct cache_file_tag_instance *tag_instance = cache_file_tag_instance_get(tag_index);
+
+        // this does not need to be in the loop, gearbox
         if(tag_instance->group_tag == SCENARIO_GROUP_TAG) {
             struct scenario *scenario = scenario_get(tag_index);
             struct data_array *scenario_hs_syntax_data = scenario->hs_syntax_data.address;
             scenario_hs_syntax_data->data = scenario_hs_syntax_data + 1;
         }
 
-        // TODO: handle indexed tags here;
-        assert(!TEST_FLAG(tag_instance->flags, _cache_file_tag_instance_flags_tag_in_data_file_bit));
+        if(!TEST_FLAG(tag_instance->flags, _cache_file_tag_instance_flags_tag_in_data_file_bit)) {
+            continue;
+        }
+
+        switch(tag_instance->group_tag) {
+            case SOUND_DEFINITION_TAG:
+                uint32_t sound_index = data_file_find_item(_data_file_type_sound, tag_get_name(tag_index));
+                uint32_t size = data_file_load_tag(_data_file_type_sound, sound_index, tag_data_cursor);
+                assert(size);
+
+                struct sound_definition *sound = sound_definition_get(tag_index);
+                struct sound_definition *loaded_sound = (struct sound_definition *)tag_data_cursor;
+
+                sound->sample_rate = loaded_sound->sample_rate;
+                sound->encoding = loaded_sound->encoding;
+                sound->compression = loaded_sound->compression;
+                sound->runtime_maximum_play_time = loaded_sound->runtime_maximum_play_time;
+
+                uint8_t *sound_data = tag_data_cursor + sizeof(struct sound_definition);
+                sound->pitch_ranges.address = sound_data;
+
+                for(int pitch_range_index = 0; pitch_range_index < sound->pitch_ranges.count; pitch_range_index++) {
+                    struct sound_pitch_range *range = sound_definition_get_pitch_range(sound, pitch_range_index);
+                    if(range->permutations.address) {
+                        range->permutations.address = sound_data + (uint32_t)range->permutations.address;
+                    }
+
+                    for(int permutation_index = 0; permutation_index < range->permutations.count; permutation_index++) {
+                        struct sound_permutation *permutation = sound_pitch_range_get_permutation(range, permutation_index);
+                        permutation->runtime_tag_index = tag_index;
+                        if(permutation->mouth_data.address) {
+                            permutation->mouth_data.address = sound_data + (uint32_t)permutation->mouth_data.address;
+                        }
+
+                        if(permutation->subtitle_data.address) {
+                            permutation->subtitle_data.address = sound_data + (uint32_t)permutation->subtitle_data.address;
+                        }
+                    }
+                }
+
+                tag_data_cursor += size;
+
+                break;
+            default:
+                [[maybe_unused]] char group[16];
+                vhalt(csprintf(temporary, "external data is not supported for tag group '%s' (tag instance %d)",
+                    tag_to_string(tag_instance->group_tag, group), DATUM_INDEX_TO_ABSOLUTE_INDEX(tag_index)));
+        }
     }
 
     return cache_file_globals.tags_header->scenario_tag_index;

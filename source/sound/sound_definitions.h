@@ -35,7 +35,7 @@ enum {
     _sound_compression_none,
     _sound_compression_xbox_adpcm,
     _sound_compression_ima_adpcm,
-    _sound_compression_ogg,
+    _sound_compression_ogg_vorbis,
     NUMBER_OF_SOUND_COMPRESSION_TYPES
 };
 
@@ -193,5 +193,33 @@ struct looping_sound_definition {
     struct tag_block details;
 };
 static_assert(sizeof(struct looping_sound_definition) == 84);
+
+/* sound functions */
+
+static inline struct sound_definition *sound_definition_get(int32_t index) {
+    return tag_get(SOUND_DEFINITION_TAG, index);
+}
+
+static inline struct sound_pitch_range *sound_definition_get_pitch_range(struct sound_definition *sound, int32_t index) {
+    return tag_block_get_element_with_size(&sound->pitch_ranges, index, sizeof(struct sound_pitch_range));
+}
+
+static inline struct sound_permutation *sound_pitch_range_get_permutation(struct sound_pitch_range *range, int32_t index) {
+    return tag_block_get_element_with_size(&range->permutations, index, sizeof(struct sound_permutation));
+}
+
+/* sound looping functions */
+
+static inline struct looping_sound_definition *looping_sound_definition_get(int32_t index) {
+    return tag_get(LOOPING_SOUND_DEFINITION_TAG, index);
+}
+
+static inline struct looping_sound_track *looping_sound_definition_get_track(struct looping_sound_definition *sound, int32_t index) {
+    return tag_block_get_element_with_size(&sound->tracks, index, sizeof(struct looping_sound_track));
+}
+
+static inline struct looping_sound_detail *looping_sound_definition_get_detail(struct looping_sound_definition *sound, int32_t index) {
+    return tag_block_get_element_with_size(&sound->details, index, sizeof(struct looping_sound_detail));
+}
 
 #endif
