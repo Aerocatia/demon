@@ -1,6 +1,10 @@
 #ifndef DEMON_BITMAPS_H
 #define DEMON_BITMAPS_H
 
+#include <stdint.h>
+
+#include "../cseries/cseries.h"
+
 enum {
     BITMAP_SIGNATURE = 0x6269746D, // 'bitm'
     BITMAP_MAXIMUM_SPRITE_PAGE_MIPMAP_COUNT = 2,

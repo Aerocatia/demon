@@ -7,6 +7,7 @@ project(Demon
 )
 
 add_library(demon SHARED
+    source/bitmaps/bitmaps.c
     source/cache/cache_files.c
     source/cache/cache_files_windows.c
     source/cache/data_file.c
