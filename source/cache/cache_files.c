@@ -113,6 +113,7 @@ int32_t scenario_tags_load(const char *name) {
         }
 
          // TODO: handle indexed tags here;
+         assert(!TEST_FLAG(tag_instance->flags, _cache_file_tag_instance_flags_tag_in_data_file_bit));
     }
 
     return cache_file_globals.tags_header->scenario_tag_index;

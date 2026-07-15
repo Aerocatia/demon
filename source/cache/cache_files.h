@@ -34,6 +34,11 @@ struct cache_file_header {
 };
 static_assert(sizeof(struct cache_file_header) == 2048);
 
+enum {
+    _cache_file_tag_instance_flags_tag_in_data_file_bit,
+    NUMBER_OF_CACHE_FILE_TAG_INSTANCE_FLAGS
+};
+
 struct cache_file_tag_instance {
     tag group_tag;
     tag parent_group_tags[MAXIMUM_PARENT_GROUP_TYPES_PER_TAG];
@@ -62,8 +67,8 @@ struct cache_file_tags_header {
 static_assert(sizeof(struct cache_file_tags_header) == 40);
 
 #define CACHE_FILE_STRUCTURE_BSP_HEADER_SIGNATURE 0x73627370 // sbsp
-/* Xbox
-struct cache_file_structure_bsp_header {
+
+struct cache_file_structure_bsp_header_xbox {
     struct structure_bsp *structure_bsp;
     int32_t vertex_buffer_count;
     void *vertex_buffers;
@@ -71,7 +76,8 @@ struct cache_file_structure_bsp_header {
     void *lightmap_vertex_buffers;
     tag signature;
 };
-*/
+static_assert(sizeof(struct cache_file_structure_bsp_header_xbox) == 24);
+
 struct cache_file_structure_bsp_header {
     struct structure_bsp *structure_bsp;
     int32_t vertex_buffer_size;
