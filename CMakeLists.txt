@@ -36,7 +36,6 @@ add_library(demon SHARED
 
 target_compile_definitions(demon PUBLIC
     CACHE_FILE_BUILD
-    DEBUG_BUILD
     TARGET_STRING="halo"
 )
 
@@ -53,6 +52,11 @@ endif()
 option(DEMON_NO_DEBUG_TRAP "Immediately exit on an assertion error rather than emitting the debug trap instruction" ON)
 if(${DEMON_NO_DEBUG_TRAP})
     target_compile_definitions(demon PUBLIC NO_DEBUG_TRAP)
+endif()
+
+option(DEMON_DEBUG_BUILD "Enable debug checks" ON)
+if(${DEMON_DEBUG_BUILD})
+    target_compile_definitions(demon PUBLIC DEBUG_BUILD)
 endif()
 
 set_target_properties(demon PROPERTIES PREFIX "")

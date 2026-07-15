@@ -21,8 +21,13 @@ struct string_list_group_header {
 };
 static_assert(sizeof(struct string_list_group_header) == 12);
 
-#define string_list_get_header(index) TAG_GET(STRING_LISTS_GROUP_TAG, (index), struct string_list_group_header)
-#define string_list_get_string_reference(header, index) (TAG_BLOCK_GET_ELEMENT(&(header)->string_references, (index), struct string_list_string_reference))
+static inline struct string_list_group_header *string_list_get_header(int32_t index) {
+    return tag_get(STRING_LISTS_GROUP_TAG, index);
+}
+
+static inline struct string_list_string_reference *string_list_get_string_reference(struct string_list_group_header *header, int32_t index) {
+    return tag_block_get_element_with_size(&header->string_references, index, sizeof(struct string_list_string_reference));
+}
 
 const char *string_list_get_string(int32_t tag_index, int16_t string_index);
 
@@ -36,8 +41,13 @@ struct unicode_string_list_group_header {
 };
 static_assert(sizeof(struct unicode_string_list_group_header) == 12);
 
-#define unicode_string_list_get_header(index) TAG_GET(UNICODE_STRING_LISTS_GROUP_TAG, (index), struct unicode_string_list_group_header)
-#define unicode_string_list_get_string_reference(header, index) (TAG_BLOCK_GET_ELEMENT(&(header)->string_references, (index), struct unicode_string_list_string_reference))
+static inline struct unicode_string_list_group_header *unicode_string_list_get_header(int32_t index) {
+    return tag_get(UNICODE_STRING_LISTS_GROUP_TAG, index);
+}
+
+static inline struct unicode_string_list_string_reference *unicode_string_list_get_string_reference(struct unicode_string_list_group_header *header, int32_t index) {
+    return tag_block_get_element_with_size(&header->string_references, index, sizeof(struct unicode_string_list_string_reference));
+}
 
 const char16_t *unicode_string_list_get_string(int32_t tag_index, int16_t string_index);
 

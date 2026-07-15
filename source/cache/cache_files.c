@@ -143,10 +143,9 @@ bool cache_file_header_verify(struct cache_file_header *header, [[maybe_unused]]
     return false;
 }
 
-//#ifdef DEBUG_BUILD // FIXME: the game uses the tag instances pointer directly in release builds
-void *tag_get(tag expected_group_tag, int32_t tag_index) {
-    struct cache_file_tag_instance *tag_instance = cache_file_tag_instance_get(tag_index);
+void *tag_get([[maybe_unused]] tag expected_group_tag, int32_t tag_index) {
 #ifdef DEBUG_BUILD
+    struct cache_file_tag_instance *tag_instance = cache_file_tag_instance_get(tag_index);
     if(
         tag_instance->group_tag != expected_group_tag &&
         tag_instance->parent_group_tags[0] != expected_group_tag &&
@@ -157,12 +156,14 @@ void *tag_get(tag expected_group_tag, int32_t tag_index) {
         vhalt(csprintf(temporary, "expected tag group '%s' but got '%s' for %08x",
             tag_to_string(expected_group_tag, group1), tag_to_string(tag_instance->group_tag, group2), tag_index));
     }
-#endif
+
     vassert(tag_instance->base_address, csprintf(temporary, "can't get() a tag with a base address!"));
 
     return tag_instance->base_address;
+#else
+    return global_tag_instances[DATUM_INDEX_TO_ABSOLUTE_INDEX(tag_index)].base_address;
+#endif
 }
-//#endif
 
 char *tag_get_name(int32_t tag_index) {
     struct cache_file_tag_instance *tag_instance = cache_file_tag_instance_get(tag_index);

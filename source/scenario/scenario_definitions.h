@@ -84,7 +84,7 @@ struct scenario {
 static_assert(sizeof(struct scenario) == 1456);
 
 static inline struct scenario *scenario_get(int32_t index) {
-    return TAG_GET(SCENARIO_GROUP_TAG, index, struct scenario);
+    return tag_get(SCENARIO_GROUP_TAG, index);
 }
 
 #endif

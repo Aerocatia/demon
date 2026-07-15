@@ -74,14 +74,10 @@ struct tag_reference {
 };
 static_assert(sizeof(struct tag_reference) == 16);
 
-#define TAG_GET(group_tag, index, type) ((type *)tag_get((group_tag), (index)))
-#define TAG_BLOCK_GET_ELEMENT(block, index, type) ((type *)tag_block_get_element_with_size(block, index, sizeof(type)))
-#define TAG_DATA_GET_POINTER(data, offset, size) tag_data_get_pointer(data, offset, size)
-
-void *tag_get(tag group_tag, int32_t tag_index);
+void *tag_block_get_element_with_size(const struct tag_block *block, int32_t index, int32_t element_size);
 void *tag_data_get_address(const struct tag_data *data);
 void *tag_data_get_pointer(const struct tag_data *data, int32_t offset, int32_t size);
-void *tag_block_get_element_with_size(const struct tag_block *block, int32_t index, int32_t element_size);
+void *tag_get(tag group_tag, int32_t tag_index);
 
 struct tag_iterator {
     struct data_iterator iterator;

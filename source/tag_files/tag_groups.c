@@ -8,7 +8,7 @@ void *tag_data_get_address(const struct tag_data *data) {
     return data->address;
 }
 
-void *tag_data_get_pointer(const struct tag_data *data, int32_t offset, int32_t size) {
+void *tag_data_get_pointer(const struct tag_data *data, int32_t offset, [[maybe_unused]] int32_t size) {
     assert(data && size >= 0);
     assert(offset >= 0 && offset + size <= data->size);
 
