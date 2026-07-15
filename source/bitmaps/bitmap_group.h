@@ -1,6 +1,9 @@
 #ifndef DEMON_BITMAP_GROUP_H
 #define DEMON_BITMAP_GROUP_H
 
+#include "../cseries/cseries.h"
+#include "../tag_files/tag_groups.h"
+
 #include "bitmaps.h"
 
 enum {

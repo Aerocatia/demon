@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "../cseries/cseries.h"
+#include "../tag_files/tag_groups.h"
 
 enum {
     BITMAP_SIGNATURE = 0x6269746D, // 'bitm'
