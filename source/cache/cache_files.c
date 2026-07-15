@@ -13,6 +13,7 @@
 #include "../bitmaps/bitmap_group.h"
 #include "../scenario/scenario_definitions.h"
 #include "../sound/sound_definitions.h"
+#include "../text/text_group.h"
 
 #include "cache_files.h"
 #include "data_file.h"
@@ -178,6 +179,25 @@ int32_t scenario_tags_load(const char *name) {
 
                         if(permutation->subtitle_data.address) {
                             permutation->subtitle_data.address = sound_data + (uint32_t)permutation->subtitle_data.address;
+                        }
+                    }
+                }
+
+                break;
+            case UNICODE_STRING_LISTS_GROUP_TAG:
+                size = data_file_load_tag(_data_file_type_loc, (uint32_t)tag_instance->base_address, tag_data_cursor);
+                assert(size);
+
+                if(tag_instance->group_tag == UNICODE_STRING_LISTS_GROUP_TAG) {
+                    struct unicode_string_list_group_header *unicode_strings = unicode_string_list_get_header(tag_index);
+                    if(unicode_strings->string_references.address) {
+                        unicode_strings->string_references.address = tag_data_cursor + (uint32_t)unicode_strings->string_references.address;
+                    }
+
+                    for(int string_index = 0; string_index < unicode_strings->string_references.count; string_index++) {
+                        struct unicode_string_list_string_reference *string_reference = unicode_string_list_get_string_reference(unicode_strings, string_index);
+                        if(string_reference->string.address) {
+                            string_reference->string.address = tag_data_cursor + (uint32_t)string_reference->string.address;
                         }
                     }
                 }
