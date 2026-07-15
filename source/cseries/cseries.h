@@ -73,8 +73,11 @@ enum {
 
 /* types */
 
+typedef uint8_t pixel8;
+typedef uint16_t pixel16;
+typedef uint32_t pixel32;
+typedef float real; // should always be a finite number
 typedef uint32_t tag;
-typedef float real;
 
 typedef union {
     uint8_t n[6];
