@@ -32,6 +32,7 @@ add_library(demon SHARED
     source/structures/structure_bsp_definitions.c
     source/tag_files/tag_files.c
     source/tag_files/tag_groups.c
+    source/text/font_group.c
     source/text/text_group.c
     source/text/unicode.c
 )

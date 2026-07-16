@@ -6,6 +6,9 @@
 #include "../tag_files/tag_groups.h"
 #include "draw_string.h"
 
+#define HIGH_BYTE(c) (((c) >> INT8_BITS) & 0xFF)
+#define LOW_BYTE(c) ((c) & 0xFF)
+
 enum {
     FONT_GROUP_TAG = 0x666F6E74 // 'font'
 };
@@ -53,6 +56,10 @@ static inline struct font_header *font_get_header(int32_t index) {
     return tag_get(FONT_GROUP_TAG, index);
 }
 
+static inline struct font_character *font_get_character(struct font_header *header, int32_t index) {
+    return tag_block_get_element_with_size(&header->characters, index, sizeof(struct font_character));
+}
+
 static inline struct font_character_tables_entry *font_get_character_tables_entry(struct font_header *header, int32_t high_byte) {
     return tag_block_get_element_with_size(&header->character_tables, high_byte, sizeof(struct font_character_tables_entry));
 }
@@ -64,5 +71,7 @@ static inline struct font_character_table_entry *font_get_character_table_entry(
 
     return tag_block_get_element_with_size(&table_entry->table, low_byte, sizeof(struct font_character_table_entry));
 }
+
+struct font_character *font_get_character_by_ascii_code(struct font_header *header, uint16_t character);
 
 #endif
