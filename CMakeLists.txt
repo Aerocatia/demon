@@ -29,6 +29,7 @@ add_library(demon SHARED
     source/memory/crc.c
     source/memory/data.c
     source/memory/lruv_cache.c
+    source/objects/object_definitions.c
     source/structures/structure_bsp_definitions.c
     source/tag_files/tag_files.c
     source/tag_files/tag_groups.c
