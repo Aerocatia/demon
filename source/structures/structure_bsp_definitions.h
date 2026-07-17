@@ -323,6 +323,8 @@ struct structure_bsp {
 };
 static_assert(sizeof(struct structure_bsp) == 648);
 
-#define structure_bsp_encoded_sound_data_row_offset(structure_bsp, row_index) (((structure_bsp)->clusters.count * (row_index)) - ((row_index) * ((row_index) + 1) / 2))
+static inline int16_t structure_bsp_encoded_sound_data_row_offset(struct structure_bsp *structure_bsp, int16_t row_index) {
+    return (structure_bsp->clusters.count * row_index) - (row_index * (row_index + 1) / 2);
+}
 
 #endif
