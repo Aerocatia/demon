@@ -22,3 +22,9 @@ Patch `halo_cache_symbols.exe` with `utils/halo_cache_demon.bps` and place `demo
 When using the patched exe functions will be replaced with the implemented versions on load.
 
 I recommended testing with the original 2003 Halo PC maps. They will be supported when `demon.dll` is loaded.
+
+## License
+
+Structure definitions, variable, and function names are considered "public information" due to being available from multiple sources, including but not limited to official modding tools, debug builds, and community wikis. For this reason no copyright is claimed on this information.
+
+Original code written for this project however is licensed under the GNU General Public License Version 3. Combined builds of the project inherit GPLv3.
