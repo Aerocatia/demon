@@ -71,16 +71,16 @@ static_assert(sizeof(struct hud_state_messages) == 128);
 
 /* hud state messaging functions */
 
-static inline struct hud_state_messages *hud_state_messages_get(int32_t index) {
-    return tag_get(HUD_MESSAGE_TEXT_DEFINITION_TAG, index);
+static inline struct hud_state_messages *hud_state_messages_get(int32_t tag_index) {
+    return tag_get(HUD_MESSAGE_TEXT_DEFINITION_TAG, tag_index);
 }
 
-static inline struct hud_state_message_element *hud_state_messages_get_element(struct hud_state_messages *message_group, int32_t index) {
-    return tag_block_get_element_with_size(&message_group->elements, index, sizeof(struct hud_state_message_element));
+static inline struct hud_state_message_element *hud_state_messages_get_element(struct hud_state_messages *message_group, int32_t message_element_index) {
+    return tag_block_get_element_with_size(&message_group->elements, message_element_index, sizeof(struct hud_state_message_element));
 }
 
-static inline struct hud_state_message_definition *hud_state_messages_get_message(struct hud_state_messages *message_group, int32_t index) {
-    return tag_block_get_element_with_size(&message_group->messages, index, sizeof(struct hud_state_message_definition));
+static inline struct hud_state_message_definition *hud_state_messages_get_message(struct hud_state_messages *message_group, int32_t message_index) {
+    return tag_block_get_element_with_size(&message_group->messages, message_index, sizeof(struct hud_state_message_definition));
 }
 
 #endif

@@ -122,20 +122,20 @@ static_assert(sizeof(struct bitmap_group) == 108);
 
 /* bitmap group functions */
 
-static inline struct bitmap_group *bitmap_group_get(int32_t index) {
-    return tag_get(BITMAP_GROUP_TAG, index);
+static inline struct bitmap_group *bitmap_group_get(int32_t tag_index) {
+    return tag_get(BITMAP_GROUP_TAG, tag_index);
 }
 
-static inline struct bitmap_group_sequence *bitmap_group_get_sequence(struct bitmap_group *bitmap_group, int32_t index) {
-    return tag_block_get_element_with_size(&bitmap_group->sequences, index, sizeof(struct bitmap_group_sequence));
+static inline struct bitmap_group_sequence *bitmap_group_get_sequence(struct bitmap_group *bitmap_group, int32_t sequence_index) {
+    return tag_block_get_element_with_size(&bitmap_group->sequences, sequence_index, sizeof(struct bitmap_group_sequence));
 }
 
-static inline struct bitmap_data *bitmap_group_get_bitmap(struct bitmap_group *bitmap_group, int32_t index) {
-    return tag_block_get_element_with_size(&bitmap_group->bitmaps, index, sizeof(struct bitmap_data));
+static inline struct bitmap_data *bitmap_group_get_bitmap(struct bitmap_group *bitmap_group, int32_t bitmap_index) {
+    return tag_block_get_element_with_size(&bitmap_group->bitmaps, bitmap_index, sizeof(struct bitmap_data));
 }
 
-static inline struct bitmap_group_sprite *bitmap_group_sequence_get_sprite(struct bitmap_group_sequence *sequence, int32_t index) {
-    return tag_block_get_element_with_size(&sequence->sprites, index, sizeof(struct bitmap_group_sprite));
+static inline struct bitmap_group_sprite *bitmap_group_sequence_get_sprite(struct bitmap_group_sequence *sequence, int32_t sprite_index) {
+    return tag_block_get_element_with_size(&sequence->sprites, sprite_index, sizeof(struct bitmap_group_sprite));
 }
 
 #endif

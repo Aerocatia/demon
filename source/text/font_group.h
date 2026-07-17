@@ -52,12 +52,12 @@ static_assert(sizeof(struct font_header) == 156);
 
 /* font group functions */
 
-static inline struct font_header *font_get_header(int32_t index) {
-    return tag_get(FONT_GROUP_TAG, index);
+static inline struct font_header *font_get_header(int32_t tag_index) {
+    return tag_get(FONT_GROUP_TAG, tag_index);
 }
 
-static inline struct font_character *font_get_character(struct font_header *header, int32_t index) {
-    return tag_block_get_element_with_size(&header->characters, index, sizeof(struct font_character));
+static inline struct font_character *font_get_character(struct font_header *header, int32_t character_index) {
+    return tag_block_get_element_with_size(&header->characters, character_index, sizeof(struct font_character));
 }
 
 static inline struct font_character_tables_entry *font_get_character_tables_entry(struct font_header *header, int32_t high_byte) {

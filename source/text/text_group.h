@@ -25,12 +25,12 @@ static_assert(sizeof(struct string_list_group_header) == 12);
 
 /* ascii functions */
 
-static inline struct string_list_group_header *string_list_get_header(int32_t index) {
-    return tag_get(STRING_LISTS_GROUP_TAG, index);
+static inline struct string_list_group_header *string_list_get_header(int32_t tag_index) {
+    return tag_get(STRING_LISTS_GROUP_TAG, tag_index);
 }
 
-static inline struct string_list_string_reference *string_list_get_string_reference(struct string_list_group_header *header, int32_t index) {
-    return tag_block_get_element_with_size(&header->string_references, index, sizeof(struct string_list_string_reference));
+static inline struct string_list_string_reference *string_list_get_string_reference(struct string_list_group_header *header, int32_t string_index) {
+    return tag_block_get_element_with_size(&header->string_references, string_index, sizeof(struct string_list_string_reference));
 }
 
 const char *string_list_get_string(int32_t tag_index, int16_t string_index);
@@ -49,12 +49,12 @@ static_assert(sizeof(struct unicode_string_list_group_header) == 12);
 
 /* unicode functions */
 
-static inline struct unicode_string_list_group_header *unicode_string_list_get_header(int32_t index) {
-    return tag_get(UNICODE_STRING_LISTS_GROUP_TAG, index);
+static inline struct unicode_string_list_group_header *unicode_string_list_get_header(int32_t tag_index) {
+    return tag_get(UNICODE_STRING_LISTS_GROUP_TAG, tag_index);
 }
 
-static inline struct unicode_string_list_string_reference *unicode_string_list_get_string_reference(struct unicode_string_list_group_header *header, int32_t index) {
-    return tag_block_get_element_with_size(&header->string_references, index, sizeof(struct unicode_string_list_string_reference));
+static inline struct unicode_string_list_string_reference *unicode_string_list_get_string_reference(struct unicode_string_list_group_header *header, int32_t string_index) {
+    return tag_block_get_element_with_size(&header->string_references, string_index, sizeof(struct unicode_string_list_string_reference));
 }
 
 const char16_t *unicode_string_list_get_string(int32_t tag_index, int16_t string_index);
