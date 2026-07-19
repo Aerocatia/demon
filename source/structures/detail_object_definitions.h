@@ -86,12 +86,14 @@ struct detail_object_view_data {
     int16_t layer_count;
     int16_t pad;
 };
+static_assert(sizeof(struct detail_object_view_data) == 8);
 
 struct detail_object_layer_data {
     struct detail_object_cell_data *cells;
     int16_t cell_count;
     int16_t collection_definition_index;
 };
+static_assert(sizeof(struct detail_object_layer_data) == 8);
 
 struct detail_object_cell_data {
     int32_t first_detail_object_index;
@@ -102,6 +104,7 @@ struct detail_object_cell_data {
     int32_t internal__first_vertex_index;
     const real_vector4d *z_reference_vector;
 };
+static_assert(sizeof(struct detail_object_cell_data) == 24);
 
 struct detail_object {
     uint8_t position[3];
