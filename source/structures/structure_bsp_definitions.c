@@ -78,17 +78,15 @@ uint8_t *structure_bsp_get_cluster_encoded_sound_data(struct structure_bsp *stru
 uint8_t structure_bsp_get_cluster_encoded_sound_distance(struct structure_bsp *structure_bsp, int16_t from_cluster_index, int16_t to_cluster_index) {
     assert(from_cluster_index >= 0 && from_cluster_index < structure_bsp->clusters.count);
     assert(to_cluster_index >= 0 && to_cluster_index < structure_bsp->clusters.count);
-
-    uint8_t result = 0;
-    if(from_cluster_index != to_cluster_index) {
-        if(from_cluster_index > to_cluster_index) {
-            int16_t swap = from_cluster_index;
-            from_cluster_index = to_cluster_index;
-            to_cluster_index = swap;
-        }
-
-        result = *structure_bsp_get_cluster_encoded_sound_data(structure_bsp, from_cluster_index, to_cluster_index);
+    if(from_cluster_index == to_cluster_index) {
+        return 0;
     }
 
-    return result;
+    if(from_cluster_index > to_cluster_index) {
+        auto swap = from_cluster_index;
+        from_cluster_index = to_cluster_index;
+        to_cluster_index = swap;
+    }
+
+    return *structure_bsp_get_cluster_encoded_sound_data(structure_bsp, from_cluster_index, to_cluster_index);
 }
