@@ -41,6 +41,37 @@ enum {
     NUMBER_OF_TRIANGLE_BUFFER_TYPES
 };
 
+struct environment_vertex_uncompressed {
+    real_point3d position;
+    real_vector3d normal;
+    real_vector3d binormal;
+    real_vector3d tangent;
+    real_point2d texcoord;
+};
+static_assert(sizeof(struct environment_vertex_uncompressed) == 56);
+
+struct environment_vertex_compressed {
+    real_point3d position;
+    uint32_t normal;
+    uint32_t binormal;
+    uint32_t tangent;
+    real_point2d texcoord;
+};
+static_assert(sizeof(struct environment_vertex_compressed) == 32);
+
+struct environment_lightmap_vertex_uncompressed {
+    real_vector3d incident_radiosity;
+    real_point2d texcoord;
+};
+static_assert(sizeof(struct environment_lightmap_vertex_uncompressed) == 20);
+
+struct environment_lightmap_vertex_compressed {
+    uint32_t incident_radiosity;
+    uint16_t lightmap_u;
+    uint16_t lightmap_v;
+};
+static_assert(sizeof(struct environment_lightmap_vertex_compressed) == 8);
+
 struct triangle_buffer {
     int16_t type;
     uint16_t pad;

@@ -61,6 +61,8 @@ enum {
 
 /* macros */
 
+#define SQR(x) ((x)*(x))
+
 #define FLOOR(n,floor) ((n)<(floor)?(floor):(n))
 #define CEILING(n,ceiling) ((n)>(ceiling)?(ceiling):(n))
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : CEILING(n,ceiling))
@@ -70,6 +72,8 @@ enum {
 #define TEST_FLAG(f, b) (((f)&FLAG(b))!=0)
 #define SWAP_FLAG(f, b) ((f)^=FLAG(b))
 #define SET_FLAG(f, b, v) ((v) ? ((f)|=FLAG(b)) : ((f)&=~FLAG(b)))
+
+#define BIT_VECTOR_SIZE_IN_LONGS(count) ((((count)+(INT32_BITS-1))>>INT32_BITS_BITS))
 
 /* types */
 

@@ -133,6 +133,8 @@
     "string_list_get_string": { "address": "0x00405CEA" },
     "structure_bsp_get_cluster_encoded_sound_data": { "address": "0x00405844" },
     "structure_bsp_get_cluster_encoded_sound_distance": { "address": "0x00408DE6" },
+    "structure_bsp_get_cluster_pvs": { "address": "0x004053D0" },
+    "structure_bsp_find_material_for_surface": { "address": "0x00402874" },
     "system_free": { "address": "0x004074B4", "ignore": true },
     "system_malloc": { "address": "0x0040652D", "ignore": true },
     "system_milliseconds": { "address": "0x004092AF" },

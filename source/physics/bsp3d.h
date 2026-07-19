@@ -1,8 +1,7 @@
 #ifndef DEMON_BSP3D_H
 #define DEMON_BSP3D_H
 
-#include <stdint.h>
-
+#include "../cseries/cseries.h"
 #include "../tag_files/tag_groups.h"
 
 enum {
