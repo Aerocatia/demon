@@ -1,14 +1,12 @@
 #include "cseries_windows.h"
 #include "errors.h"
 
-// halo_cache_symbols.exe
-void (*exe_stack_walk_initialize)() = (void *)0x00559480;
-void (*exe_stack_walk_dispose)() = (void *)0x005593F0;
-
 void stack_walk_initialize() {
-    exe_stack_walk_initialize();
+    typeof(stack_walk_initialize) *FIXME_EXE_FUNCTION_POINTER = (void *)0x00559480;
+    FIXME_EXE_FUNCTION_POINTER();
 }
 
 void stack_walk_dispose() {
-    exe_stack_walk_dispose();
+    typeof(stack_walk_dispose) *FIXME_EXE_FUNCTION_POINTER = (void *)0x005593F0;
+    FIXME_EXE_FUNCTION_POINTER();
 }
