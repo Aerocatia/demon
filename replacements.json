@@ -10,6 +10,7 @@
     "cache_files_map_directory": { "address": "0x004081AC" },
     "cache_files_root_directory": { "address": "0x00406910" },
     "cache_files_set_root_directory": { "address": "0x00511780", "sudo": true },
+    "choose_random_array_element": { "address": "0x00404E21" },
     "cosine": { "address": "0x00405BF5" },
     "crc_checksum_buffer": { "address": "0x00408567" },
     "crc_new": { "address": "0x00409534" },

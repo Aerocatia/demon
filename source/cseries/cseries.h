@@ -74,6 +74,9 @@ enum {
 #define SET_FLAG(f, b, v) ((v) ? ((f)|=FLAG(b)) : ((f)&=~FLAG(b)))
 
 #define BIT_VECTOR_SIZE_IN_LONGS(count) ((((count)+(INT32_BITS-1))>>INT32_BITS_BITS))
+#define BIT_VECTOR_TEST_FLAG(vector, bit) ((((uint32_t *)(vector))[(bit)>>INT32_BITS_BITS]&(1<<((bit)&(INT32_BITS-1))))!=0)
+#define BIT_VECTOR_SET_FLAG(vector, bit, value) ((value) ? (((uint32_t *)(vector))[(bit)>>INT32_BITS_BITS]|= (1<<((bit)&(INT32_BITS-1)))) : (((uint32_t *)(vector))[(bit)>>INT32_BITS_BITS]&= ~(1<<((bit)&(INT32_BITS-1)))))
+
 
 /* types */
 

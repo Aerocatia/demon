@@ -3,6 +3,8 @@
 
 #include <math.h>
 
+#include "../main/exe_functions.h"
+
 #define REAL_MAX FLT_MAX
 #define REAL_MIN (-FLT_MAX)
 
@@ -90,6 +92,8 @@ real_vector3d *perpendicular3d(const real_vector3d *a, real_vector3d *result);
 
 void quaternion_to_angle_and_vector(const real_quaternion *q, real *a, real_vector3d *v);
 
+/* matrix math */
+
 void matrix4x3_identity(real_matrix4x3 *matrix);
 void matrix4x3_transpose(real_matrix4x3 *matrix);
 void matrix4x3_inverse(const real_matrix4x3 *matrix, real_matrix4x3 *result);
@@ -124,5 +128,11 @@ real_matrix3x3 *matrix3x3_from_axis_and_angle(real_matrix3x3 *matrix, const real
 real_matrix3x3 *matrix3x3_multiply(const real_matrix3x3 *a, const real_matrix3x3 *b, real_matrix3x3 *result);
 real_vector3d *matrix3x3_transform_vector(const real_matrix3x3 *matrix, const real_vector3d *vector, real_vector3d *result);
 real_quaternion *matrix3x3_rotation_to_quaternion(const real_matrix3x3 *matrix, real_quaternion *quaternion);
+
+/* random math */
+
+static inline real real_random_range(real lower_bound, real upper_bound) {
+    return RUN_EXE_FUNCTION(real_random_range, lower_bound, upper_bound);
+}
 
 #endif
