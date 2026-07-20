@@ -9,6 +9,8 @@
 #include "cseries.h"
 #include "errors.h"
 
+#include "../main/exe_functions.h"
+
 #if DEBUG_BUILD
 char temporary[256];
 #endif
@@ -198,8 +200,7 @@ void display_assert(char *information, char *file, int32_t line, bool fatal) {
 #endif
 
 void keystone_dispose() {
-    typeof(keystone_dispose) *FIXME_EXE_FUNCTION_POINTER = (void *)0x0086D320;
-    FIXME_EXE_FUNCTION_POINTER();
+    RUN_EXE_FUNCTION(keystone_dispose);
 }
 
 void system_exit(int code) {

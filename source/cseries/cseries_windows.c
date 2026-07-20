@@ -3,6 +3,8 @@
 #include "cseries_windows.h"
 #include "cseries.h"
 
+#include "../main/exe_functions.h"
+
 #ifdef DEBUG_BUILD
 void display_debug_string(char *string) {
     OutputDebugString(string);
@@ -10,8 +12,7 @@ void display_debug_string(char *string) {
 #endif
 
 uint32_t system_milliseconds() {
-    typeof(system_milliseconds) *FIXME_EXE_FUNCTION_POINTER = (void *)0x0054F1E0;
-    return FIXME_EXE_FUNCTION_POINTER();
+    return RUN_EXE_FUNCTION(system_milliseconds);
 }
 
 void system_sleep(uint32_t milliseconds) {

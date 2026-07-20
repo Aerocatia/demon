@@ -22,6 +22,7 @@ add_library(demon SHARED
     source/interface/terminal.c
     source/main/console.c
     source/main/demon.c
+    source/main/exe_functions.c
     source/main/main.c
     source/math/matrix_math.c
     source/math/real_math.c

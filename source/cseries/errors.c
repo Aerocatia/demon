@@ -12,6 +12,8 @@
 
 #include "../interface/terminal.h"
 
+#include "../main/exe_functions.h"
+
 #define DEBUG_OUTPUT_FILENAME "debug.txt"
 
 #ifdef CACHE_FILE_BUILD
@@ -49,10 +51,8 @@ int32_t fucked_up_shit_count = 0;
 
 /* forward declarations */
 
+static const char *errors_debug_file_path(const char *filename);
 static void reset_error_state(void);
-
-// FIXME_EXE_FUNCTION_POINTER
-char *(*errors_debug_file_path)(char *filename) = (void *)0x0075BB30;
 
 /* public functions */
 
@@ -251,6 +251,10 @@ void write_to_error_file(char *string, bool date) {
 }
 
 /* private functions */
+
+static const char *errors_debug_file_path(const char *filename) {
+    return RUN_EXE_FUNCTION(errors_debug_file_path, filename);
+}
 
 static void reset_error_state() {
     error_globals.delayed = false;
