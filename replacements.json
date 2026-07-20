@@ -29,6 +29,8 @@
     "data_delete_all": { "address": "0x00407E5F" },
     "data_dispose": { "address": "0x00409CDC" },
     "data_destroy": { "address": "0x00402329" },
+    "data_file_find_item": { "address": "0x00408652" },
+    "data_file_load_tag": { "address": "0x004059F2" },
     "data_initialize": { "address": "0x00402207" },
     "data_iterator_new": { "address": "0x004087BF" },
     "data_iterator_next": { "address": "0x004047FF" },
