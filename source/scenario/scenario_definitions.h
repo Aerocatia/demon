@@ -1,6 +1,7 @@
 #ifndef DEMON_SCENARIO_DEFINITIONS_H
 #define DEMON_SCENARIO_DEFINITIONS_H
 
+#include "../cseries/cseries.h"
 #include "../tag_files/tag_files.h"
 
 enum {
