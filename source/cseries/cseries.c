@@ -97,14 +97,11 @@ int strncmp_case_insensitive(const char *s1, const char *s2, size_t count) {
     }
 
     do {
-        int a = tolower((unsigned char)*s1);
-        int b = tolower((unsigned char)*s2++);
-        if(a != b) {
-            if(a > b) {
-                return 1;
-            }
-
-            return -1;
+        int a = fast_ascii_tolower((unsigned char)*s1);
+        int b = fast_ascii_tolower((unsigned char)*s2++);
+        int c = a - b;
+        if(c) {
+            return c;
         }
 
         if(*s1++ == '\0') {

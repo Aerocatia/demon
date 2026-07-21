@@ -78,7 +78,6 @@ enum {
 #define BIT_VECTOR_TEST_FLAG(vector, bit) ((((uint32_t *)(vector))[(bit)>>INT32_BITS_BITS]&(1<<((bit)&(INT32_BITS-1))))!=0)
 #define BIT_VECTOR_SET_FLAG(vector, bit, value) ((value) ? (((uint32_t *)(vector))[(bit)>>INT32_BITS_BITS]|= (1<<((bit)&(INT32_BITS-1)))) : (((uint32_t *)(vector))[(bit)>>INT32_BITS_BITS]&= ~(1<<((bit)&(INT32_BITS-1)))))
 
-
 /* types */
 
 typedef uint8_t pixel8;
@@ -404,6 +403,14 @@ char *tag_to_string(tag t, char *s);
 int strncmp_case_insensitive(const char *s1, const char *s2, size_t count);
 
 void system_exit(int code);
+
+static inline int fast_ascii_tolower(unsigned char c) {
+    if(c >= 'A' && c <= 'Z') {
+        return c |= FLAG(5);
+    }
+
+    return c;
+}
 
 /* debug memory */
 
