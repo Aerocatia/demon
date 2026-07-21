@@ -41,7 +41,7 @@
 #ifdef MATH_ASSERTS
     #define math_assert(expr) assert(expr)
 #else
-    #define math_assert(expr)
+    #define math_assert(expr) ((void)0)
 #endif
 
 #define realcmp(x, y) _realcmp(x, y, _real_epsilon)

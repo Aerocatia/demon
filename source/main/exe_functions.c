@@ -16,6 +16,7 @@ const void *exe_function_table[] = {
     [_exe_function_sound_cache_open] = (void *)0x0051DF90,
     [_exe_function_stack_walk_dispose] = (void *)0x005593F0,
     [_exe_function_stack_walk_initialize] = (void *)0x00559480,
+    [_exe_function_strncmp_case_insensitive] = (void *)0x0054C1B0,
     [_exe_function_system_milliseconds] = (void *)0x0054F1E0,
     [_exe_function_tags_header_register_vertex_and_index_buffers] = (void *)0x0051A100,
     [_exe_function_texture_cache_open] = (void *)0x0051FD20

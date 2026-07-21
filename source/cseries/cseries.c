@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdcountof.h>
+#include <ctype.h>
 
 #include "../memory/byte_swapping.h"
 
@@ -88,6 +89,34 @@ char *tag_to_string(tag t, char *s) {
 
     return s;
 }
+
+int strncmp_case_insensitive(const char *s1, const char *s2, size_t count) {
+    assert(s1 && s2);
+    if(count == 0) {
+        return 0;
+    }
+
+    do {
+        int a = tolower((unsigned char)*s1);
+        int b = tolower((unsigned char)*s2++);
+        if(a != b) {
+            if(a > b) {
+                return 1;
+            }
+
+            return -1;
+        }
+
+        if(*s1++ == '\0') {
+            break;
+        }
+    }
+    while(--count != 0);
+
+    return 0;
+}
+
+/* debug wrappers */
 
 #ifdef DEBUG_BUILD
 char *csprintf(char *buffer, char *format, ...) {

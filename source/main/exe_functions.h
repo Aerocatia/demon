@@ -14,6 +14,7 @@ enum {
     _exe_function_sound_cache_open,
     _exe_function_stack_walk_dispose,
     _exe_function_stack_walk_initialize,
+    _exe_function_strncmp_case_insensitive,
     _exe_function_system_milliseconds,
     _exe_function_tags_header_register_vertex_and_index_buffers,
     _exe_function_texture_cache_open,

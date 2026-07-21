@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* constants */
 
@@ -400,6 +401,7 @@ extern const real_rgb_color *global_real_rgb_violet;
 
 tag string_to_tag(const char *s);
 char *tag_to_string(tag t, char *s);
+int strncmp_case_insensitive(const char *s1, const char *s2, size_t count);
 
 void system_exit(int code);
 
