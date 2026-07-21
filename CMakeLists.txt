@@ -7,6 +7,7 @@ project(Demon
 )
 
 add_library(demon SHARED
+    source/ai/actor_definitions.c
     source/ai/ai_scenario_definitions.c
     source/bitmaps/bitmaps.c
     source/cache/cache_files.c
