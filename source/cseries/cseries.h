@@ -404,7 +404,7 @@ int strncmp_case_insensitive(const char *s1, const char *s2, size_t count);
 
 void system_exit(int code);
 
-static inline int fast_ascii_tolower(unsigned char c) {
+static inline char fast_ascii_lowercase(char c) {
     if(c >= 'A' && c <= 'Z') {
         return c |= FLAG(5);
     }
