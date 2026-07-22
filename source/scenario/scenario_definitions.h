@@ -2,7 +2,7 @@
 #define DEMON_SCENARIO_DEFINITIONS_H
 
 #include "../cseries/cseries.h"
-#include "../tag_files/tag_files.h"
+#include "../tag_files/tag_groups.h"
 
 enum {
     SCENARIO_GROUP_TAG = 0x73636E72, // 'scnr'
