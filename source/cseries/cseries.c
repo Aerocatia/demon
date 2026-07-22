@@ -5,6 +5,7 @@
 #include <stdcountof.h>
 #include <ctype.h>
 
+#include "../memory/crc.h"
 #include "../memory/byte_swapping.h"
 
 #include "cseries.h"
@@ -75,6 +76,56 @@ const real_rgb_color *global_real_rgb_darkgreen   = &private_real_argb_colors[14
 const real_rgb_color *global_real_rgb_salmon      = &private_real_argb_colors[15].rgb;
 const real_rgb_color *global_real_rgb_violet      = &private_real_argb_colors[16].rgb;
 
+char *stristr(const char *haystack, const char *needle) {
+    do {
+        const char *h = haystack;
+        const char *n = needle;
+        while(*n && fast_ascii_lowercase(*h) == fast_ascii_lowercase(*n)) {
+            h++;
+            n++;
+        }
+
+        if(*n == '\0') {
+            return (char *)haystack;
+        }
+    }
+    while(*haystack++);
+
+    return nullptr;
+}
+
+char *strnupper(char *string, size_t n) {
+    for(char *p = string; *p && n-->0; p++) {
+        *p = fast_ascii_uppercase(*p);
+    }
+
+    return string;
+}
+
+char *strnlower(char *string, size_t n) {
+    for(char *p = string; *p && n-->0; p++) {
+        *p = fast_ascii_lowercase(*p);
+    }
+
+    return string;
+}
+
+char *strupper(char *string) {
+    for(char *p = string; *p; p++) {
+        *p = fast_ascii_uppercase(*p);
+    }
+
+    return string;
+}
+
+char *strlower(char *string) {
+    for(char *p = string; *p; p++) {
+        *p = fast_ascii_lowercase(*p);
+    }
+
+    return string;
+}
+
 tag string_to_tag(const char *s) {
     tag t = NONE;
     t = *((tag *)s);
@@ -88,6 +139,14 @@ char *tag_to_string(tag t, char *s) {
     s[sizeof(tag)] = '\0';
 
     return s;
+}
+
+uint32_t string_hash(const char *string) {
+    uint32_t hash;
+    crc_new(&hash);
+    crc_checksum_buffer(&hash, string, strlen(string));
+
+    return hash;
 }
 
 int strncmp_case_insensitive(const char *s1, const char *s2, size_t count) {

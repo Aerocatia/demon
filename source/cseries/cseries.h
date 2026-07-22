@@ -398,11 +398,26 @@ extern const real_rgb_color *global_real_rgb_violet;
 
 /* functions */
 
+char *stristr(const char *haystack, const char *needle);
+char *strnupper(char *string, size_t n);
+char *strnlower(char *string, size_t n);
+char *strupper(char *string);
+char *strlower(char *string);
 tag string_to_tag(const char *s);
 char *tag_to_string(tag t, char *s);
+uint32_t string_hash(const char *string);
+
 int strncmp_case_insensitive(const char *s1, const char *s2, size_t count);
 
 void system_exit(int code);
+
+static inline char fast_ascii_uppercase(char c) {
+    if(c >= 'a' && c <= 'z') {
+        return c &= ~FLAG(5);
+    }
+
+    return c;
+}
 
 static inline char fast_ascii_lowercase(char c) {
     if(c >= 'A' && c <= 'Z') {
