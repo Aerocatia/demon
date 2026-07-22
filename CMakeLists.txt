@@ -34,6 +34,7 @@ add_library(demon SHARED
     source/memory/lruv_cache.c
     source/objects/object_definitions.c
     source/scenario/fog_definitions.c
+    source/scenario/sky_definitions.c
     source/structures/structure_bsp_definitions.c
     source/tag_files/tag_files.c
     source/tag_files/tag_groups.c

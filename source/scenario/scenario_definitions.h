@@ -371,7 +371,7 @@ struct scenario_detail_object_collection_palette_entry {
 };
 static_assert(sizeof(struct scenario_detail_object_collection_palette_entry) == 48);
 
-/* functions */
+/* scenario functions */
 
 static inline struct scenario *scenario_get(int32_t tag_index) {
     return tag_get(SCENARIO_GROUP_TAG, tag_index);
