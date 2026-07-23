@@ -107,6 +107,7 @@ struct lruv_cache *game_state_lruv_cache_new(const char *name, int32_t page_coun
 /* private functions */
 
 [[maybe_unused]] static void game_state_allocation_record(const char *name, const char *type, int32_t size, int32_t total, int32_t allocated, bool gpu) {
+    assert(name);
     static FILE *file;
     if(!file) {
         file = fopen(GAMESTATE_FILENAME, "wt");
