@@ -42,18 +42,25 @@ char *cache_files_map_directory() {
 
 #ifdef CACHE_FILE_BUILD
 
-asm(".set _cache_file_globals, 0x00AF8368"); // TODO: make static
-extern struct {
+/* cache file globals */
+
+struct cache_file_global_data {
     bool tags_loaded;
     bool unknown_bool; // set this to false and you get EXCEPTION halt in memory\data.c,#532: pc texture index #0 (0xe3700000) is unused or changed
     struct cache_file_header header;
     uint32_t unknown; // set to 0 and never read
     struct cache_file_tags_header *tags_header;
     struct cache_file_structure_bsp_header *structure_bsp_header;
-} cache_file_globals;
+};
+static_assert(sizeof(struct cache_file_global_data) == 2064);
 
-asm(".set _global_tag_instances, 0x00AF8364"); // TODO: remove extern
+asm(".set _cache_file_globals, 0x00AF8368");
+extern struct cache_file_global_data cache_file_globals;
+
+asm(".set _global_tag_instances, 0x00AF8364");
 extern struct cache_file_tag_instance *global_tag_instances;
+
+/* cache file functions */
 
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index);
 

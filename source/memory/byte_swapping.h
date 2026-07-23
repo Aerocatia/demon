@@ -5,7 +5,7 @@
 
 #include "../cseries/platform.h"
 
-typedef long byte_swap_code;
+typedef int32_t byte_swap_code;
 
 #define SWAP2(q) ((((uint16_t)(q))>>8) | ((((uint16_t)(q))<<8)))
 #define SWAP4(q) (((((uint32_t) (q)))>>24) | ((((uint32_t) (q))>>8)&0xFF00) | ((((uint32_t) (q))<<8)&0xFF0000) | ((((uint32_t) (q))<<24)))

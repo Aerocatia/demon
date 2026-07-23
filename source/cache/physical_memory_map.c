@@ -5,13 +5,16 @@
 
 /* globals */
 
-asm(".set _physical_memory_map_globals, 0x00AFF024");
-extern struct {
+struct physical_memory_map_global_data {
     void *game_state_base_address;
     void *tag_cache_base_address;
     void *texture_cache_base_address;
     void *sound_cache_base_address;
-} physical_memory_map_globals;
+};
+static_assert(sizeof(struct physical_memory_map_global_data) == 16);
+
+asm(".set _physical_memory_map_globals, 0x00AFF024");
+extern struct physical_memory_map_global_data physical_memory_map_globals;
 
 /* public functions */
 

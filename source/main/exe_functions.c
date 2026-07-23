@@ -1,8 +1,10 @@
 #include <stdcountof.h>
+#include <stdint.h>
 
 #include "exe_functions.h"
 
 #ifdef CACHE_FILE_BUILD
+
 const void *exe_function_table[] = {
     [_exe_function_cache_file_open] = (void *)0x005173C0,
     [_exe_function_cache_file_read] = (void *)0x005175D0,
@@ -22,4 +24,5 @@ const void *exe_function_table[] = {
     [_exe_function_texture_cache_open] = (void *)0x0051FD20
 };
 static_assert(countof(exe_function_table) == NUMBER_OF_EXE_FUNCTIONS);
+
 #endif

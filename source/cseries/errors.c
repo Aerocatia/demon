@@ -43,8 +43,8 @@ static_assert(sizeof(struct error_global_data) == 4366);
 
 /* globals */
 
-asm(".set _error_globals, 0x00B016C8"); // HACK demon.dll
-extern struct error_global_data error_globals; // remove extern
+asm(".set _error_globals, 0x00B016C8");
+extern struct error_global_data error_globals;
 
 bool find_all_fucked_up_shit = false;
 int32_t fucked_up_shit_count = 0;

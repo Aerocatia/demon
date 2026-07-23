@@ -2,8 +2,10 @@
 #define DEMON_CSERIES_H
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdcountof.h>
 
 /* constants */
 

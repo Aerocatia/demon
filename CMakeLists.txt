@@ -33,8 +33,11 @@ add_library(demon SHARED
     source/memory/data.c
     source/memory/lruv_cache.c
     source/objects/object_definitions.c
+    source/saved_games/game_state.c
     source/scenario/fog_definitions.c
     source/scenario/sky_definitions.c
+    source/sound/sound_classes.c
+    source/sound/sound_definitions.c
     source/structures/structure_bsp_definitions.c
     source/tag_files/tag_files.c
     source/tag_files/tag_groups.c
@@ -66,6 +69,11 @@ endif()
 option(DEMON_DEBUG_BUILD "Enable debug checks" ON)
 if(${DEMON_DEBUG_BUILD})
     target_compile_definitions(demon PUBLIC DEBUG_BUILD)
+endif()
+
+option(DEMON_DEBUG_LOGGING "Log things like game state allocations to disk" ON)
+if(${DEMON_DEBUG_LOGGING})
+    target_compile_definitions(demon PUBLIC DEBUG_LOGGING)
 endif()
 
 set_target_properties(demon PROPERTIES PREFIX "")
