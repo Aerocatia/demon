@@ -42,7 +42,7 @@ char *cache_files_map_directory() {
 
 #ifdef CACHE_FILE_BUILD
 
-/* cache file globals */
+/* globals */
 
 struct cache_file_global_data {
     bool tags_loaded;
@@ -60,9 +60,11 @@ extern struct cache_file_global_data cache_file_globals;
 asm(".set _global_tag_instances, 0x00AF8364");
 extern struct cache_file_tag_instance *global_tag_instances;
 
-/* cache file functions */
+/* forward declarations */
 
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index);
+
+/* public functions */
 
 int32_t scenario_tags_load(const char *name) {
     assert(name);
@@ -375,6 +377,8 @@ int32_t tag_iterator_next(struct tag_iterator *iterator) {
 
     return NONE;
 }
+
+/* private functions */
 
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index) {
     assert(cache_file_globals.tags_loaded);

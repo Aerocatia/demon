@@ -9,6 +9,8 @@ enum {
     _exe_function_debug_malloc,
     _exe_function_debug_free,
     _exe_function_errors_debug_file_path,
+    _exe_function_game_state_allocate_buffer,
+    _exe_function_game_state_create_or_open_file,
     _exe_function_keystone_dispose,
     _exe_function_real_random_range,
     _exe_function_sound_cache_open,

@@ -34,6 +34,7 @@ add_library(demon SHARED
     source/memory/lruv_cache.c
     source/objects/object_definitions.c
     source/saved_games/game_state.c
+    source/saved_games/game_state_pc.c
     source/scenario/fog_definitions.c
     source/scenario/sky_definitions.c
     source/sound/sound_classes.c
