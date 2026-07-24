@@ -1,4 +1,5 @@
 #include "../cseries/cseries.h"
+#include "../cseries/errors.h"
 #include "../cseries/build_number.h"
 #include "../cseries/platform.h"
 #include "console.h"
@@ -102,6 +103,16 @@ static_assert(offsetof(struct _main_globals, restart_time) == 138);
 
 asm(".set _main_globals, 0x00C996B0");
 extern struct _main_globals main_globals;
+
+void main_skip(int16_t ticks) {
+    if(ticks <= TICKS_PER_SECOND / 2) {
+        main_globals.skip_ticks = ticks;
+        main_globals.cutscene_skip = true;
+    }
+    else {
+        error(_error_silent, "cannot skip more than 15 frames (half a second)");
+    }
+}
 
 void main_stop_time() {
     main_globals.halt_time_scale = 0;
