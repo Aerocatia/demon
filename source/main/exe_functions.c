@@ -15,6 +15,7 @@ const void *exe_function_table[] = {
     [_exe_function_errors_debug_file_path] = (void *)0x0075BB30,
     [_exe_function_game_state_allocate_buffer] = (void *)0x856370,
     [_exe_function_game_state_create_or_open_file] =(void *)0x00856610,
+    [_exe_function_hud_load] = (void *)0x006220E0,
     [_exe_function_keystone_dispose] = (void *)0x0086D320,
     [_exe_function_real_random_range] = (void *)0x0042F360,
     [_exe_function_sound_cache_open] = (void *)0x0051DF90,

@@ -21,6 +21,7 @@ add_library(demon SHARED
     source/cseries/errors.c
     source/cseries/debug_memory.c
     source/cseries/stack_walk_windows.c
+    source/interface/hud.c
     source/interface/terminal.c
     source/main/console.c
     source/main/demon.c
@@ -36,6 +37,7 @@ add_library(demon SHARED
     source/saved_games/game_state.c
     source/saved_games/game_state_pc.c
     source/scenario/fog_definitions.c
+    source/scenario/scenario.c
     source/scenario/sky_definitions.c
     source/sound/sound_classes.c
     source/sound/sound_definitions.c

@@ -2,8 +2,11 @@
 #include "../cseries/errors.h"
 #include "../cseries/build_number.h"
 #include "../cseries/platform.h"
+
 #include "console.h"
 
+#include "../interface/hud.h"
+#include "../scenario/scenario.h"
 #include "../tag_files/tag_files.h"
 
 /* constants */
@@ -103,6 +106,22 @@ static_assert(offsetof(struct _main_globals, restart_time) == 138);
 
 asm(".set _main_globals, 0x00C996B0");
 extern struct _main_globals main_globals;
+
+/* public functions */
+
+void main_switch_structure_bsp(int16_t new_structure_bsp_index) {
+    auto scenario = global_scenario_get();
+    if(new_structure_bsp_index < 0 || new_structure_bsp_index >= scenario->structure_bsp_references.count) {
+        console_warning("tried to switch to invalid structure-bsp %d", new_structure_bsp_index);
+    }
+    else if(new_structure_bsp_index == global_structure_bsp_index_get()) {
+        console_warning("tried to switch to current structure-bsp %d", new_structure_bsp_index);
+    }
+    else {
+        main_globals.switch_to_structure_bsp_index = new_structure_bsp_index;
+        hud_load(true);
+    }
+}
 
 void main_skip(int16_t ticks) {
     if(ticks <= TICKS_PER_SECOND / 2) {
