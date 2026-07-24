@@ -5,9 +5,10 @@
 
 #include "console.h"
 
+#include "../tag_files/tag_files.h"
+
 #include "../interface/hud.h"
 #include "../scenario/scenario.h"
-#include "../tag_files/tag_files.h"
 
 /* constants */
 
@@ -101,8 +102,11 @@ struct _main_globals {
 static_assert(sizeof(struct _main_globals) == 1136);
 
 // confirmed matches for halo_cache_symbols.exe
-static_assert(offsetof(struct _main_globals, halt_time_scale) == 137);
-static_assert(offsetof(struct _main_globals, restart_time) == 138);
+static_assert(offsetof(struct _main_globals, switch_to_structure_bsp_index) == 0x74);
+static_assert(offsetof(struct _main_globals, halt_time_scale) == 0x89);
+static_assert(offsetof(struct _main_globals, restart_time) == 0x8A);
+static_assert(offsetof(struct _main_globals, cutscene_skip) == 0x8C);
+static_assert(offsetof(struct _main_globals, skip_ticks) == 0x8E);
 
 asm(".set _main_globals, 0x00C996B0");
 extern struct _main_globals main_globals;
