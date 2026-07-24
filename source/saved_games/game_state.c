@@ -1,12 +1,14 @@
 #include "../cseries/cseries.h"
 
 #include "../cache/physical_memory_map.h"
+#include "../main/main.h"
 #include "../memory/crc.h"
 #include "../memory/data.h"
 #include "../memory/lruv_cache.h"
 #include "../tag_files/tag_files.h"
 
 #include "game_state.h"
+#include "game_state_procs.h"
 
 #define GAMESTATE_FILENAME "gamestate.txt"
 
@@ -103,6 +105,16 @@ struct lruv_cache *game_state_lruv_cache_new(const char *name, int32_t page_coun
 
     return buffer;
 }
+
+/*
+// incomplete
+void game_state_save() {
+    game_state_call_before_save_procs();
+    main_stop_time();
+    game_state_globals.saved_game_valid = game_state_write_to_file();
+    main_start_time();
+}
+*/
 
 /* private functions */
 

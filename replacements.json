@@ -91,6 +91,8 @@
     "magnitude_squared3d": { "address": "0x004090E3" },
     "main_crash": { "address": "0x00403C29" },
     "main_print_version": { "address": "0x004076DF" },
+    "main_stop_time": { "address": "0x00401442" },
+    "main_start_time": { "address": "0x00409CEB" },
     "matrix3x3_determinant": { "address": "0x0", "ignore": true },
     "matrix3x3_from_axis_and_angle": { "address": "0x0", "ignore": true },
     "matrix3x3_from_forward_and_up": { "address": "0x00404A7A" },

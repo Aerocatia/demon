@@ -8,3 +8,7 @@ void *game_state_allocate_buffer(uint32_t address, uint32_t cpu_size, uint32_t g
 void game_state_create_or_open_file() {
     RUN_EXE_FUNCTION(game_state_create_or_open_file);
 }
+
+bool game_state_write_to_file() {
+    abort();
+}
