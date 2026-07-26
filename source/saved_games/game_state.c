@@ -10,6 +10,8 @@
 #include "game_state.h"
 #include "game_state_procs.h"
 
+#include "../demon/exe_globals.h"
+
 #define GAMESTATE_FILENAME "gamestate.txt"
 
 /* globals */
@@ -38,8 +40,9 @@ struct game_state_global_data {
 };
 static_assert(sizeof(struct game_state_global_data) == 28);
 
-asm(".set _game_state_globals, 0x00F14600");
-extern struct game_state_global_data game_state_globals;
+#ifndef DEMON_EXE_GLOBALS
+static struct game_state_global_data game_state_globals;
+#endif
 
 /* forward declarations */
 

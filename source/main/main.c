@@ -10,6 +10,8 @@
 #include "../interface/hud.h"
 #include "../scenario/scenario.h"
 
+#include "../demon/exe_globals.h"
+
 /* constants */
 
 enum {
@@ -108,8 +110,9 @@ static_assert(offsetof(struct _main_globals, restart_time) == 0x8A);
 static_assert(offsetof(struct _main_globals, cutscene_skip) == 0x8C);
 static_assert(offsetof(struct _main_globals, skip_ticks) == 0x8E);
 
-asm(".set _main_globals, 0x00C996B0");
-extern struct _main_globals main_globals;
+#ifndef DEMON_EXE_GLOBALS
+static struct _main_globals main_globals;
+#endif
 
 /* public functions */
 

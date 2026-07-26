@@ -1,7 +1,7 @@
 #include "../cseries/cseries_windows.h"
 #include "cache_files.h"
 
-#include "../main/exe_functions.h"
+#include "../demon/exe_functions.h"
 
 bool cache_file_open(const char *scenario_name, struct cache_file_header *header) {
     return RUN_EXE_FUNCTION(cache_file_open, scenario_name, header);

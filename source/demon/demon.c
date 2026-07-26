@@ -8,7 +8,7 @@ bool demon_count_thunks = true;
 #ifdef CACHE_FILE_BUILD
 // Cache build (halo_cache_symbols.exe)
 const char demon_replacements_json[] = {
-    #embed "../../replacements.json"
+    #embed "replacements.json"
     , 0
 };
 

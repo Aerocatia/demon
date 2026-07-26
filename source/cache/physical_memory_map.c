@@ -3,6 +3,8 @@
 #include "../cseries/cseries_windows.h"
 #include "physical_memory_map.h"
 
+#include "../demon/exe_globals.h"
+
 /* globals */
 
 struct physical_memory_map_global_data {
@@ -13,8 +15,9 @@ struct physical_memory_map_global_data {
 };
 static_assert(sizeof(struct physical_memory_map_global_data) == 16);
 
-asm(".set _physical_memory_map_globals, 0x00AFF024");
-extern struct physical_memory_map_global_data physical_memory_map_globals;
+#ifndef DEMON_EXE_GLOBALS
+static struct physical_memory_map_global_data physical_memory_map_globals;
+#endif
 
 /* public functions */
 

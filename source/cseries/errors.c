@@ -12,7 +12,8 @@
 
 #include "../interface/terminal.h"
 
-#include "../main/exe_functions.h"
+#include "../demon/exe_functions.h"
+#include "../demon/exe_globals.h"
 
 #define DEBUG_OUTPUT_FILENAME "debug.txt"
 
@@ -43,9 +44,9 @@ static_assert(sizeof(struct error_global_data) == 4366);
 
 /* globals */
 
-asm(".set _error_globals, 0x00B016C8");
-extern struct error_global_data error_globals;
-
+#ifndef DEMON_EXE_GLOBALS
+static struct error_global_data error_globals;
+#endif
 bool find_all_fucked_up_shit = false;
 int32_t fucked_up_shit_count = 0;
 

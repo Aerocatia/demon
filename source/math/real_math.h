@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-#include "../main/exe_functions.h"
+#include "../demon/exe_functions.h"
 
 #define REAL_MAX FLT_MAX
 #define REAL_MIN (-FLT_MAX)

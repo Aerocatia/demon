@@ -3,6 +3,8 @@
 
 #include "sound_classes.h"
 
+#include "../demon/exe_globals.h"
+
 struct sound_class_datum {
     real desired_gain;
     real gain;
@@ -97,14 +99,23 @@ const char *sound_class_names[NUMBER_OF_SOUND_CLASSES] = {
     "game_event"
 };
 
-asm(".set _sound_class_data, 0x00F1BD14");
-extern struct sound_class_datum *sound_class_data;
+/* globals */
+
+#ifndef DEMON_EXE_GLOBALS
+static struct sound_class_datum *sound_class_data;
+#endif
+
+/* forward declarations */
 
 static struct sound_class_datum *sound_class_datum_get(int16_t index);
+
+/* public functions */
 
 void sound_classes_initialize() {
     sound_class_data = game_state_malloc("sound classes", nullptr, NUMBER_OF_SOUND_CLASSES * sizeof(struct sound_class_datum));
 }
+
+/* private functions */
 
 static struct sound_class_datum *sound_class_datum_get(int16_t index) {
     assert(index >= 0 && index < NUMBER_OF_SOUND_CLASSES);

@@ -3,13 +3,14 @@
 
 #include "scenario.h"
 
+#include "../demon/exe_globals.h"
+
 /* globals */
 
-asm(".set _global_scenario, 0x00F1A67C");
-extern struct scenario *global_scenario;
-
-asm(".set _global_structure_bsp_index, 0x00A39C68");
-extern int16_t global_structure_bsp_index;
+#ifndef DEMON_EXE_GLOBALS
+static struct scenario *global_scenario;
+static int16_t global_structure_bsp_index;
+#endif
 
 /* public functions */
 

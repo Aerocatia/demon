@@ -21,11 +21,11 @@ add_library(demon SHARED
     source/cseries/errors.c
     source/cseries/debug_memory.c
     source/cseries/stack_walk_windows.c
+    source/demon/demon.c
+    source/demon/exe_functions.c
     source/interface/hud.c
     source/interface/terminal.c
     source/main/console.c
-    source/main/demon.c
-    source/main/exe_functions.c
     source/main/main.c
     source/math/matrix_math.c
     source/math/real_math.c

@@ -23,6 +23,8 @@
 #include "texture_cache.h"
 #include "physical_memory_map.h"
 
+#include "../demon/exe_globals.h"
+
 static char cache_root_directory[MAXIMUM_FILENAME_LENGTH + 1] = {};
 
 void cache_files_set_root_directory(const char *root_directory) {
@@ -54,11 +56,10 @@ struct cache_file_global_data {
 };
 static_assert(sizeof(struct cache_file_global_data) == 2064);
 
-asm(".set _cache_file_globals, 0x00AF8368");
-extern struct cache_file_global_data cache_file_globals;
-
-asm(".set _global_tag_instances, 0x00AF8364");
-extern struct cache_file_tag_instance *global_tag_instances;
+#ifndef DEMON_EXE_GLOBALS
+static struct cache_file_global_data cache_file_globals;
+static struct cache_file_tag_instance *global_tag_instances;
+#endif
 
 /* forward declarations */
 

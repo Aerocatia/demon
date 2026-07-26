@@ -11,7 +11,7 @@
 #include "cseries.h"
 #include "errors.h"
 
-#include "../main/exe_functions.h"
+#include "../demon/exe_functions.h"
 
 #if DEBUG_BUILD
 char temporary[256];
