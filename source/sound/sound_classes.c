@@ -167,6 +167,34 @@ void sound_class_set_gain(const char *substring, real gain, int16_t ticks) {
     }
 }
 
+#ifdef DEBUG_BUILD
+void debug_sound_classes_enable(const char *substring, bool enabled) {
+    for(int class_index = 0; class_index < NUMBER_OF_SOUND_CLASSES; class_index++) {
+        if(sound_class_names[class_index][0] && strstr(sound_class_names[class_index], substring)) {
+            sound_class_get(class_index)->disabled = !enabled;
+        }
+    }
+}
+
+void debug_sound_classes_set_distances(const char *substring, real minimum_distance, real maximum_distance) {
+    for(int class_index = 0; class_index < NUMBER_OF_SOUND_CLASSES; class_index++) {
+        if(sound_class_names[class_index][0] && strstr(sound_class_names[class_index], substring)) {
+            auto sound_class = sound_class_get(class_index);
+            sound_class->minimum_distance = minimum_distance;
+            sound_class->maximum_distance = maximum_distance;
+        }
+    }
+}
+
+void debug_sound_classes_set_wet(const char *substring, real wet) {
+    for(int class_index = 0; class_index < NUMBER_OF_SOUND_CLASSES; class_index++) {
+        if(sound_class_names[class_index][0] && strstr(sound_class_names[class_index], substring)) {
+            sound_class_get(class_index)->reverb_damping_factor = PIN(1.0f - wet, 0.0f, 1.0f);
+        }
+    }
+}
+#endif
+
 /* private functions */
 
 static struct sound_class_datum *sound_class_datum_get(int16_t index) {
