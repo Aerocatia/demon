@@ -64,21 +64,28 @@ enum {
 
 /* macros */
 
-#define SQR(x) ((x)*(x))
+#define SQR(x) ((x) * (x))
+#define SGN(x) ((x) ? ((x) < 0 ? -1 : 1) : 0)
 
-#define FLOOR(n,floor) ((n)<(floor)?(floor):(n))
-#define CEILING(n,ceiling) ((n)>(ceiling)?(ceiling):(n))
-#define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : CEILING(n,ceiling))
+#define ABS(x) ((x >= 0) ? (x) : -(x))
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN3(a, b, c) MIN(a, MIN(b, c))
+#define MAX3(a, b, c) MAX(a, MAX(b, c))
 
-#define FLAG(b) (1<<(b))
+#define FLOOR(n, floor) ((n) < (floor) ? (floor) : (n))
+#define CEILING(n, ceiling) ((n) > (ceiling) ? (ceiling) : (n))
+#define PIN(n, floor, ceiling) ((n) < (floor) ? (floor) : CEILING(n, ceiling))
 
-#define TEST_FLAG(f, b) (((f)&FLAG(b))!=0)
-#define SWAP_FLAG(f, b) ((f)^=FLAG(b))
-#define SET_FLAG(f, b, v) ((v) ? ((f)|=FLAG(b)) : ((f)&=~FLAG(b)))
+#define FLAG(b) (1 << (b))
+#define TEST_FLAG(f, b) (((f) & FLAG(b)) != 0)
+#define SWAP_FLAG(f, b) ((f) ^= FLAG(b))
+#define SET_FLAG(f, b, v) ((v) ? ((f) |= FLAG(b)) : ((f) &= ~FLAG(b)))
 
-#define BIT_VECTOR_SIZE_IN_LONGS(count) ((((count)+(INT32_BITS-1))>>INT32_BITS_BITS))
-#define BIT_VECTOR_TEST_FLAG(vector, bit) ((((uint32_t *)(vector))[(bit)>>INT32_BITS_BITS]&(1<<((bit)&(INT32_BITS-1))))!=0)
-#define BIT_VECTOR_SET_FLAG(vector, bit, value) ((value) ? (((uint32_t *)(vector))[(bit)>>INT32_BITS_BITS]|= (1<<((bit)&(INT32_BITS-1)))) : (((uint32_t *)(vector))[(bit)>>INT32_BITS_BITS]&= ~(1<<((bit)&(INT32_BITS-1)))))
+#define BIT_VECTOR_SIZE_IN_LONGS(count) ((((count) + (INT32_BITS - 1)) >> INT32_BITS_BITS))
+#define BIT_VECTOR_TEST_FLAG(vector, bit) ((((uint32_t *)(vector))[(bit) >> INT32_BITS_BITS] & (1 << ((bit) & (INT32_BITS - 1)))) != 0)
+#define BIT_VECTOR_SET_FLAG(vector, bit, value) ((value) ? (((uint32_t *)(vector))[(bit) >> INT32_BITS_BITS] |= \
+    (1 << ((bit) & (INT32_BITS - 1)))) : (((uint32_t *)(vector))[(bit) >> INT32_BITS_BITS] &= ~(1 << ((bit) & (INT32_BITS - 1)))))
 
 /* types */
 

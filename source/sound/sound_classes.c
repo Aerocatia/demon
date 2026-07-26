@@ -1,6 +1,7 @@
 #include "../cseries/cseries.h"
 #include "../saved_games/game_state.h"
 
+#include "sound_definitions.h"
 #include "sound_classes.h"
 
 #include "../demon/exe_globals.h"
@@ -10,6 +11,7 @@ struct sound_class_datum {
     real gain;
     int16_t ticks;
 };
+static_assert(sizeof(struct sound_class_datum) == 12);
 
 struct sound_class_definition sound_classes[NUMBER_OF_SOUND_CLASSES] = {
     [_sound_class_projectile_impact]                   = {6, 4, 100,  false, 4, _sound_cache_miss_mode_discard,  0.5f, 0.0f, 1.4f, 8.0f,   1.0f, 1.0f},
@@ -113,6 +115,56 @@ static struct sound_class_datum *sound_class_datum_get(int16_t index);
 
 void sound_classes_initialize() {
     sound_class_data = game_state_malloc("sound classes", nullptr, NUMBER_OF_SOUND_CLASSES * sizeof(struct sound_class_datum));
+}
+
+void sound_classes_initialize_for_new_map() {
+    for(int class_index = 0; class_index < NUMBER_OF_SOUND_CLASSES; class_index++) {
+        auto class_datum = sound_class_datum_get(class_index);
+        class_datum->gain = 1.0f;
+        class_datum->desired_gain = 1.0f;
+        class_datum->ticks = 0;
+    }
+}
+
+void sound_classes_dispose_from_old_map() {}
+
+void sound_classes_dispose() {
+    sound_class_data = nullptr;
+}
+
+void sound_classes_update(int32_t ticks_elapsed) {
+    if(ticks_elapsed <= 0) {
+        return;
+    }
+
+    for(int class_index = 0; class_index < NUMBER_OF_SOUND_CLASSES; class_index++) {
+        auto class_datum = sound_class_datum_get(class_index);
+        assert(valid_sound_gain(class_datum->gain));
+        if(class_datum->ticks > ticks_elapsed) {
+            class_datum->gain += (class_datum->desired_gain - class_datum->gain) * ((real)ticks_elapsed / class_datum->ticks);
+            class_datum->ticks -= ticks_elapsed;
+        }
+        else {
+            class_datum->gain = class_datum->desired_gain;
+            class_datum->ticks = 0;
+        }
+
+        assert(valid_sound_gain(class_datum->gain));
+    }
+}
+
+real sound_class_get_gain(int16_t class_index) {
+    return sound_class_datum_get(class_index)->gain;
+}
+
+void sound_class_set_gain(const char *substring, real gain, int16_t ticks) {
+    for(int class_index = 0; class_index < NUMBER_OF_SOUND_CLASSES; class_index++) {
+        if(sound_class_names[class_index][0] && strstr(sound_class_names[class_index], substring)) {
+            auto class_datum = sound_class_datum_get(class_index);
+            class_datum->desired_gain = PIN(gain, 0.0f, 1.0f);
+            class_datum->ticks = MAX(0, ticks);
+        }
+    }
 }
 
 /* private functions */

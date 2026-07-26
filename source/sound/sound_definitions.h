@@ -209,6 +209,10 @@ static inline struct sound_permutation *sound_pitch_range_get_permutation(struct
     return tag_block_get_element_with_size(&pitch_range->permutations, permutation_index, sizeof(struct sound_permutation));
 }
 
+static inline bool valid_sound_gain(real gain) {
+    return (gain >= 0.0f && gain <= 1.0f);
+}
+
 /* sound looping functions */
 
 static inline struct looping_sound_definition *looping_sound_definition_get(int32_t tag_index) {
