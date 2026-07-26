@@ -139,8 +139,8 @@ void error(short priority, const char *format, ...) {
 
         int32_t new_size = strlen(buffer);
         if(error_globals.message_buffer_size + new_size >= ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE) {
-            const char *prefix = "[...too many errors to print...]" EOL_STRING;
-            int32_t prefix_size = strlen(prefix);
+            const char prefix[] = "[...too many errors to print...]" EOL_STRING;
+            constexpr int32_t prefix_size = sizeof(prefix) - 1;
 
             char *start_ptr = error_globals.message_buffer +
                 PIN(ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE / 2 + prefix_size + new_size, 0, error_globals.message_buffer_size - 1);
@@ -157,7 +157,7 @@ void error(short priority, const char *format, ...) {
             int32_t copy_size = error_globals.message_buffer_size - copy_index;
             assert(prefix_size + copy_size + new_size < ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE);
 
-            strncpy(error_globals.message_buffer, prefix, prefix_size);
+            memcpy(error_globals.message_buffer, prefix, prefix_size);
             if(copy_size > 0) {
                 memmove(error_globals.message_buffer + prefix_size, copy_ptr, copy_size);
             }

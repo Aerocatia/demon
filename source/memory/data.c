@@ -171,7 +171,7 @@ void data_delete_all(struct data_array *data) {
     data->count = 0;
     data->actual_count = 0;
     data->first_free_absolute_index = 0;
-    strncpy((char *)&data->next_identifier, data->name, sizeof(data->next_identifier));
+    memcpy(&data->next_identifier, data->name, sizeof(data->next_identifier));
     data->next_identifier |= (int16_t)0x8000;
 
     void *datum = data->data;
