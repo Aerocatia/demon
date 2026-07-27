@@ -8,38 +8,33 @@
 
 /* constants */
 
-#define REAL_MAX FLT_MAX
-#define REAL_MIN (-FLT_MAX)
+constexpr real REAL_MAX = FLT_MAX;
+constexpr real REAL_MIN = -FLT_MAX;
+constexpr real _2pi = 6.28318530718f;
+constexpr real _pi = 3.14159265359f;
+constexpr real _half_pi = 1.570796326795f;
+constexpr real _quarter_pi = 0.7853981633974f;
+constexpr real _e = 2.71828182845f;
+constexpr real _log2 = 0.69314718056f;
+constexpr real _root2 = 1.41421356237f;
+constexpr real _root3 = 1.73205080757f;
+constexpr real _one_over_root2 = 0.70710678119f;
+constexpr real _cosine30 = 0.866025403784f;
+constexpr real _sine30 = 0.5f;
+constexpr real _cosine45 = _one_over_root2;
+constexpr real _sine45 = _one_over_root2;
+constexpr real _cosine60 = _sine30;
+constexpr real _sine60 = _cosine30;
+constexpr real _deg2rad = 0.01745329251994f;
+constexpr real _rad2deg = 57.29577951308f;
+constexpr real _full_circle = _2pi;
+constexpr real _half_circle = _pi;
+constexpr real _quarter_circle = _half_pi;
+constexpr real _eighth_circle = _quarter_pi;
+constexpr real _real_epsilon = 0.0001f;
+constexpr real _valid_real_epsilon = 0.001f;
 
-#define _2pi 6.28318530718f
-#define _pi 3.14159265359f
-#define _half_pi 1.570796326795f
-#define _quarter_pi 0.7853981633974f
-
-#define _e 2.71828182845f
-#define _log2 0.69314718056f
-
-#define _root2 1.41421356237f
-#define _root3 1.73205080757f
-#define _one_over_root2 0.70710678119f
-
-#define _cosine30 0.866025403784f
-#define _sine30 0.5f
-#define _cosine45 _one_over_root2
-#define _sine45 _one_over_root2
-#define _cosine60 _sine30
-#define _sine60 _cosine30
-
-#define _deg2rad 0.01745329251994f
-#define _rad2deg 57.29577951308f
-
-#define _full_circle _2pi
-#define _half_circle _pi
-#define _quarter_circle _half_pi
-#define _eighth_circle _quarter_pi
-
-#define _real_epsilon 0.0001f
-#define _valid_real_epsilon 0.001f
+/* math assert macro */
 
 #ifdef MATH_ASSERTS
     #define math_assert(expr) assert(expr)
