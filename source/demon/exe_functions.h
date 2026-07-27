@@ -13,6 +13,8 @@ enum {
     _exe_function_game_state_create_or_open_file,
     _exe_function_hud_load,
     _exe_function_keystone_dispose,
+    _exe_function_local_random_range,
+    _exe_function_real_local_random,
     _exe_function_real_random_range,
     _exe_function_sound_cache_open,
     _exe_function_sound_definition_find_pitch_range_by_pitch,

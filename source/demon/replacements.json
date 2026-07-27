@@ -155,6 +155,7 @@
     "sound_definition_find_pitch_range_by_pitch": { "address": "0x00404C69" },
     "sound_definition_get_maximum_distance": { "address": "0x004058CB" },
     "sound_definition_get_minimum_distance": { "address": "0x00405056" },
+    "sound_definition_next_permutation": { "address": "0x00407D01" },
     "sound_permutation_get_mouth_aperture": { "address": "0x00401E88" },
     "sound_permutation_get_real_mouth_aperture": { "address": "0x00405FB5" },
     "square_root": { "address": "0x00408ABC" },

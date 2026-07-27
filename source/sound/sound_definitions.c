@@ -8,7 +8,8 @@
 
 /* constants */
 
-#define MAXIMUM_PERMUTATION_TESTS 16
+constexpr int16_t MAXIMUM_PERMUTATION_TESTS = 16;
+constexpr real oo_unsigned_char_max = 1.0f / UINT8_MAX;
 
 /* globals */
 
@@ -17,7 +18,9 @@ const int32_t sound_sample_rate_samples_per_second[NUMBER_OF_SOUND_SAMPLE_RATES]
     44100
 };
 
-constexpr real oo_unsigned_char_max = 1.0f / UINT8_MAX;
+/* forward declarations */
+
+static inline void try_to_reset_permutations(struct sound_pitch_range *range);
 
 /* public functions */
 
@@ -93,4 +96,52 @@ int16_t sound_definition_find_pitch_range_by_pitch(struct sound_definition *soun
     }
 
     return best_range_index;
+}
+
+int16_t sound_definition_next_permutation(struct sound_definition *sound, int16_t pitch_range_index, int16_t looping_last_permutation_index) {
+    auto range = sound_definition_get_pitch_range(sound, pitch_range_index);
+    assert(range->permutations.count);
+
+    int16_t permutation_index;
+    if(range->runtime_discarded_permutation_index != NONE) {
+        permutation_index = range->runtime_discarded_permutation_index;
+        range->runtime_discarded_permutation_index = NONE;
+        range->runtime_last_permutation_index = permutation_index;
+    }
+    else if(TEST_FLAG(sound->flags, _sound_definition_linked_permutations_bit) && looping_last_permutation_index != NONE) {
+        auto last_permutation = sound_pitch_range_get_permutation(range, looping_last_permutation_index);
+        permutation_index = last_permutation->next_permutation_index;
+    }
+    else {
+        permutation_index = local_random_range(0, range->actual_permutation_count);
+        int16_t failure_count = 0;
+        while(true) {
+            try_to_reset_permutations(range);
+            if(!TEST_FLAG(range->runtime_permutation_flags, permutation_index)) {
+                SET_FLAG(range->runtime_permutation_flags, permutation_index, true);
+                if(failure_count++ == MAXIMUM_PERMUTATION_TESTS || real_local_random() >= sound_pitch_range_get_permutation(range, permutation_index)->skip_fraction) {
+                    break;
+                }
+            }
+
+            if(++permutation_index == range->actual_permutation_count) {
+                permutation_index = 0;
+            }
+        }
+
+        range->runtime_last_permutation_index = permutation_index;
+    }
+
+    return permutation_index;
+}
+
+/* private functions */
+
+static inline void try_to_reset_permutations(struct sound_pitch_range *range) {
+    if(!TEST_FLAG_RANGE(~range->runtime_permutation_flags, 0, range->actual_permutation_count - 1)) {
+        range->runtime_permutation_flags = 0;
+        if(range->actual_permutation_count > 1) {
+            SET_FLAG(range->runtime_permutation_flags, range->runtime_last_permutation_index, true);
+        }
+    }
 }

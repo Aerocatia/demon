@@ -135,6 +135,14 @@ real_quaternion *matrix3x3_rotation_to_quaternion(const real_matrix3x3 *matrix, 
 
 /* random math */
 
+static inline int16_t local_random_range(int16_t lower_bound, int16_t upper_bound) {
+    return RUN_EXE_FUNCTION(local_random_range, lower_bound, upper_bound);
+}
+
+static inline real real_local_random() {
+    return RUN_EXE_FUNCTION(real_local_random);
+}
+
 static inline real real_random_range(real lower_bound, real upper_bound) {
     return RUN_EXE_FUNCTION(real_random_range, lower_bound, upper_bound);
 }

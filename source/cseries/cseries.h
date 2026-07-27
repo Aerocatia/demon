@@ -78,7 +78,9 @@ enum {
 #define PIN(n, floor, ceiling) ((n) < (floor) ? (floor) : CEILING(n, ceiling))
 
 #define FLAG(b) (1 << (b))
+#define FLAG_RANGE(b0, b1) ((FLAG((b1) + 1 - (b0)) - 1) << (b0))
 #define TEST_FLAG(f, b) (((f) & FLAG(b)) != 0)
+#define TEST_FLAG_RANGE(f, b0, b1) (((f) & FLAG_RANGE(b0, b1)) != 0)
 #define SWAP_FLAG(f, b) ((f) ^= FLAG(b))
 #define SET_FLAG(f, b, v) ((v) ? ((f) |= FLAG(b)) : ((f) &= ~FLAG(b)))
 
