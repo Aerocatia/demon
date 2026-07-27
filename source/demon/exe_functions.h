@@ -15,6 +15,7 @@ enum {
     _exe_function_keystone_dispose,
     _exe_function_real_random_range,
     _exe_function_sound_cache_open,
+    _exe_function_sound_definition_find_pitch_range_by_pitch,
     _exe_function_stack_walk_dispose,
     _exe_function_stack_walk_initialize,
     _exe_function_strncmp_case_insensitive,

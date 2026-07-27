@@ -2,6 +2,7 @@
 #define DEMON_REAL_MATH_H
 
 #include <math.h>
+#include <float.h>
 
 #include "../demon/exe_functions.h"
 

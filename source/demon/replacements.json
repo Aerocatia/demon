@@ -152,6 +152,7 @@
     "sound_classes_initialize": { "address": "0x00402E0A" },
     "sound_classes_initialize_for_new_map": { "address": "0x00403026" },
     "sound_classes_update": { "address": "0x0040483B" },
+    "sound_definition_find_pitch_range_by_pitch": { "address": "0x00404C69" },
     "sound_definition_get_maximum_distance": { "address": "0x004058CB" },
     "sound_definition_get_minimum_distance": { "address": "0x00405056" },
     "sound_permutation_get_mouth_aperture": { "address": "0x00401E88" },

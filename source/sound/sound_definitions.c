@@ -1,6 +1,8 @@
 #include "../cseries/cseries.h"
 #include "../cseries/errors.h"
 
+#include "../math/real_math.h"
+
 #include "sound_classes.h"
 #include "sound_definitions.h"
 
@@ -52,4 +54,43 @@ uint8_t *sound_permutation_get_mouth_aperture(const struct sound_permutation *pe
 
     uint8_t *mouth_data = tag_data_get_address(&permutation->mouth_data);
     return mouth_data + tick_index;
+}
+
+int16_t sound_definition_find_pitch_range_by_pitch(struct sound_definition *sound, real pitch, int16_t old_range_index) {
+    if(old_range_index != NONE && old_range_index < sound->pitch_ranges.count) {
+        auto range = sound_definition_get_pitch_range(sound, old_range_index);
+        if(range->bend_lower_bound <= pitch && pitch <= range->bend_upper_bound && range->permutations.count) {
+            return old_range_index;
+        }
+    }
+
+    int16_t best_range_index = NONE;
+    real best_range_error = REAL_MAX;
+    for(int range_index = 0; range_index < sound->pitch_ranges.count; range_index++) {
+        auto range = sound_definition_get_pitch_range(sound, range_index);
+        if(!range->permutations.count) {
+            continue;
+        }
+
+        if(range->bend_lower_bound <= pitch && pitch <= range->bend_upper_bound) {
+            best_range_index = range_index;
+            break;
+        }
+        else {
+            real error;
+            if(range->bend_upper_bound < pitch) {
+                error = pitch / range->bend_upper_bound;
+            }
+            else {
+                error = range->bend_lower_bound / pitch;
+            }
+
+            if(error < best_range_error) {
+                best_range_index = range_index;
+                best_range_error = error;
+            }
+        }
+    }
+
+    return best_range_index;
 }

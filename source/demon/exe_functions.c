@@ -18,6 +18,7 @@ const void *exe_function_table[] = {
     [_exe_function_keystone_dispose] = (void *)0x0086D320,
     [_exe_function_real_random_range] = (void *)0x0042F360,
     [_exe_function_sound_cache_open] = (void *)0x0051DF90,
+    [_exe_function_sound_definition_find_pitch_range_by_pitch] = (void *)0x00877810,
     [_exe_function_stack_walk_dispose] = (void *)0x005593F0,
     [_exe_function_stack_walk_initialize] = (void *)0x00559480,
     [_exe_function_strncmp_case_insensitive] = (void *)0x0054C1B0,

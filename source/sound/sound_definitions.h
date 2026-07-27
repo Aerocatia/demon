@@ -197,6 +197,7 @@ static_assert(sizeof(struct looping_sound_definition) == 84);
 
 /* sound functions */
 
+int16_t sound_definition_find_pitch_range_by_pitch(struct sound_definition *sound, real pitch, int16_t old_range_index);
 real sound_definition_get_maximum_distance(int32_t sound_definition_index);
 real sound_definition_get_minimum_distance(int32_t sound_definition_index);
 real sound_permutation_get_real_mouth_aperture(const struct sound_permutation *permutation, int16_t estimated_tick_index);
