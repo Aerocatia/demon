@@ -193,7 +193,7 @@ struct object_definition {
 };
 static_assert(sizeof(struct object_definition) == 380);
 
-/* object definition functions */
+/* object definition inline functions */
 
 static inline struct object_definition *object_definition_get(int32_t tag_index) {
     return tag_get(OBJECT_DEFINITION_TAG, tag_index);

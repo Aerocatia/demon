@@ -71,7 +71,7 @@ struct fog_definition {
 };
 static_assert(sizeof(struct fog_definition) == 396);
 
-/* fog definition functions */
+/* fog definition inline functions */
 
 static inline struct fog_definition *fog_definition_get(int32_t tag_index) {
     return tag_get(FOG_TAG, tag_index);

@@ -52,6 +52,10 @@ static_assert(sizeof(struct font_header) == 156);
 
 /* font group functions */
 
+struct font_character *font_get_character_by_ascii_code(struct font_header *header, uint16_t character);
+
+/* font group inline functions */
+
 static inline struct font_header *font_get_header(int32_t tag_index) {
     return tag_get(FONT_GROUP_TAG, tag_index);
 }
@@ -71,7 +75,5 @@ static inline struct font_character_table_entry *font_get_character_table_entry(
 
     return tag_block_get_element_with_size(&table_entry->table, low_byte, sizeof(struct font_character_table_entry));
 }
-
-struct font_character *font_get_character_by_ascii_code(struct font_header *header, uint16_t character);
 
 #endif

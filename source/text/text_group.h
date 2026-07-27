@@ -6,12 +6,12 @@
 #include "../tag_files/tag_groups.h"
 #include "unicode.h"
 
-/* ascii */
-
 enum {
     STRING_LISTS_GROUP_TAG = 0x73747223,
     UNICODE_STRING_LISTS_GROUP_TAG = 0x75737472
 };
+
+/* string list */
 
 struct string_list_string_reference {
     struct tag_data string;
@@ -23,7 +23,11 @@ struct string_list_group_header {
 };
 static_assert(sizeof(struct string_list_group_header) == 12);
 
-/* ascii functions */
+/* string list functions */
+
+const char *string_list_get_string(int32_t tag_index, int16_t string_index);
+
+/* string list inline functions */
 
 static inline struct string_list_group_header *string_list_get_header(int32_t tag_index) {
     return tag_get(STRING_LISTS_GROUP_TAG, tag_index);
@@ -33,9 +37,7 @@ static inline struct string_list_string_reference *string_list_get_string_refere
     return tag_block_get_element_with_size(&header->string_references, string_index, sizeof(struct string_list_string_reference));
 }
 
-const char *string_list_get_string(int32_t tag_index, int16_t string_index);
-
-/* unicode */
+/* unicode string list */
 
 struct unicode_string_list_string_reference {
     struct tag_data string;
@@ -47,7 +49,11 @@ struct unicode_string_list_group_header {
 };
 static_assert(sizeof(struct unicode_string_list_group_header) == 12);
 
-/* unicode functions */
+/* unicode string list functions */
+
+const char16_t *unicode_string_list_get_string(int32_t tag_index, int16_t string_index);
+
+/* unicode string list inline functions */
 
 static inline struct unicode_string_list_group_header *unicode_string_list_get_header(int32_t tag_index) {
     return tag_get(UNICODE_STRING_LISTS_GROUP_TAG, tag_index);
@@ -56,7 +62,5 @@ static inline struct unicode_string_list_group_header *unicode_string_list_get_h
 static inline struct unicode_string_list_string_reference *unicode_string_list_get_string_reference(struct unicode_string_list_group_header *header, int32_t string_index) {
     return tag_block_get_element_with_size(&header->string_references, string_index, sizeof(struct unicode_string_list_string_reference));
 }
-
-const char16_t *unicode_string_list_get_string(int32_t tag_index, int16_t string_index);
 
 #endif

@@ -75,7 +75,7 @@ struct collision_vertex {
 };
 static_assert(sizeof(struct collision_vertex) == 16);
 
-/* collision bsp functions */
+/* collision bsp inline functions */
 
 static inline struct collision_leaf *collision_bsp_get_leaf(struct collision_bsp *collision_bsp, int32_t leaf_index) {
     return tag_block_get_element_with_size(&collision_bsp->leaves, leaf_index, sizeof(struct collision_leaf));

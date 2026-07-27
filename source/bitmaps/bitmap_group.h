@@ -120,7 +120,7 @@ struct bitmap_group {
 };
 static_assert(sizeof(struct bitmap_group) == 108);
 
-/* bitmap group functions */
+/* bitmap group inline functions */
 
 static inline struct bitmap_group *bitmap_group_get(int32_t tag_index) {
     return tag_get(BITMAP_GROUP_TAG, tag_index);

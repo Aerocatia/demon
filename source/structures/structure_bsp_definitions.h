@@ -16,6 +16,8 @@ enum {
     STRUCTURE_BSP_VERSION = 5,
 };
 
+#define MAXIMUM_ENCODED_SOUND_DISTANCE 256.0f
+
 enum {
     MAXIMUM_COLLISION_MATERIALS_PER_STRUCTURE = 512,
     MAXIMUM_SURFACE_REFERENCES_PER_STRUCTURE = 256 * KIB,
@@ -326,6 +328,14 @@ static_assert(sizeof(struct structure_bsp) == 648);
 
 /* structure bsp functions */
 
+uint32_t *structure_bsp_get_cluster_pvs(struct structure_bsp *structure_bsp, int16_t cluster_index);
+uint8_t *structure_bsp_get_cluster_encoded_sound_data(struct structure_bsp *structure_bsp, int16_t row_index, int16_t column_index);
+void structure_bsp_find_material_for_surface(struct structure_bsp *structure, int32_t surface_index, int16_t *lightmap_index, int16_t *material_index);
+void vertex_type_from_shader_tag(tag group_tag, int16_t *vertex_type, int16_t *lightmap_vertex_type, bool compressed);
+uint8_t structure_bsp_get_cluster_encoded_sound_distance(struct structure_bsp *structure_bsp, int16_t from_cluster_index, int16_t to_cluster_index);
+
+/* structure bsp inline functions */
+
 static inline struct structure_bsp *structure_bsp_get(int32_t tag_index) {
     return tag_get(STRUCTURE_BSP_TAG, tag_index);
 }
@@ -402,8 +412,6 @@ static inline real_point3d *structure_bsp_cluster_portal_get_vertex(struct clust
     return tag_block_get_element_with_size(&portal->vertices, index, sizeof(real_point3d));
 }
 
-uint32_t *structure_bsp_get_cluster_pvs(struct structure_bsp *structure_bsp, int16_t cluster_index);
-
 static inline struct structure_mirror *structure_bsp_cluster_get_mirror(struct structure_cluster *cluster, int32_t mirror_index) {
     return tag_block_get_element_with_size(&cluster->mirrors, mirror_index, sizeof(struct structure_mirror));
 }
@@ -468,13 +476,9 @@ static inline struct structure_weather_palette_entry *structure_bsp_get_weather_
     return tag_block_get_element_with_size(&structure_bsp->weather_palette, weather_palette_index, sizeof(struct structure_weather_palette_entry));
 }
 
-uint8_t *structure_bsp_get_cluster_encoded_sound_data(struct structure_bsp *structure_bsp, int16_t row_index, int16_t column_index);
-
 static inline int16_t structure_bsp_encoded_sound_data_row_offset(struct structure_bsp *structure_bsp, int16_t row_index) {
     return (structure_bsp->clusters.count * row_index) - (row_index * (row_index + 1) / 2);
 }
-
-#define MAXIMUM_ENCODED_SOUND_DISTANCE 256.0f
 
 static inline uint8_t sound_distance_encode(real distance, bool ai_deafening) {
     if(distance > MAXIMUM_ENCODED_SOUND_DISTANCE) {
@@ -500,11 +504,6 @@ static inline bool sound_distance_decode_ai_deafening(uint8_t encoded_distance) 
 static inline struct structure_marker *structure_bsp_get_marker(struct structure_bsp *structure_bsp, int32_t marker_index) {
     return tag_block_get_element_with_size(&structure_bsp->markers, marker_index, sizeof(struct structure_marker));
 }
-
-void structure_bsp_find_material_for_surface(struct structure_bsp *structure, int32_t surface_index, int16_t *lightmap_index, int16_t *material_index);
-void vertex_type_from_shader_tag(tag group_tag, int16_t *vertex_type, int16_t *lightmap_vertex_type, bool compressed);
-
-uint8_t structure_bsp_get_cluster_encoded_sound_distance(struct structure_bsp *structure_bsp, int16_t from_cluster_index, int16_t to_cluster_index);
 
 static inline struct structure_detail_object_data *structure_bsp_get_detail_object_data(struct structure_bsp *structure_bsp) {
     if(!structure_bsp->detail_object_data.count) {

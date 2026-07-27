@@ -69,7 +69,7 @@ struct hud_state_messages {
 };
 static_assert(sizeof(struct hud_state_messages) == 128);
 
-/* hud state messaging functions */
+/* hud state messaging inline functions */
 
 static inline struct hud_state_messages *hud_state_messages_get(int32_t tag_index) {
     return tag_get(HUD_MESSAGE_TEXT_DEFINITION_TAG, tag_index);

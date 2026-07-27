@@ -79,7 +79,7 @@ struct sky_light {
 };
 static_assert(sizeof(struct sky_light) == 116);
 
-/* sky functions */
+/* sky inline functions */
 
 static inline struct sky *sky_get(int32_t tag_index) {
     return tag_get(SKY_TAG, tag_index);

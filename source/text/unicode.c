@@ -15,6 +15,7 @@ static size_t strlen16(const char16_t *str) {
     while(*end != u'\0') {
         end++;
     }
+
     return end - str;
 }
 

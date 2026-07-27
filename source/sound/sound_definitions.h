@@ -197,6 +197,13 @@ static_assert(sizeof(struct looping_sound_definition) == 84);
 
 /* sound functions */
 
+real sound_definition_get_maximum_distance(int32_t sound_definition_index);
+real sound_definition_get_minimum_distance(int32_t sound_definition_index);
+real sound_permutation_get_real_mouth_aperture(const struct sound_permutation *permutation, int16_t estimated_tick_index);
+uint8_t *sound_permutation_get_mouth_aperture(const struct sound_permutation *permutation, int16_t tick_index);
+
+/* sound inline functions */
+
 static inline struct sound_definition *sound_definition_get(int32_t tag_index) {
     return tag_get(SOUND_DEFINITION_TAG, tag_index);
 }
@@ -213,7 +220,7 @@ static inline bool valid_sound_gain(real gain) {
     return (gain >= 0.0f && gain <= 1.0f);
 }
 
-/* sound looping functions */
+/* sound looping inline functions */
 
 static inline struct looping_sound_definition *looping_sound_definition_get(int32_t tag_index) {
     return tag_get(LOOPING_SOUND_DEFINITION_TAG, tag_index);
