@@ -1,6 +1,3 @@
-#include <string.h>
-#include <uchar.h>
-
 #include "../cseries/cseries.h"
 
 #include "unicode.h"

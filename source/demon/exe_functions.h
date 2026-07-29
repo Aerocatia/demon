@@ -11,6 +11,7 @@ enum {
     _exe_function_errors_debug_file_path,
     _exe_function_game_state_allocate_buffer,
     _exe_function_game_state_create_or_open_file,
+    _exe_function_geosphere_new,
     _exe_function_hud_load,
     _exe_function_keystone_dispose,
     _exe_function_local_random_range,
@@ -22,6 +23,7 @@ enum {
     _exe_function_stack_walk_initialize,
     _exe_function_strncmp_case_insensitive,
     _exe_function_system_milliseconds,
+    _exe_function_system_seconds,
     _exe_function_tags_header_register_vertex_and_index_buffers,
     _exe_function_texture_cache_open,
     NUMBER_OF_EXE_FUNCTIONS

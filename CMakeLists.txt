@@ -23,11 +23,14 @@ add_library(demon SHARED
     source/cseries/stack_walk_windows.c
     source/demon/demon.c
     source/demon/exe_functions.c
+    source/game/game_engine.c
     source/interface/hud.c
     source/interface/terminal.c
     source/main/console.c
     source/main/main.c
+    source/math/geometry.c
     source/math/matrix_math.c
+    source/math/random_math.c
     source/math/real_math.c
     source/math/real_math_debug_inlines.c
     source/memory/crc.c

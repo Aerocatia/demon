@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 #include "../cseries/cseries.h"
 
 #include "font_group.h"

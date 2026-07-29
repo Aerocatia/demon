@@ -1,7 +1,7 @@
 #ifndef DEMON_TEXT_GROUP_H
 #define DEMON_TEXT_GROUP_H
 
-#include <uchar.h>
+#include "../cseries/cseries.h"
 
 #include "../tag_files/tag_groups.h"
 #include "unicode.h"

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdcountof.h>
+#include <uchar.h>
 
 /* constants */
 
@@ -459,6 +460,7 @@ void *debug_realloc(void *pointer, size_t size, const char *source_file, int32_t
 #endif
 
 uint32_t system_milliseconds(void);
+uint32_t system_seconds();
 void system_sleep(uint32_t milliseconds);
 
 #endif

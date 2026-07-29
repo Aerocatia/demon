@@ -1,7 +1,7 @@
 #ifndef DEMON_FONT_GROUP_H
 #define DEMON_FONT_GROUP_H
 
-#include <stdint.h>
+#include "../cseries/cseries.h"
 
 #include "../tag_files/tag_groups.h"
 #include "draw_string.h"

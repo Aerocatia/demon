@@ -1,6 +1,3 @@
-#include <stdint.h>
-#include <uchar.h>
-
 #include "../cseries/cseries.h"
 
 #include "text_group.h"

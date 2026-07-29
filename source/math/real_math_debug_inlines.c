@@ -1,4 +1,4 @@
-// These should be static inline and in real_math.h, but are not in the debug exe
+// These should be static inline and in real_math.h (or something), but are not in the debug exe
 
 #include "../cseries/cseries.h"
 #include "real_math.h"
@@ -34,6 +34,8 @@ real arccosine(real x) {
 real arcsine(real x) {
     return (real)asin(x);
 }
+
+/* vector math */
 
 real_point3d *set_real_point3d(real_point3d *p, real x, real y, real z) {
     p->x = x;
@@ -98,6 +100,78 @@ real_vector3d *negate_vector3d(const real_vector3d *a, real_vector3d *result) {
 
     return result;
 }
+
+/* random math */
+
+void set_random_seed(uint32_t seed) {
+    *get_global_random_seed_address() = seed;
+}
+
+uint16_t random() {
+    return seed_random(get_global_random_seed_address());
+}
+
+int16_t random_range(int16_t lower_bound, int16_t upper_bound) {
+    return seed_random_range(get_global_random_seed_address(), lower_bound, upper_bound);
+}
+
+bool random_boolean() {
+    return seed_random(get_global_random_seed_address()) > 0x8000;
+}
+
+real real_random() {
+    return real_seed_random(get_global_random_seed_address());
+}
+
+real real_random_range(real lower_bound, real upper_bound) {
+    return real_seed_random_range(get_global_random_seed_address(), lower_bound, upper_bound);
+}
+
+real_vector3d *random_direction3d(real_vector3d *direction) {
+    return seed_random_direction3d(get_global_random_seed_address(), direction);
+}
+
+void random_orientation(real_vector3d *forward, real_vector3d *up) {
+    seed_random_orientation(get_global_random_seed_address(), forward, up);
+}
+
+real_vector3d *random_vector_in_cone3d(const real_vector3d *axis, real inner_cone_angle, real outer_cone_angle, real_vector3d *result) {
+    return seed_random_vector_in_cone3d(get_global_random_seed_address(), axis, inner_cone_angle, outer_cone_angle, result);
+}
+
+uint16_t local_random() {
+    return seed_random(get_global_local_random_seed_address());
+}
+
+int16_t local_random_range(int16_t lower_bound, int16_t upper_bound) {
+    return seed_random_range(get_global_local_random_seed_address(), lower_bound, upper_bound);
+}
+
+real real_local_random() {
+    return real_seed_random(get_global_local_random_seed_address());
+}
+
+real real_local_random_range(real lower_bound, real upper_bound) {
+    return real_seed_random_range(get_global_local_random_seed_address(), lower_bound, upper_bound);
+}
+
+bool local_random_boolean() {
+    return seed_random(get_global_local_random_seed_address()) > 0x8000;
+}
+
+real_vector3d *local_random_direction3d(real_vector3d *direction) {
+    return seed_random_direction3d(get_global_local_random_seed_address(), direction);
+}
+
+void local_random_orientation(real_vector3d *forward, real_vector3d *up) {
+    seed_random_orientation(get_global_local_random_seed_address(), forward, up);
+}
+
+real_vector3d *local_random_vector_in_cone3d(const real_vector3d *axis, real inner_cone_angle, real outer_cone_angle, real_vector3d *result) {
+    return seed_random_vector_in_cone3d(get_global_local_random_seed_address(), axis, inner_cone_angle, outer_cone_angle, result);
+}
+
+/* validity functions */
 
 bool valid_realcmp(real x, real y) {
     real d = x - y;
