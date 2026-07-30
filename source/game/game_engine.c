@@ -1,7 +1,7 @@
 #include "../cseries/cseries.h"
 #include "game_engine.h"
 
-// #include "../demon/exe_globals.h"
+#include "../demon/exe_globals.h"
 
 /* globals */
 

@@ -14,6 +14,9 @@ extern struct cache_file_tag_instance *global_tag_instances;
 asm(".set _error_globals, 0x00B016C8");
 extern struct error_global_data error_globals;
 
+asm(".set _game_engine, 0x00C56FF4");
+extern struct game_engine *game_engine;
+
 asm(".set _game_state_globals, 0x00F14600");
 extern struct game_state_global_data game_state_globals;
 
