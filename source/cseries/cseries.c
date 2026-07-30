@@ -188,12 +188,10 @@ char *csprintf(char *buffer, char *format, ...) {
     return buffer;
 }
 
-enum {
-    MAXIMUM_MEMCMP_SIZE = 512 * MIB,
-    MAXIMUM_MEMCPY_MEMMOVE_SIZE = 512 * MIB,
-    MAXIMUM_MEMSET_SIZE = 512 * MIB,
-    MAXIMUM_STRING_SIZE = 256 * KIB
-};
+constexpr size_t MAXIMUM_MEMCMP_SIZE = 512 * MIB;
+constexpr size_t MAXIMUM_MEMCPY_MEMMOVE_SIZE = 512 * MIB;
+constexpr size_t MAXIMUM_MEMSET_SIZE = 512 * MIB;
+constexpr size_t MAXIMUM_STRING_SIZE = 256 * KIB;
 
 int csmemcmp(const void *p1, const void *p2, size_t size) {
     assert(p1 && p2);
