@@ -6,15 +6,19 @@
 #include "../cseries/cseries.h"
 #include "../tag_files/tag_groups.h"
 
-enum {
-    BITMAP_SIGNATURE = 0x6269746D, // 'bitm'
-    BITMAP_MAXIMUM_SPRITE_PAGE_MIPMAP_COUNT = 2,
-    NUMBER_OF_ENTRIES_IN_PALETTE = 256,
-    BITMAP_BLOCK_SIZE = 4,
-    BITMAP_PIXELS_PER_BLOCK = 16
-};
+/* constants */
 
-extern pixel32 global_vector_palette[NUMBER_OF_ENTRIES_IN_PALETTE];
+constexpr tag BITMAP_SIGNATURE = 0x6269746D; // 'bitm'
+constexpr int32_t BITMAP_MAXIMUM_SPRITE_PAGE_MIPMAP_COUNT = 2;
+constexpr int32_t NUMBER_OF_ENTRIES_IN_PALETTE = 256;
+constexpr int32_t BITMAP_BLOCK_SIZE = 4;
+constexpr int32_t BITMAP_PIXELS_PER_BLOCK = 16;
+
+/* globals */
+
+extern const pixel32 global_vector_palette[NUMBER_OF_ENTRIES_IN_PALETTE];
+
+/* definitions */
 
 enum {
     _bitmap_type_2d,

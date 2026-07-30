@@ -6,10 +6,8 @@
 #include "../tag_files/tag_groups.h"
 #include "unicode.h"
 
-enum {
-    STRING_LISTS_GROUP_TAG = 0x73747223,
-    UNICODE_STRING_LISTS_GROUP_TAG = 0x75737472
-};
+constexpr tag STRING_LISTS_GROUP_TAG = 0x73747223;
+constexpr tag UNICODE_STRING_LISTS_GROUP_TAG = 0x75737472;
 
 /* string list */
 

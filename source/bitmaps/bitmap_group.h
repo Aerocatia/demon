@@ -6,12 +6,16 @@
 
 #include "bitmaps.h"
 
-enum {
-    BITMAP_GROUP_TAG = 0x6269746D, // 'bitm'
-    BITMAP_GROUP_VERSION = 7,
-    BITMAP_GROUP_SHOW_BITMAP_CUSTOM_ID = 0x62736877, // 'bshw'
-    MAXIMUM_BITMAP_PIXELS_SIZE = 16 * MIB
-};
+/* constants */
+
+constexpr tag BITMAP_GROUP_TAG = 0x6269746D; // 'bitm'
+constexpr tag BITMAP_GROUP_SHOW_BITMAP_CUSTOM_ID = 0x62736877; // 'bshw'
+
+constexpr int16_t BITMAP_GROUP_VERSION = 7;
+
+constexpr int32_t MAXIMUM_BITMAP_PIXELS_SIZE = 16 * MIB;
+
+/* definitions */
 
 enum {
     _bitmap_group_diffusion_dither_bit,

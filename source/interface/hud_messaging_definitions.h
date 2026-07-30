@@ -7,18 +7,18 @@
 #include "../input/input.h"
 #include "../game/players.h"
 
-enum {
-    HUD_MESSAGE_TEXT_DEFINITION_TAG = 0x686D7420, // 'hmt '
-    HUD_MESSAGE_TEXT_VERSION = 1,
-};
+/* constants */
 
-enum {
-    MAX_TEXT_MESSAGES = 4,
-    MAX_MESSAGE_LENGTH = 63,
-    MAX_STATE_TEXT_PANELS = 8,
-    MAX_STATE_MESSAGES = KIB,
-    MAXIMUM_MESSAGE_STRING_DATA_SIZE = 64 * KIB,
-};
+constexpr tag HUD_MESSAGE_TEXT_DEFINITION_TAG = 0x686D7420; // 'hmt '
+constexpr int16_t HUD_MESSAGE_TEXT_VERSION = 1;
+
+constexpr int32_t MAX_TEXT_MESSAGES = 4;
+constexpr int32_t MAX_MESSAGE_LENGTH = 63;
+constexpr int32_t MAX_STATE_TEXT_PANELS = 8;
+constexpr int32_t MAX_STATE_MESSAGES = KIB;
+constexpr int32_t MAXIMUM_MESSAGE_STRING_DATA_SIZE = 64 * KIB;
+
+/* definitions */
 
 enum {
     _hud_message_type_text,

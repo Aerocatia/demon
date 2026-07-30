@@ -1,9 +1,6 @@
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include "../cseries/cseries.h"
 
 #include "../cseries/build_number.h"
-#include "../cseries/cseries.h"
 #include "../tag_files/files.h"
 #include "../tag_files/tag_files.h"
 #include "../tag_files/tag_groups.h"

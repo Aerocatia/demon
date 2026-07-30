@@ -4,13 +4,15 @@
 #include "../cseries/cseries.h"
 #include "../tag_files/tag_groups.h"
 
-enum {
-    MAXIMUM_NODES_PER_BSP3D = 131072,
-    MAXIMUM_LEAVES_PER_BSP3D = 65536,
-    MAXIMUM_PLANES_PER_BSP3D = 65536,
-    MAXIMUM_BSP3D_DEPTH = 128,
-    BSP3D_ROOT_NODE_INDEX = 0
-};
+/* constants */
+
+constexpr int32_t MAXIMUM_NODES_PER_BSP3D = 131072;
+constexpr int32_t MAXIMUM_LEAVES_PER_BSP3D = 65536;
+constexpr int32_t MAXIMUM_PLANES_PER_BSP3D = 65536;
+constexpr int32_t MAXIMUM_BSP3D_DEPTH = 128;
+constexpr int32_t BSP3D_ROOT_NODE_INDEX = 0;
+
+/* definitions */
 
 struct bsp3d {
     struct tag_block nodes;

@@ -6,14 +6,17 @@
 #include "../tag_files/tag_groups.h"
 #include "../math/periodic_functions.h"
 
-enum {
-    OBJECT_DEFINITION_TAG = 0x6F626A65, // 'obje'
-    OBJECT_DEFINITION_VERSION = 1,
-    NUMBER_OF_OUTGOING_OBJECT_FUNCTIONS = 4,
-    NUMBER_OF_INCOMING_OBJECT_FUNCTIONS = 4,
-    MAXIMUM_NUMBER_OF_ATTACHMENTS_PER_OBJECT = 8,
-    MAXIMUM_REGIONS_PER_OBJECT = 8
-};
+/* constants */
+
+constexpr tag OBJECT_DEFINITION_TAG = 0x6F626A65; // 'obje'
+constexpr int16_t OBJECT_DEFINITION_VERSION = 1;
+
+constexpr int32_t NUMBER_OF_OUTGOING_OBJECT_FUNCTIONS = 4;
+constexpr int32_t NUMBER_OF_INCOMING_OBJECT_FUNCTIONS = 4;
+constexpr int32_t MAXIMUM_NUMBER_OF_ATTACHMENTS_PER_OBJECT = 8;
+constexpr int32_t MAXIMUM_REGIONS_PER_OBJECT = 8;
+
+/* definitions */
 
 enum {
     _object_function_reference_none,

@@ -5,12 +5,11 @@
 #include "../tag_files/tag_groups.h"
 #include "../units/unit_metagame.h"
 
-enum {
-    ACTOR_DEFINITION_TAG = 0x61637472, // 'actr'
-    ACTOR_DEFINITION_VERSION = 2,
-    ACTOR_VARIANT_DEFINITION_TAG = 0x61637476, // 'actv'
-    ACTOR_VARIANT_DEFINITION_VERSION = 1
-};
+constexpr tag ACTOR_DEFINITION_TAG = 0x61637472; // 'actr'
+constexpr int16_t ACTOR_DEFINITION_VERSION = 2;
+
+constexpr tag ACTOR_VARIANT_DEFINITION_TAG = 0x61637476; // 'actv'
+constexpr int16_t ACTOR_VARIANT_DEFINITION_VERSION = 1;
 
 /* actor */
 

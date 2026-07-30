@@ -1,17 +1,18 @@
 #ifndef DEMON_LEAF_MAP_H
 #define DEMON_LEAF_MAP_H
 
-#include <stdint.h>
-
+#include "../cseries/cseries.h"
 #include "../tag_files/tag_groups.h"
 #include "../physics/bsp3d.h"
 
-enum {
-    MAXIMUM_FACES_PER_MAP_LEAF = 256,
-    MAXIMUM_PORTALS_PER_MAP_LEAF = 256,
-    MAXIMUM_PORTALS_PER_LEAF_MAP = 524288,
-    MAXIMUM_VERTICES_PER_LEAF_PORTAL = 64,
-};
+/* constants */
+
+constexpr int32_t MAXIMUM_FACES_PER_MAP_LEAF = 256;
+constexpr int32_t MAXIMUM_PORTALS_PER_MAP_LEAF = 256;
+constexpr int32_t MAXIMUM_PORTALS_PER_LEAF_MAP = 524288;
+constexpr int32_t MAXIMUM_VERTICES_PER_LEAF_PORTAL = 64;
+
+/* definitions */
 
 struct leaf_map {
     const struct bsp3d *bsp;

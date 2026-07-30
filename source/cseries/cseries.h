@@ -8,88 +8,6 @@
 #include <stdcountof.h>
 #include <uchar.h>
 
-/* constants */
-
-#define NONE -1
-#define TAG_NONE 0xFFFFFFFF
-
-#define KIB 1024
-#define MIB (KIB * KIB)
-#define GIB (KIB * MIB)
-
-#define INT32_BITS 32
-#define INT32_BITS_BITS 5
-#define INT16_BITS 16
-#define INT16_BITS_BITS 4
-#define INT8_BITS 8
-#define INT8_BITS_BITS 3
-
-enum {
-    MILLISECONDS_PER_SECOND = 1000,
-    SECONDS_PER_MINUTE = 60,
-    MINUTES_PER_HOUR = 60,
-    HOURS_PER_DAY = 24,
-    VBLANKS_PER_SECOND = 60,
-    TICKS_PER_SECOND = 30,
-    TICKS_PER_MINUTE = TICKS_PER_SECOND * SECONDS_PER_MINUTE,
-    TICKS_PER_HOUR = TICKS_PER_MINUTE * MINUTES_PER_HOUR,
-    TICKS_PER_DAY = TICKS_PER_HOUR * HOURS_PER_DAY
-};
-
-#define TICKS_TO_SECONDS(t) ((t) * (1.0f / TICKS_PER_SECOND))
-#define SECONDS_TO_TICKS(s) ((s) * TICKS_PER_SECOND)
-
-enum {
-    _x,
-    _y,
-    _z,
-    NUMBER_OF_RECTANGLE2D_COMPONENTS = 4,
-    NUMBER_OF_RECTANGLE3D_COMPONENTS = 6,
-    NUMBER_OF_VERTICES_PER_LINE = 2,
-    NUMBER_OF_VERTICES_PER_TRIANGLE = 3,
-    NUMBER_OF_VERTICES_PER_QUADRILATERAL = 4,
-    NUMBER_OF_VERTICES_PER_HEXAGON = 6,
-    NUMBER_OF_VERTICES_PER_PYRAMID = 5,
-    NUMBER_OF_VERTICES_PER_CUBE = 8,
-    NUMBER_OF_TRIANGLES_PER_QUADRILATERAL = 2,
-    NUMBER_OF_EDGES_PER_TRIANGLE = 3,
-    NUMBER_OF_EDGES_PER_QUADRILATERAL = 4,
-    NUMBER_OF_EDGES_PER_HEXAGON = 6,
-    NUMBER_OF_FACES_PER_CUBE = 6,
-    _rectangle_top_left = 0,
-    _rectangle_bottom_left,
-    _rectangle_top_right,
-    _rectangle_bottom_right,
-    NUMBER_OF_POINTS_PER_RECTANGLE
-};
-
-/* macros */
-
-#define SQR(x) ((x) * (x))
-#define SGN(x) ((x) ? ((x) < 0 ? -1 : 1) : 0)
-
-#define ABS(x) ((x >= 0) ? (x) : -(x))
-#define MIN(a, b) ((a) > (b) ? (b) : (a))
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#define MIN3(a, b, c) MIN(a, MIN(b, c))
-#define MAX3(a, b, c) MAX(a, MAX(b, c))
-
-#define FLOOR(n, floor) ((n) < (floor) ? (floor) : (n))
-#define CEILING(n, ceiling) ((n) > (ceiling) ? (ceiling) : (n))
-#define PIN(n, floor, ceiling) ((n) < (floor) ? (floor) : CEILING(n, ceiling))
-
-#define FLAG(b) (1 << (b))
-#define FLAG_RANGE(b0, b1) ((FLAG((b1) + 1 - (b0)) - 1) << (b0))
-#define TEST_FLAG(f, b) (((f) & FLAG(b)) != 0)
-#define TEST_FLAG_RANGE(f, b0, b1) (((f) & FLAG_RANGE(b0, b1)) != 0)
-#define SWAP_FLAG(f, b) ((f) ^= FLAG(b))
-#define SET_FLAG(f, b, v) ((v) ? ((f) |= FLAG(b)) : ((f) &= ~FLAG(b)))
-
-#define BIT_VECTOR_SIZE_IN_LONGS(count) ((((count) + (INT32_BITS - 1)) >> INT32_BITS_BITS))
-#define BIT_VECTOR_TEST_FLAG(vector, bit) ((((uint32_t *)(vector))[(bit) >> INT32_BITS_BITS] & (1 << ((bit) & (INT32_BITS - 1)))) != 0)
-#define BIT_VECTOR_SET_FLAG(vector, bit, value) ((value) ? (((uint32_t *)(vector))[(bit) >> INT32_BITS_BITS] |= \
-    (1 << ((bit) & (INT32_BITS - 1)))) : (((uint32_t *)(vector))[(bit) >> INT32_BITS_BITS] &= ~(1 << ((bit) & (INT32_BITS - 1)))))
-
 /* types */
 
 typedef uint8_t pixel8;
@@ -318,6 +236,91 @@ typedef struct {
         };
     };
 } real_matrix4x3;
+
+/* constants */
+
+constexpr int32_t NONE = -1;
+constexpr tag TAG_NONE = UINT32_MAX;
+
+constexpr int32_t KIB = 1024;
+constexpr int32_t MIB = KIB * KIB;
+constexpr int32_t GIB = KIB * MIB;
+
+constexpr int32_t INT32_BITS = 32;
+constexpr int32_t INT32_BITS_BITS = 5;
+constexpr int32_t INT16_BITS = 16;
+constexpr int32_t INT16_BITS_BITS = 4;
+constexpr int32_t INT8_BITS = 8;
+constexpr int32_t INT8_BITS_BITS = 3;
+
+constexpr int32_t MILLISECONDS_PER_SECOND = 1000;
+constexpr int32_t SECONDS_PER_MINUTE = 60;
+constexpr int32_t MINUTES_PER_HOUR = 60;
+constexpr int32_t HOURS_PER_DAY = 24;
+constexpr int32_t VBLANKS_PER_SECOND = 60;
+constexpr int32_t TICKS_PER_SECOND = 30;
+constexpr int32_t TICKS_PER_MINUTE = TICKS_PER_SECOND * SECONDS_PER_MINUTE;
+constexpr int32_t TICKS_PER_HOUR = TICKS_PER_MINUTE * MINUTES_PER_HOUR;
+constexpr int32_t TICKS_PER_DAY = TICKS_PER_HOUR * HOURS_PER_DAY;
+constexpr real OO_TICKS_PER_SECOND = 1.0f / TICKS_PER_SECOND;
+
+constexpr int32_t NUMBER_OF_RECTANGLE2D_COMPONENTS = 4;
+constexpr int32_t NUMBER_OF_RECTANGLE3D_COMPONENTS = 6;
+constexpr int32_t NUMBER_OF_VERTICES_PER_LINE = 2;
+constexpr int32_t NUMBER_OF_VERTICES_PER_TRIANGLE = 3;
+constexpr int32_t NUMBER_OF_VERTICES_PER_QUADRILATERAL = 4;
+constexpr int32_t NUMBER_OF_VERTICES_PER_HEXAGON = 6;
+constexpr int32_t NUMBER_OF_VERTICES_PER_PYRAMID = 5;
+constexpr int32_t NUMBER_OF_VERTICES_PER_CUBE = 8;
+constexpr int32_t NUMBER_OF_TRIANGLES_PER_QUADRILATERAL = 2;
+constexpr int32_t NUMBER_OF_EDGES_PER_TRIANGLE = 3;
+constexpr int32_t NUMBER_OF_EDGES_PER_QUADRILATERAL = 4;
+constexpr int32_t NUMBER_OF_EDGES_PER_HEXAGON = 6;
+constexpr int32_t NUMBER_OF_FACES_PER_CUBE = 6;
+
+enum {
+    _x,
+    _y,
+    _z,
+};
+
+enum {
+    _rectangle_top_left,
+    _rectangle_bottom_left,
+    _rectangle_top_right,
+    _rectangle_bottom_right,
+    NUMBER_OF_POINTS_PER_RECTANGLE
+};
+
+/* macros */
+
+#define TICKS_TO_SECONDS(t) ((t) * OO_TICKS_PER_SECOND)
+#define SECONDS_TO_TICKS(s) ((s) * TICKS_PER_SECOND)
+
+#define SQR(x) ((x) * (x))
+#define SGN(x) ((x) ? ((x) < 0 ? -1 : 1) : 0)
+
+#define ABS(x) ((x >= 0) ? (x) : -(x))
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN3(a, b, c) MIN(a, MIN(b, c))
+#define MAX3(a, b, c) MAX(a, MAX(b, c))
+
+#define FLOOR(n, floor) ((n) < (floor) ? (floor) : (n))
+#define CEILING(n, ceiling) ((n) > (ceiling) ? (ceiling) : (n))
+#define PIN(n, floor, ceiling) ((n) < (floor) ? (floor) : CEILING(n, ceiling))
+
+#define FLAG(b) (1 << (b))
+#define FLAG_RANGE(b0, b1) ((FLAG((b1) + 1 - (b0)) - 1) << (b0))
+#define TEST_FLAG(f, b) (((f) & FLAG(b)) != 0)
+#define TEST_FLAG_RANGE(f, b0, b1) (((f) & FLAG_RANGE(b0, b1)) != 0)
+#define SWAP_FLAG(f, b) ((f) ^= FLAG(b))
+#define SET_FLAG(f, b, v) ((v) ? ((f) |= FLAG(b)) : ((f) &= ~FLAG(b)))
+
+#define BIT_VECTOR_SIZE_IN_LONGS(count) ((((count) + (INT32_BITS - 1)) >> INT32_BITS_BITS))
+#define BIT_VECTOR_TEST_FLAG(vector, bit) ((((uint32_t *)(vector))[(bit) >> INT32_BITS_BITS] & (1 << ((bit) & (INT32_BITS - 1)))) != 0)
+#define BIT_VECTOR_SET_FLAG(vector, bit, value) ((value) ? (((uint32_t *)(vector))[(bit) >> INT32_BITS_BITS] |= \
+    (1 << ((bit) & (INT32_BITS - 1)))) : (((uint32_t *)(vector))[(bit) >> INT32_BITS_BITS] &= ~(1 << ((bit) & (INT32_BITS - 1)))))
 
 /* asserts */
 

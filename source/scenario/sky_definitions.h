@@ -4,13 +4,16 @@
 #include "../cseries/cseries.h"
 #include "../tag_files/tag_groups.h"
 
-enum {
-    SKY_TAG = 0x736B7920, // 'sky '
-    SKY_VERSION = 1,
-    MAXIMUM_SHADER_FUNCTIONS_PER_SKY = 8,
-    MAXIMUM_ANIMATIONS_PER_SKY = 8,
-    MAXIMUM_LIGHTS_PER_SKY = 8
-};
+/* constants */
+
+constexpr tag SKY_TAG = 0x736B7920; // 'sky '
+constexpr int16_t SKY_VERSION = 1;
+
+constexpr int32_t MAXIMUM_SHADER_FUNCTIONS_PER_SKY = 8;
+constexpr int32_t MAXIMUM_ANIMATIONS_PER_SKY = 8;
+constexpr int32_t MAXIMUM_LIGHTS_PER_SKY = 8;
+
+/* definitions */
 
 struct sky_atmospheric_fog {
     real_rgb_color color;

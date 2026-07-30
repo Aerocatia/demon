@@ -3,10 +3,12 @@
 
 #include "../cseries/cseries.h"
 
-enum {
-    MAXIMUM_SOUND_INSTANCES_PER_DEFINITION = 16,
-    MAXIMUM_SOUND_INSTANCES_PER_OBJECT_PER_DEFINITION = 16
-};
+/* constants */
+
+constexpr int32_t MAXIMUM_SOUND_INSTANCES_PER_DEFINITION = 16;
+constexpr int32_t MAXIMUM_SOUND_INSTANCES_PER_OBJECT_PER_DEFINITION = 16;
+
+/* definitions */
 
 enum {
     _sound_class_projectile_impact,

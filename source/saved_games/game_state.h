@@ -7,7 +7,7 @@
 #include "../memory/lruv_cache.h"
 
 // the exact value of MAXIMUM_GAME_STATE_SIZE got optimized out, but it is at least higher than Xbox
-#define MAXIMUM_GAME_STATE_SIZE (4 * MIB + 256 * KIB)
+constexpr int32_t MAXIMUM_GAME_STATE_SIZE = 4 * MIB + 256 * KIB;
 
 void *game_state_malloc(const char *name, const char *type, int32_t size);
 void *game_state_gpu_malloc(const char *name, const char *type, int32_t size);

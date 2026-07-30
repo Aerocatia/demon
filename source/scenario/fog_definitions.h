@@ -4,10 +4,12 @@
 #include "../cseries/cseries.h"
 #include "../tag_files/tag_groups.h"
 
-enum {
-    FOG_TAG = 0x666F6720, // 'fog '
-    FOG_VERSION = 1
-};
+/* constants */
+
+constexpr tag FOG_TAG = 0x666F6720; // 'fog '
+constexpr int16_t FOG_VERSION = 1;
+
+/* definitions */
 
 enum {
     _fog_screen_no_environment_multipass_bit,

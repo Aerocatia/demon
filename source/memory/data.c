@@ -1,12 +1,16 @@
-#include <string.h>
-
 #include "../cseries/cseries.h"
 #include "data.h"
 
-#define DATA_SIGNATURE 0x64407440 // 'd@t@'
-#define DATA_ITERATOR_SIGNATURE 0x69746572 // 'iter'
+/* constants */
+
+constexpr tag DATA_SIGNATURE = 0x64407440; // 'd@t@'
+constexpr tag DATA_ITERATOR_SIGNATURE = 0x69746572; // 'iter'
+
+/* forward declarations */
 
 static void datum_initialize(struct data_array *data, struct datum_header *header);
+
+/* public functions */
 
 struct data_array *data_new(const char *name, int16_t maximum_count, int16_t size) {
     struct data_array *data = malloc(data_allocation_size(maximum_count, size));

@@ -1,13 +1,15 @@
-#include <stdio.h>
-#include <string.h>
-
 #include "../cseries/cseries.h"
 
 #include "data.h"
 #include "lruv_cache.h"
 
-#define LRUV_CACHE_SIGNATURE 0x77656565 // 'weee'
-#define OLD_BLOCK_FRAME_COUNT 30
+/* constants */
+
+constexpr uint32_t LRUV_CACHE_SIGNATURE = 0x77656565; // 'weee'
+constexpr uint32_t OLD_BLOCK_FRAME_COUNT = 30;
+constexpr int16_t MAXIMUM_CACHE_HOLES = 256;
+
+/* definitions */
 
 struct lruv_cache {
     char name[32];
@@ -42,6 +44,8 @@ struct lruv_cache_hole {
     int32_t page_count;
 };
 
+/* forward declarations */
+
 static int32_t lruv_cache_bytes_to_pages(struct lruv_cache *cache, int32_t size_in_bytes);
 
 #define lruv_cache_block_get(cache, index) DATUM_GET((cache)->blocks, index, struct lruv_cache_block)
@@ -51,6 +55,8 @@ static int32_t lruv_cache_bytes_to_pages(struct lruv_cache *cache, int32_t size_
 #else
     #define lruv_cache_verify(cache, verify_blocks) ((void)0)
 #endif
+
+/* public functions */
 
 struct lruv_cache *lruv_new(const char *name, int32_t page_count, int32_t page_size_bits, int32_t maximum_block_count, lruv_delete_block_proc delete_block_proc, lruv_locked_block_proc locked_block_proc) {
     struct lruv_cache *cache = malloc(lruv_allocation_size(maximum_block_count));
@@ -127,7 +133,6 @@ void lruv_flush(struct lruv_cache *cache) {
     }
 }
 
-#define MAXIMUM_CACHE_HOLES 256
 #define INCREMENT_HOLE_INDEX(index) ((index) == MAXIMUM_CACHE_HOLES -1 ? 0 : ((index) +1))
 
 int32_t lruv_block_new(struct lruv_cache *cache, int32_t size) {
@@ -449,6 +454,8 @@ void lruv_debug_to_file(const char *path, const char *failed_allocation_name, in
     fprintf(stream, "\n");
     fclose(stream);
 }
+
+/* private functions */
 
 static int32_t lruv_cache_bytes_to_pages(struct lruv_cache *cache, int32_t size_in_bytes) {
     int32_t page_count = size_in_bytes >> cache->page_size_bits;

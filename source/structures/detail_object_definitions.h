@@ -1,24 +1,27 @@
 #ifndef DEMON_DETAIL_OBJECT_DEFINITIONS_H
 #define DEMON_DETAIL_OBJECT_DEFINITIONS_H
 
-enum {
-    DETAIL_OBJECT_COLLECTION_GROUP_TAG = 0x646F6263, // 'dobc'
-    DETAIL_OBJECT_COLLECTION_VERSION = 1
-};
+#include "../cseries/cseries.h"
+#include "../tag_files/tag_groups.h"
 
-enum {
-    MAXIMUM_DETAIL_OBJECT_LAYERS_PER_STRUCTURE = 32,
-    MAXIMUM_DETAIL_OBJECT_CELLS_PER_STRUCTURE = 256 * KIB,
-    MAXIMUM_DETAIL_OBJECTS_PER_STRUCTURE = 2 * MIB,
-    MAXIMUM_DETAIL_OBJECTS_PER_CELL = 512,
-    MAXIMUM_DETAIL_OBJECT_TYPES_PER_COLLECTION = 16,
-    MAXIMUM_DETAIL_OBJECT_SPRITES_PER_TYPE = 16,
-    MAXIMUM_DETAIL_OBJECT_SPRITES_PER_COLLECTION = 128,
-    MAXIMUM_DETAIL_OBJECT_CELLS_PER_AXIS = 3,
-    MAXIMUM_DETAIL_OBJECT_CELLS_PER_FRAME = SQR(MAXIMUM_DETAIL_OBJECT_CELLS_PER_AXIS) * MAXIMUM_DETAIL_OBJECT_CELLS_PER_AXIS,
-    DETAIL_OBJECT_CELL_SIZE = 8,
-    DETAIL_OBJECT_CELL_GRANULARITY = 255
-};
+/* constants */
+
+constexpr tag DETAIL_OBJECT_COLLECTION_GROUP_TAG = 0x646F6263; // 'dobc'
+constexpr int16_t DETAIL_OBJECT_COLLECTION_VERSION = 1;
+
+constexpr int32_t MAXIMUM_DETAIL_OBJECT_LAYERS_PER_STRUCTURE = 32;
+constexpr int32_t MAXIMUM_DETAIL_OBJECT_CELLS_PER_STRUCTURE = 256 * KIB;
+constexpr int32_t MAXIMUM_DETAIL_OBJECTS_PER_STRUCTURE = 2 * MIB;
+constexpr int32_t MAXIMUM_DETAIL_OBJECTS_PER_CELL = 512;
+constexpr int32_t MAXIMUM_DETAIL_OBJECT_TYPES_PER_COLLECTION = 16;
+constexpr int32_t MAXIMUM_DETAIL_OBJECT_SPRITES_PER_TYPE = 16;
+constexpr int32_t MAXIMUM_DETAIL_OBJECT_SPRITES_PER_COLLECTION = 128;
+constexpr int32_t MAXIMUM_DETAIL_OBJECT_CELLS_PER_AXIS = 3;
+constexpr int32_t MAXIMUM_DETAIL_OBJECT_CELLS_PER_FRAME = SQR(MAXIMUM_DETAIL_OBJECT_CELLS_PER_AXIS) * MAXIMUM_DETAIL_OBJECT_CELLS_PER_AXIS;
+constexpr int32_t DETAIL_OBJECT_CELL_SIZE = 8;
+constexpr int32_t DETAIL_OBJECT_CELL_GRANULARITY = 255;
+
+/* definitions */
 
 enum {
     _detail_object_collection_type_screen_facing,
@@ -113,7 +116,7 @@ struct detail_object {
 };
 static_assert(sizeof(struct detail_object) == 6);
 
-/* detail object definition functions */
+/* detail object definition inline functions */
 
 static inline struct detail_object_collection_definition *detail_object_collection_get(int32_t tag_index) {
     return tag_get(DETAIL_OBJECT_COLLECTION_GROUP_TAG, tag_index);

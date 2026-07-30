@@ -1,20 +1,27 @@
 #ifndef DEMON_CACHE_FILES_H
 #define DEMON_CACHE_FILES_H
 
-#include <stdint.h>
 #include "../cseries/cseries.h"
 #include "../tag_files/tag_groups.h"
 
-#define CACHE_FILE_HEADER_SIGNATURE 0x68656164 // head
-#define CACHE_FILE_FOOTER_SIGNATURE 0x666F6F74 // foot
-#define CACHE_FILE_VERSION_RETAIL 7
-#define CACHE_FILE_VERSION_CUSTOM_EDITION 609
-#define CACHE_FILE_VERSION CACHE_FILE_VERSION_CUSTOM_EDITION
+/* constants */
 
-#define CACHE_FILE_MAXIMUM_SIZE 1 * GIB // was (384 * MIB)
-#define CACHE_FILE_MAXIMUM_SOLO_SIZE CACHE_FILE_MAXIMUM_SIZE
-#define CACHE_FILE_MAXIMUM_UI_SIZE CACHE_FILE_MAXIMUM_SIZE // was (35 * MIB)
-#define CACHE_FILE_MAXIMUM_MULTIPLAYER_SIZE CACHE_FILE_MAXIMUM_SIZE // was (128 * MIB)
+constexpr int32_t CACHE_FILE_HEADER_SIGNATURE = 0x68656164; // head
+constexpr int32_t CACHE_FILE_FOOTER_SIGNATURE = 0x666F6F74; // foot
+
+constexpr int32_t CACHE_FILE_VERSION_RETAIL = 7;
+constexpr int32_t CACHE_FILE_VERSION_CUSTOM_EDITION = 609;
+constexpr int32_t CACHE_FILE_VERSION = CACHE_FILE_VERSION_CUSTOM_EDITION;
+
+constexpr int32_t CACHE_FILE_MAXIMUM_SIZE = 1 * GIB; // was (384 * MIB)
+constexpr int32_t CACHE_FILE_MAXIMUM_SOLO_SIZE = CACHE_FILE_MAXIMUM_SIZE;
+constexpr int32_t CACHE_FILE_MAXIMUM_UI_SIZE = CACHE_FILE_MAXIMUM_SIZE; // was (35 * MIB)
+constexpr int32_t CACHE_FILE_MAXIMUM_MULTIPLAYER_SIZE = CACHE_FILE_MAXIMUM_SIZE; // was (128 * MIB)
+
+constexpr tag CACHE_FILE_TAGS_HEADER_SIGNATURE = 0x74616773; // tags
+constexpr tag CACHE_FILE_STRUCTURE_BSP_HEADER_SIGNATURE = 0x73627370; // sbsp
+
+/* definitions */
 
 struct cache_file_header {
     int32_t header_signature;
@@ -50,8 +57,6 @@ struct cache_file_tag_instance {
 };
 static_assert(sizeof(struct cache_file_tag_instance) == 32);
 
-#define CACHE_FILE_TAGS_HEADER_SIGNATURE 0x74616773 // tags
-
 struct cache_file_tags_header {
     struct cache_file_tag_instance *tag_instances;
     int32_t scenario_tag_index;
@@ -65,8 +70,6 @@ struct cache_file_tags_header {
     tag signature;
 };
 static_assert(sizeof(struct cache_file_tags_header) == 40);
-
-#define CACHE_FILE_STRUCTURE_BSP_HEADER_SIGNATURE 0x73627370 // sbsp
 
 struct cache_file_structure_bsp_header_xbox {
     struct structure_bsp *structure_bsp;
@@ -93,6 +96,8 @@ struct cache_file_read_request_params {
     void *userdata;
 };
 static_assert(sizeof(struct cache_file_read_request_params) == 12);
+
+/* cache file functions */
 
 bool cache_file_open(const char *scenario_name, struct cache_file_header *header);
 int16_t cache_file_read(int32_t tag_index, int32_t offset, int32_t size, void *buffer, struct cache_file_read_request_params *params, bool blocking, bool data_file);

@@ -6,12 +6,16 @@
 #include "../tag_files/tag_groups.h"
 #include "draw_string.h"
 
+/* constants */
+
+constexpr tag FONT_GROUP_TAG = 0x666F6E74; // 'font'
+
+/* macros */
+
 #define HIGH_BYTE(c) (((c) >> INT8_BITS) & 0xFF)
 #define LOW_BYTE(c) ((c) & 0xFF)
 
-enum {
-    FONT_GROUP_TAG = 0x666F6E74 // 'font'
-};
+/* definitions */
 
 struct font_character {
     uint16_t character;

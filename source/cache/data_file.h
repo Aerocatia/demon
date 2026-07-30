@@ -1,7 +1,7 @@
 #ifndef DEMON_DATA_FILE_H
 #define DEMON_DATA_FILE_H
 
-#include <stdint.h>
+#include "../cseries/cseries.h"
 
 enum {
     _data_file_type_none,

@@ -15,7 +15,7 @@
 #include "../demon/exe_functions.h"
 #include "../demon/exe_globals.h"
 
-#define DEBUG_OUTPUT_FILENAME "debug.txt"
+/* constants */
 
 #ifdef CACHE_FILE_BUILD
 #define CACHE_STRING "(CACHE)"
@@ -23,9 +23,10 @@
 #define CACHE_STRING ""
 #endif
 
-enum {
-    ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE = 4 * KIB
-};
+constexpr char DEBUG_OUTPUT_FILENAME[] = "debug.txt";
+constexpr int32_t ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE = 4 * KIB;
+
+/* globals */
 
 struct error_global_data {
     bool delayed;
@@ -41,8 +42,6 @@ struct error_global_data {
     char message_buffer[ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE];
 };
 static_assert(sizeof(struct error_global_data) == 4366);
-
-/* globals */
 
 #ifndef DEMON_EXE_GLOBALS
 static struct error_global_data error_globals;
@@ -127,10 +126,9 @@ void error(short priority, const char *format, ...) {
         fprintf(stderr, buffer);
 #endif
 
-//FIXME not in release builds
-//#ifdef SYMBOLS_BUILD
+#ifdef SYMBOLS_BUILD
         display_debug_string(buffer);
-//#endif
+#endif
         if(priority != _error_log) {
             terminal_printf(global_real_argb_white, "%s", buffer);
         }
@@ -140,7 +138,7 @@ void error(short priority, const char *format, ...) {
         int32_t new_size = strlen(buffer);
         if(error_globals.message_buffer_size + new_size >= ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE) {
             const char prefix[] = "[...too many errors to print...]" EOL_STRING;
-            constexpr int32_t prefix_size = sizeof(prefix) - 1;
+            const int32_t prefix_size = sizeof(prefix) - 1;
 
             char *start_ptr = error_globals.message_buffer +
                 PIN(ERROR_MESSAGE_BUFFER_MAXIMUM_SIZE / 2 + prefix_size + new_size, 0, error_globals.message_buffer_size - 1);

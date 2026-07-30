@@ -1,7 +1,7 @@
 #ifndef DEMON_RASTERIZER_GEOMETRY_H
 #define DEMON_RASTERIZER_GEOMETRY_H
 
-#include <stdint.h>
+#include "../cseries/cseries.h"
 
 enum {
     _rasterizer_vertex_type_environment_uncompressed,

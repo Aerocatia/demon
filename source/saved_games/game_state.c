@@ -12,7 +12,9 @@
 
 #include "../demon/exe_globals.h"
 
-#define GAMESTATE_FILENAME "gamestate.txt"
+/* constants */
+
+constexpr char GAMESTATE_FILENAME[] = "gamestate.txt";
 
 /* globals */
 

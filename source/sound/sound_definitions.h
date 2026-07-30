@@ -4,21 +4,22 @@
 #include "../cseries/cseries.h"
 #include "../tag_files/tag_groups.h"
 
-/* sound */
+/* sound constants */
 
-enum {
-    SOUND_DEFINITION_TAG = 0x736E6421, // 'snd!'
-    SOUND_DEFINITION_VERSION = 4,
-    MAXIMUM_PROMOTION_RULES_PER_SOUND = 4,
-    MAXIMUM_PITCH_RANGES_PER_SOUND = 8,
-    MAXIMUM_PERMUTATIONS_PER_PITCH_RANGE = 256,
-    MAXIMUM_PERMUTATIONS_PER_RANDOM_PITCH_RANGE = INT32_BITS,
-    MAXIMUM_SOUND_DATA_SIZE = 4 * MIB,
-    MAXIMUM_SOUND_MOUTH_DATA_SIZE = 8192,
-    SOUND_MOUTH_SAMPLES_PER_SECOND = TICKS_PER_SECOND,
-    MAXIMUM_SOUND_SUBTITLE_DATA_SIZE = 512,
-    SOUND_COMPRESSION_BLOCK_SIZE = 64
-};
+constexpr tag SOUND_DEFINITION_TAG = 0x736E6421; // 'snd!'
+constexpr int16_t SOUND_DEFINITION_VERSION = 4;
+
+constexpr int32_t MAXIMUM_PROMOTION_RULES_PER_SOUND = 4;
+constexpr int32_t MAXIMUM_PITCH_RANGES_PER_SOUND = 8;
+constexpr int32_t MAXIMUM_PERMUTATIONS_PER_PITCH_RANGE = 256;
+constexpr int32_t MAXIMUM_PERMUTATIONS_PER_RANDOM_PITCH_RANGE = INT32_BITS;
+constexpr int32_t MAXIMUM_SOUND_DATA_SIZE = 4 * MIB;
+constexpr int32_t MAXIMUM_SOUND_MOUTH_DATA_SIZE = 8192;
+constexpr int32_t SOUND_MOUTH_SAMPLES_PER_SECOND = TICKS_PER_SECOND;
+constexpr int32_t MAXIMUM_SOUND_SUBTITLE_DATA_SIZE = 512;
+constexpr int32_t SOUND_COMPRESSION_BLOCK_SIZE = 64;
+
+/* sound definitions */
 
 enum {
     _sound_definition_fit_to_compression_block_size_bit,
@@ -116,15 +117,17 @@ struct sound_definition {
 };
 static_assert(sizeof(struct sound_definition) == 164);
 
-/* sound looping */
+/* sound looping constants */
 
-enum {
-    LOOPING_SOUND_DEFINITION_TAG = 0x6C736E64, // 'lsnd'
-    LOOPING_SOUND_DEFINITION_VERSION = 3,
-    CUSTOM_MUSIC_PLAY_ID = 0x6D706C79, // 'mply'
-    MAXIMUM_TRACKS_PER_LOOPING_SOUND = 4,
-    MAXIMUM_DETAIL_SOUNDS_PER_LOOPING_SOUND = 32
-};
+constexpr tag LOOPING_SOUND_DEFINITION_TAG = 0x6C736E64; // 'lsnd'
+constexpr int16_t LOOPING_SOUND_DEFINITION_VERSION = 3;
+
+constexpr tag CUSTOM_MUSIC_PLAY_ID = 0x6D706C79; // 'mply'
+
+constexpr int32_t MAXIMUM_TRACKS_PER_LOOPING_SOUND = 4;
+constexpr int32_t MAXIMUM_DETAIL_SOUNDS_PER_LOOPING_SOUND = 32;
+
+/* sound looping definitions */
 
 enum{
     _fade_in_at_start_bit,

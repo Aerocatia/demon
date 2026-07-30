@@ -1,18 +1,14 @@
 #ifndef DEMON_TAG_GROUPS_H
 #define DEMON_TAG_GROUPS_H
 
-#include <stdint.h>
-
 #include "../cseries/cseries.h"
 #include "../memory/byte_swapping.h"
 #include "../memory/data.h"
 
-#define MAXIMUM_PARENT_GROUP_TYPES_PER_TAG 2
-#define MAXIMUM_SIMULTANEOUS_TAG_INSTANCES 4000
+constexpr int32_t MAXIMUM_PARENT_GROUP_TYPES_PER_TAG = 2;
+constexpr int32_t MAXIMUM_SIMULTANEOUS_TAG_INSTANCES = 4000;
 
-enum {
-    TAG_STRING_LENGTH = 31
-};
+constexpr size_t TAG_STRING_LENGTH = 31;
 
 enum {
     _tag_data_flags_external_bit, // if the data is in a resource map (only used by sounds)

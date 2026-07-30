@@ -1,8 +1,7 @@
 #ifndef DEMON_LRUV_CACHE_H
 #define DEMON_LRUV_CACHE_H
 
-#include <stdint.h>
-#include <stdio.h>
+#include "../cseries/cseries.h"
 
 struct lruv_cache;
 

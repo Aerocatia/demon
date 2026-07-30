@@ -4,10 +4,12 @@
 #include "../cseries/cseries.h"
 #include "../tag_files/tag_groups.h"
 
-enum {
-    MAXIMUM_NODES_PER_BSP2D = 65535,
-    MAXIMUM_BSP2D_DEPTH = 64
-};
+/* constants */
+
+constexpr int32_t MAXIMUM_NODES_PER_BSP2D = 65535;
+constexpr int32_t MAXIMUM_BSP2D_DEPTH = 64;
+
+/* definitions */
 
 struct bsp2d {
     struct tag_block nodes;
