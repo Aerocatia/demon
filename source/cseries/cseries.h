@@ -234,6 +234,7 @@ typedef union {
         real i, j, k;
     };
 } real_vector3d;
+static_assert(sizeof(real_point3d) == sizeof(real_vector3d));
 
 typedef union {
     real n[4];
