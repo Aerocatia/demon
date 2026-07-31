@@ -7,6 +7,17 @@
 
 struct structure_bsp;
 
+/* constants */
+
+constexpr tag CUSTOM_SAPIEN_FIRING_POINT_FIELD = 0x63667066; // 'cfpf'
+
+constexpr int32_t NUMBER_OF_FIRING_POSITION_GROUP_INDICES = 26;
+constexpr int32_t ALL_FIRING_POSITION_GROUPS = (1 << NUMBER_OF_FIRING_POSITION_GROUP_INDICES) - 1;
+
+constexpr int32_t MAXIMUM_DIALOGUE_VARIANTS_PER_CONVERSATION_PARTICIPANT = 6;
+
+/* definitions */
+
 struct actor_palette_entry {
     struct tag_reference reference;
 };
@@ -175,12 +186,6 @@ struct squad_definition {
     struct tag_block unused_block;
 };
 static_assert(sizeof(struct squad_definition) == 232);
-
-enum {
-    CUSTOM_SAPIEN_FIRING_POINT_FIELD = 0x63667066, // 'cfpf'
-    NUMBER_OF_FIRING_POSITION_GROUP_INDICES = 26,
-    ALL_FIRING_POSITION_GROUPS = ((1 << NUMBER_OF_FIRING_POSITION_GROUP_INDICES) - 1),
-};
 
 struct firing_position_definition {
     real_point3d position;
@@ -449,8 +454,6 @@ struct ai_recording_reference_definition {
 };
 static_assert(sizeof(struct ai_recording_reference_definition) == 40);
 
-#define MAXIMUM_DIALOGUE_VARIANTS_PER_CONVERSATION_PARTICIPANT 6
-
 enum {
     _ai_conversation_stop_if_anyone_dies_bit,
     _ai_conversation_stop_if_damaged_bit,
@@ -546,6 +549,8 @@ int16_t choose_random_array_element(void *array, int16_t element_size, int16_t e
 int32_t scenario_get_encounter_by_name(struct scenario *scenario, const char *encounter_name);
 int32_t encounter_definition_get_squad_by_name(struct encounter_definition *encounter, const char *squad_name);
 int32_t encounter_definition_get_platoon_by_name(struct encounter_definition *encounter, const char *platoon_name);
+
+/* ai scenario definition inline functions */
 
 static inline struct encounter_definition *scenario_get_encounter(struct scenario *scenario, int32_t encounter_index) {
     return tag_block_get_element_with_size(&scenario->ai_encounters, encounter_index, sizeof(struct encounter_definition));

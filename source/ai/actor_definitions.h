@@ -5,6 +5,8 @@
 #include "../tag_files/tag_groups.h"
 #include "../units/unit_metagame.h"
 
+/* constants */
+
 constexpr tag ACTOR_DEFINITION_TAG = 0x61637472; // 'actr'
 constexpr int16_t ACTOR_DEFINITION_VERSION = 2;
 
