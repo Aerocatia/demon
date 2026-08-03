@@ -1,8 +1,6 @@
 #ifndef DEMON_DATA_H
 #define DEMON_DATA_H
 
-#include <stdint.h>
-
 #include "../cseries/cseries.h"
 
 struct datum_header {
@@ -33,25 +31,10 @@ struct data_iterator {
 };
 static_assert(sizeof(struct data_iterator) == 16);
 
-#define DATUM_IS_USED(datum) ((datum)->identifier)
-#define DATUM_IS_FREE(datum) (!DATUM_IS_USED(datum))
-#define MARK_DATUM_AS_FREE(datum) ((datum)->identifier = 0)
-
-#define BUILD_DATUM_INDEX(identifier, absolute_index) \
-    ((uint32_t)(absolute_index) | ((uint32_t)(identifier) << INT16_BITS))
-#define DATUM_INDEX_TO_IDENTIFIER(index) ((index) >> INT16_BITS)
-#define DATUM_INDEX_TO_ABSOLUTE_INDEX(index) ((index) & ((1 << INT16_BITS) -1))
-
-#define DATUM_TRY_AND_GET(data_array, index, structure) ((structure *)datum_try_and_get((data_array), (index)))
-
 #ifdef DEBUG_BUILD
-    #define DATUM_GET(data_array, index, structure) ((structure *)datum_get((data_array), (index)))
-    #define DATUM_GET_BY_SIZE(data_array, index, structure) ((structure *)datum_get((data_array), (index)))
-    void data_verify(struct data_array *data);
+void data_verify(struct data_array *data);
 #else
-    #define DATUM_GET(data_array, index, structure) ((structure *)(((data_array)->data)) + DATUM_INDEX_TO_ABSOLUTE_INDEX(index))
-    #define DATUM_GET_BY_SIZE(data_array, index, structure) ((structure *)(((data_array)->data)) + (data_array)->size * DATUM_INDEX_TO_ABSOLUTE_INDEX(index))
-    #define data_verify(data) ((void)0)
+#define data_verify(data) ((void)0)
 #endif
 
 struct data_array *data_new(const char *name, int16_t maximum_count, int16_t size);
@@ -80,5 +63,31 @@ void *data_iterator_next(struct data_iterator *iterator);
 int32_t data_next_index(struct data_array *data, int32_t index);
 int32_t data_prev_index(struct data_array *data, int32_t index);
 int32_t data_last_index(struct data_array *data);
+
+/* inline functions */
+
+static inline bool datum_is_used(struct datum_header *header) {
+    return header->identifier != 0;
+}
+
+static inline bool datum_is_free(struct datum_header *header) {
+    return header->identifier == 0;
+}
+
+static inline void mark_datum_as_free(struct datum_header *header) {
+    header->identifier = 0;
+}
+
+static inline int32_t build_datum_index(int16_t identifier, int16_t absolute_index) {
+    return (uint32_t)absolute_index | ((uint32_t)identifier << INT16_BITS);
+}
+
+static inline int16_t datum_index_to_identifier(int32_t datum_index) {
+    return datum_index >> INT16_BITS;
+}
+
+static inline int16_t datum_index_to_absolute_index(int32_t datum_index) {
+    return datum_index & ((1 << INT16_BITS) -1);
+}
 
 #endif

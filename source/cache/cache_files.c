@@ -258,7 +258,7 @@ int32_t scenario_tags_load(const char *name) {
             default:
                 [[maybe_unused]] char group[16];
                 vhalt(csprintf(temporary, "external data is not supported for tag group '%s' (tag instance %d)",
-                    tag_to_string(tag_instance->group_tag, group), DATUM_INDEX_TO_ABSOLUTE_INDEX(tag_index)));
+                    tag_to_string(tag_instance->group_tag, group), datum_index_to_absolute_index(tag_index)));
         }
 
         tag_data_cursor += size;
@@ -381,12 +381,12 @@ int32_t tag_iterator_next(struct tag_iterator *iterator) {
 static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_index) {
     assert(cache_file_globals.tags_loaded);
     assert(global_tag_instances);
-    int16_t absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(tag_index);
+    int16_t absolute_index = datum_index_to_absolute_index(tag_index);
     vassert(absolute_index >= 0 && absolute_index < cache_file_globals.tags_header->tag_count,
         csprintf(temporary, "i don't think %08x is a tag index", tag_index));
 
     auto tag_instance = &global_tag_instances[absolute_index];
-    vassert(!DATUM_INDEX_TO_IDENTIFIER(tag_index) || tag_instance->tag_index == tag_index,
+    vassert(!datum_index_to_identifier(tag_index) || tag_instance->tag_index == tag_index,
         csprintf(temporary, "i don't think %08x is a tag index", tag_index));
 
     return tag_instance;

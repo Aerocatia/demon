@@ -47,13 +47,12 @@ struct lruv_cache_hole {
 /* forward declarations */
 
 static int32_t lruv_cache_bytes_to_pages(struct lruv_cache *cache, int32_t size_in_bytes);
-
-#define lruv_cache_block_get(cache, index) DATUM_GET((cache)->blocks, index, struct lruv_cache_block)
+static inline struct lruv_cache_block *lruv_cache_block_get(struct lruv_cache *cache, int32_t index);
 
 #ifdef DEBUG_BUILD
-    static void lruv_cache_verify(struct lruv_cache *cache, bool verify_blocks);
+static void lruv_cache_verify(struct lruv_cache *cache, bool verify_blocks);
 #else
-    #define lruv_cache_verify(cache, verify_blocks) ((void)0)
+#define lruv_cache_verify(cache, verify_blocks) ((void)0)
 #endif
 
 /* public functions */
@@ -146,7 +145,8 @@ int32_t lruv_block_new(struct lruv_cache *cache, int32_t size) {
     uint32_t oldest_block_last_used_frame_index;
 
     struct lruv_cache_hole holes[MAXIMUM_CACHE_HOLES];
-    int16_t hole_read_index = 0, hole_write_index = 0;
+    int16_t hole_read_index = 0;
+    int16_t hole_write_index = 0;
     int32_t block_index = cache->first_block_index;
     int32_t previous_block_index = NONE;
     int32_t page_index = 0;
@@ -170,7 +170,7 @@ int32_t lruv_block_new(struct lruv_cache *cache, int32_t size) {
             page_index = cache->page_count;
         }
         else {
-            struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+            auto block = lruv_cache_block_get(cache, block_index);
             if(page_index == block->first_page_index) {
                 last_used_frame_index = block->last_used_frame_index;
                 page_count = block->page_count;
@@ -250,7 +250,7 @@ int32_t lruv_block_new(struct lruv_cache *cache, int32_t size) {
         return new_block_index;
     }
 
-    struct lruv_cache_block *new_block = lruv_cache_block_get(cache, new_block_index);
+    auto new_block = lruv_cache_block_get(cache, new_block_index);
     if(best_hole.previous_block_index == NONE) {
         if (cache->first_block_index == NONE) {
             assert(cache->last_block_index == NONE);
@@ -258,20 +258,20 @@ int32_t lruv_block_new(struct lruv_cache *cache, int32_t size) {
             cache->last_block_index = new_block_index;
         }
         else {
-            struct lruv_cache_block *next_block = lruv_cache_block_get(cache, cache->first_block_index);
+            auto next_block = lruv_cache_block_get(cache, cache->first_block_index);
             assert(next_block->previous_block_index == NONE);
             new_block->previous_block_index = NONE;
             next_block->previous_block_index = new_block_index;
         }
     }
     else {
-        struct lruv_cache_block *previous_block = lruv_cache_block_get(cache, best_hole.previous_block_index);
+        auto previous_block = lruv_cache_block_get(cache, best_hole.previous_block_index);
         if(previous_block->next_block_index == NONE) {
             new_block->previous_block_index = cache->last_block_index;
             cache->last_block_index = new_block_index;
         }
         else {
-            struct lruv_cache_block *next_block = lruv_cache_block_get(cache, previous_block->next_block_index);
+            auto next_block = lruv_cache_block_get(cache, previous_block->next_block_index);
             new_block->previous_block_index = next_block->previous_block_index;
             next_block->previous_block_index = new_block_index;
         }
@@ -282,7 +282,7 @@ int32_t lruv_block_new(struct lruv_cache *cache, int32_t size) {
         cache->first_block_index = new_block_index;
     }
     else {
-        struct lruv_cache_block *previous_block = lruv_cache_block_get(cache, best_hole.previous_block_index);
+        auto previous_block = lruv_cache_block_get(cache, best_hole.previous_block_index);
         new_block->next_block_index = previous_block->next_block_index;
         previous_block->next_block_index = new_block_index;
     }
@@ -303,9 +303,9 @@ void lruv_block_delete(struct lruv_cache *cache, int32_t block_index) {
         cache->delete_block_proc(block_index);
     }
 
-    struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+    auto block = lruv_cache_block_get(cache, block_index);
     if(block->previous_block_index != NONE) {
-        struct lruv_cache_block *previous_block = lruv_cache_block_get(cache, block->previous_block_index);
+        auto previous_block = lruv_cache_block_get(cache, block->previous_block_index);
         previous_block->next_block_index = block->next_block_index;
     }
     else {
@@ -314,7 +314,7 @@ void lruv_block_delete(struct lruv_cache *cache, int32_t block_index) {
     }
 
     if(block->next_block_index != NONE) {
-        struct lruv_cache_block *next_block = lruv_cache_block_get(cache, block->next_block_index);
+        auto next_block = lruv_cache_block_get(cache, block->next_block_index);
         next_block->previous_block_index = block->previous_block_index;
     }
     else {
@@ -329,21 +329,21 @@ void lruv_block_delete(struct lruv_cache *cache, int32_t block_index) {
 void lruv_block_touch(struct lruv_cache *cache, int32_t block_index) {
     lruv_cache_verify(cache, false);
 
-    struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+    auto block = lruv_cache_block_get(cache, block_index);
     block->last_used_frame_index = cache->frame_index;
 }
 
 uint32_t lruv_block_get_address(struct lruv_cache *cache, int32_t block_index) {
     lruv_cache_verify(cache, false);
 
-    struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+    auto block = lruv_cache_block_get(cache, block_index);
     return block->first_page_index << cache->page_size_bits;
 }
 
 bool lruv_block_touched(struct lruv_cache *cache, int32_t block_index) {
     lruv_cache_verify(cache, false);
 
-    struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+    auto block = lruv_cache_block_get(cache, block_index);
     return block->last_used_frame_index == cache->frame_index;
 }
 
@@ -427,7 +427,7 @@ void lruv_debug_to_file(const char *path, const char *failed_allocation_name, in
             page_index = cache->page_count;
         }
         else {
-            struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+            auto block = lruv_cache_block_get(cache, block_index);
             if(page_index == block->first_page_index) {
                 age = cache->frame_index-block->last_used_frame_index;
                 page_count = block->page_count;
@@ -466,6 +466,10 @@ static int32_t lruv_cache_bytes_to_pages(struct lruv_cache *cache, int32_t size_
     return page_count;
 }
 
+static inline struct lruv_cache_block *lruv_cache_block_get(struct lruv_cache *cache, int32_t index) {
+    return datum_get(cache->blocks, index);
+}
+
 #ifdef DEBUG_BUILD
 static void lruv_cache_verify(struct lruv_cache *cache, bool verify_blocks) {
     assert(cache);
@@ -478,12 +482,12 @@ static void lruv_cache_verify(struct lruv_cache *cache, bool verify_blocks) {
 
     int32_t block_index = cache->first_block_index;
     while(block_index != NONE) {
-        struct lruv_cache_block *block = lruv_cache_block_get(cache, block_index);
+        auto block = lruv_cache_block_get(cache, block_index);
         if(block->previous_block_index == NONE) {
             assert(cache->first_block_index == block_index);
         }
         else {
-            struct lruv_cache_block *previous_block = lruv_cache_block_get(cache, block->previous_block_index);
+            auto previous_block = lruv_cache_block_get(cache, block->previous_block_index);
             assert(previous_block->next_block_index == block_index);
             assert(previous_block->first_page_index < block->first_page_index);
             assert(previous_block->first_page_index + previous_block->page_count <= block->first_page_index);
@@ -493,7 +497,7 @@ static void lruv_cache_verify(struct lruv_cache *cache, bool verify_blocks) {
             assert(cache->last_block_index == block_index);
         }
         else {
-            struct lruv_cache_block *next_block = lruv_cache_block_get(cache, block->next_block_index);
+            auto next_block = lruv_cache_block_get(cache, block->next_block_index);
             assert(next_block->previous_block_index == block_index);
             assert(next_block->first_page_index > block->first_page_index);
             assert(block->first_page_index + block->page_count <= next_block->first_page_index);
