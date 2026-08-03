@@ -64,6 +64,8 @@ static struct cache_file_tag_instance *cache_file_tag_instance_get(int32_t tag_i
 
 /* public functions */
 
+#define FIX_TAG_ADDRESS(address, base_address) if(address) (address) = (base_address) + (uint32_t)(address)
+
 int32_t scenario_tags_load(const char *name) {
     assert(name);
     texture_cache_open();
@@ -140,19 +142,12 @@ int32_t scenario_tags_load(const char *name) {
 
                 tag_instance->base_address = tag_data_cursor;
                 auto bitmap_group = bitmap_group_get(tag_index);
-                if(bitmap_group->bitmaps.address) {
-                    bitmap_group->bitmaps.address = tag_data_cursor + (uint32_t)bitmap_group->bitmaps.address;
-                }
-
-                if(bitmap_group->sequences.address) {
-                    bitmap_group->sequences.address = tag_data_cursor + (uint32_t)bitmap_group->sequences.address;
-                }
+                FIX_TAG_ADDRESS(bitmap_group->bitmaps.address, tag_data_cursor);
+                FIX_TAG_ADDRESS(bitmap_group->sequences.address, tag_data_cursor);
 
                 for(int sequence_index = 0; sequence_index < bitmap_group->sequences.count; sequence_index++) {
                     auto sequence = bitmap_group_get_sequence(bitmap_group, sequence_index);
-                    if(sequence->sprites.address) {
-                        sequence->sprites.address = tag_data_cursor + (uint32_t)sequence->sprites.address;
-                    }
+                    FIX_TAG_ADDRESS(sequence->sprites.address, tag_data_cursor);
                 }
 
                 break;
@@ -174,20 +169,13 @@ int32_t scenario_tags_load(const char *name) {
 
                 for(int pitch_range_index = 0; pitch_range_index < sound->pitch_ranges.count; pitch_range_index++) {
                     auto range = sound_definition_get_pitch_range(sound, pitch_range_index);
-                    if(range->permutations.address) {
-                        range->permutations.address = sound_data + (uint32_t)range->permutations.address;
-                    }
+                    FIX_TAG_ADDRESS(range->permutations.address, sound_data);
 
                     for(int permutation_index = 0; permutation_index < range->permutations.count; permutation_index++) {
                         auto permutation = sound_pitch_range_get_permutation(range, permutation_index);
                         permutation->runtime_tag_index = tag_index;
-                        if(permutation->mouth_data.address) {
-                            permutation->mouth_data.address = sound_data + (uint32_t)permutation->mouth_data.address;
-                        }
-
-                        if(permutation->subtitle_data.address) {
-                            permutation->subtitle_data.address = sound_data + (uint32_t)permutation->subtitle_data.address;
-                        }
+                        FIX_TAG_ADDRESS(permutation->mouth_data.address, sound_data);
+                        FIX_TAG_ADDRESS(permutation->subtitle_data.address, sound_data);
                     }
                 }
 
@@ -198,24 +186,15 @@ int32_t scenario_tags_load(const char *name) {
 
                 tag_instance->base_address = tag_data_cursor;
                 auto font = font_get_header(tag_index);
-                if(font->character_tables.address) {
-                    font->character_tables.address = tag_data_cursor + (uint32_t)font->character_tables.address;
-                }
+                FIX_TAG_ADDRESS(font->character_tables.address, tag_data_cursor);
 
                 for(int character_table_index = 0; character_table_index < font->character_tables.count; character_table_index++) {
                     auto character_table = font_get_character_tables_entry(font, character_table_index);
-                    if(character_table->table.address) {
-                        character_table->table.address = tag_data_cursor + (uint32_t)character_table->table.address;
-                    }
+                    FIX_TAG_ADDRESS(character_table->table.address, tag_data_cursor);
                 }
 
-                if(font->characters.address) {
-                    font->characters.address = tag_data_cursor + (uint32_t)font->characters.address;
-                }
-
-                if(font->pixels.address) {
-                    font->pixels.address = tag_data_cursor + (uint32_t)font->pixels.address;
-                }
+                FIX_TAG_ADDRESS(font->characters.address, tag_data_cursor);
+                FIX_TAG_ADDRESS(font->pixels.address, tag_data_cursor);
 
                 break;
             case HUD_MESSAGE_TEXT_DEFINITION_TAG:
@@ -224,17 +203,9 @@ int32_t scenario_tags_load(const char *name) {
 
                 tag_instance->base_address = tag_data_cursor;
                 auto hud_messages = hud_state_messages_get(tag_index);
-                if(hud_messages->text_data.address) {
-                    hud_messages->text_data.address = tag_data_cursor + (uint32_t)hud_messages->text_data.address;
-                }
-
-                if(hud_messages->elements.address) {
-                    hud_messages->elements.address = tag_data_cursor + (uint32_t)hud_messages->elements.address;
-                }
-
-                if(hud_messages->messages.address) {
-                    hud_messages->messages.address = tag_data_cursor + (uint32_t)hud_messages->messages.address;
-                }
+                FIX_TAG_ADDRESS(hud_messages->text_data.address, tag_data_cursor);
+                FIX_TAG_ADDRESS(hud_messages->elements.address, tag_data_cursor);
+                FIX_TAG_ADDRESS(hud_messages->messages.address, tag_data_cursor);
 
                 break;
             case UNICODE_STRING_LISTS_GROUP_TAG:
@@ -243,15 +214,11 @@ int32_t scenario_tags_load(const char *name) {
 
                 tag_instance->base_address = tag_data_cursor;
                 auto unicode_strings = unicode_string_list_get_header(tag_index);
-                if(unicode_strings->string_references.address) {
-                    unicode_strings->string_references.address = tag_data_cursor + (uint32_t)unicode_strings->string_references.address;
-                }
+                FIX_TAG_ADDRESS(unicode_strings->string_references.address, tag_data_cursor);
 
                 for(int string_index = 0; string_index < unicode_strings->string_references.count; string_index++) {
                     auto string_reference = unicode_string_list_get_string_reference(unicode_strings, string_index);
-                    if(string_reference->string.address) {
-                        string_reference->string.address = tag_data_cursor + (uint32_t)string_reference->string.address;
-                    }
+                    FIX_TAG_ADDRESS(string_reference->string.address, tag_data_cursor);
                 }
 
                 break;
